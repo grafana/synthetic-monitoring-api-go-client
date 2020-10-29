@@ -101,7 +101,8 @@ endif
 .PHONY: test-go
 test-go: $(GOTESTSUM) ## Run Go tests.
 	$(S) echo "test backend"
-	$(GOTESTSUM) \
+	$(V) mkdir -p $(TEST_OUTPUT)
+	$(V) $(GOTESTSUM) \
 		--format standard-verbose \
 		--jsonfile $(TEST_OUTPUT).json \
 		--junitfile $(TEST_OUTPUT).xml \
