@@ -12,7 +12,7 @@ import (
 	"github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring"
 )
 
-type SmApi struct {
+type Client struct {
 	client      *http.Client
 	accessToken string
 	baseURL     string
@@ -52,19 +52,19 @@ type CheckDeleteResponse struct {
 	CheckID int    `json:"checkId"`
 }
 
-func NewClient(baseURL, accessToken string, client *http.Client) *SmApi {
+func NewClient(baseURL, accessToken string, client *http.Client) *Client {
 	if client == nil {
 		client = http.DefaultClient
 	}
 
-	return &SmApi{
+	return &Client{
 		client:      client,
 		accessToken: accessToken,
 		baseURL:     baseURL + "/api/v1",
 	}
 }
 
-func (h *SmApi) Init(ctx context.Context, adminToken string) (*InitResponse, error) {
+func (h *Client) Init(ctx context.Context, adminToken string) (*InitResponse, error) {
 	body := strings.NewReader(`{"apiToken": "` + adminToken + `"}`)
 
 	resp, err := h.postJSON(ctx, h.baseURL+"/register/init", nil, body)
@@ -83,7 +83,7 @@ func (h *SmApi) Init(ctx context.Context, adminToken string) (*InitResponse, err
 	return &result, nil
 }
 
-func (h *SmApi) Save(ctx context.Context, adminToken string, metricInstanceID, logInstanceID int) error {
+func (h *Client) Save(ctx context.Context, adminToken string, metricInstanceID, logInstanceID int) error {
 	saveReq := struct {
 		AdminToken        string `json:"apiToken"`
 		MetricsInstanceID int    `json:"metricsInstanceId"`
@@ -116,7 +116,7 @@ func (h *SmApi) Save(ctx context.Context, adminToken string, metricInstanceID, l
 	return nil
 }
 
-func (h *SmApi) AddProbe(ctx context.Context, probe synthetic_monitoring.Probe) (*synthetic_monitoring.Probe, []byte, error) {
+func (h *Client) AddProbe(ctx context.Context, probe synthetic_monitoring.Probe) (*synthetic_monitoring.Probe, []byte, error) {
 	body, err := json.Marshal(&probe)
 	if err != nil {
 		return nil, nil, err
@@ -136,7 +136,7 @@ func (h *SmApi) AddProbe(ctx context.Context, probe synthetic_monitoring.Probe) 
 	return &result.Probe, result.Token, nil
 }
 
-func (h *SmApi) DeleteProbe(ctx context.Context, id int64) error {
+func (h *Client) DeleteProbe(ctx context.Context, id int64) error {
 	resp, err := h.delete(ctx, fmt.Sprintf("%s%s/%d", h.baseURL, "/probe/delete", id), http.Header{"Authorization": []string{"Bearer " + h.accessToken}})
 	if err != nil {
 		return fmt.Errorf("sending probe delete request: %w", err)
@@ -151,7 +151,7 @@ func (h *SmApi) DeleteProbe(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (h *SmApi) AddCheck(ctx context.Context, check synthetic_monitoring.Check) (*synthetic_monitoring.Check, error) {
+func (h *Client) AddCheck(ctx context.Context, check synthetic_monitoring.Check) (*synthetic_monitoring.Check, error) {
 	body, err := json.Marshal(&check)
 	if err != nil {
 		return nil, err
@@ -171,7 +171,7 @@ func (h *SmApi) AddCheck(ctx context.Context, check synthetic_monitoring.Check) 
 	return &result, nil
 }
 
-func (h *SmApi) DeleteCheck(ctx context.Context, id int64) error {
+func (h *Client) DeleteCheck(ctx context.Context, id int64) error {
 	resp, err := h.delete(ctx, fmt.Sprintf("%s%s/%d", h.baseURL, "/check/delete", id), http.Header{"Authorization": []string{"Bearer " + h.accessToken}})
 	if err != nil {
 		return fmt.Errorf("sending check delete request: %w", err)
@@ -186,7 +186,7 @@ func (h *SmApi) DeleteCheck(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (h *SmApi) do(ctx context.Context, url, method string, headers http.Header, body io.Reader) (*http.Response, error) {
+func (h *Client) do(ctx context.Context, url, method string, headers http.Header, body io.Reader) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		return nil, err
@@ -199,11 +199,11 @@ func (h *SmApi) do(ctx context.Context, url, method string, headers http.Header,
 	return h.client.Do(req)
 }
 
-func (h *SmApi) post(ctx context.Context, url string, headers http.Header, body io.Reader) (*http.Response, error) {
+func (h *Client) post(ctx context.Context, url string, headers http.Header, body io.Reader) (*http.Response, error) {
 	return h.do(ctx, url, http.MethodPost, headers, body)
 }
 
-func (h *SmApi) postJSON(ctx context.Context, url string, headers http.Header, body io.Reader) (*http.Response, error) {
+func (h *Client) postJSON(ctx context.Context, url string, headers http.Header, body io.Reader) (*http.Response, error) {
 	if body != nil {
 		if headers != nil {
 			headers = headers.Clone()
@@ -216,7 +216,7 @@ func (h *SmApi) postJSON(ctx context.Context, url string, headers http.Header, b
 	return h.post(ctx, url, headers, body)
 }
 
-func (h *SmApi) delete(ctx context.Context, url string, headers http.Header) (*http.Response, error) {
+func (h *Client) delete(ctx context.Context, url string, headers http.Header) (*http.Response, error) {
 	return h.do(ctx, url, http.MethodDelete, headers, nil)
 }
 
