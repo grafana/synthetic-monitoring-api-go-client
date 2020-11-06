@@ -18,40 +18,6 @@ type Client struct {
 	baseURL     string
 }
 
-type InitResponse struct {
-	AccessToken string             `json:"accessToken"`
-	TenantInfo  *TenantDescription `json:"tenantInfo,omitempty"`
-	Instances   []HostedInstance   `json:"instances"`
-}
-
-type TenantDescription struct {
-	ID             int64          `json:"id"`
-	MetricInstance HostedInstance `json:"metricInstance"`
-	LogInstance    HostedInstance `json:"logInstance"`
-}
-
-type HostedInstance struct {
-	ID   int    `json:"id"`
-	Type string `json:"type"`
-	Name string `json:"name"`
-	URL  string `json:"url"`
-}
-
-type ProbeAddResponse struct {
-	Probe synthetic_monitoring.Probe `json:"probe"`
-	Token []byte                     `json:"token"`
-}
-
-type ProbeDeleteResponse struct {
-	Msg     string `json:"msg"`
-	ProbeID int    `json:"probeId"`
-}
-
-type CheckDeleteResponse struct {
-	Msg     string `json:"msg"`
-	CheckID int    `json:"checkId"`
-}
-
 func NewClient(baseURL, accessToken string, client *http.Client) *Client {
 	if client == nil {
 		client = http.DefaultClient
