@@ -274,6 +274,45 @@ func TestDeleteProbe(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestAddCheck(t *testing.T) {
+	url, mux, cleanup := newTestServer(t)
+	defer cleanup()
+	mux.Handle("/api/v1/check/add", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req synthetic_monitoring.Check
+		tenantId := readPostRequest(w, r, &req)
+		if tenantId < 0 {
+			return
+		}
+
+		resp := req
+
+		resp.Id = 1
+		resp.TenantId = tenantId
+		resp.Created = 200
+		resp.Modified = 201
+
+		writeResponse(w, http.StatusOK, &resp)
+	}))
+
+	tenantId := int64(2000)
+	c := NewClient(url, tokensByTenant[tenantId], http.DefaultClient)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	check := synthetic_monitoring.Check{}
+	newCheck, err := c.AddCheck(ctx, check)
+
+	require.NoError(t, err)
+	require.NotNil(t, newCheck)
+	require.NotZero(t, newCheck.Id)
+	require.Equal(t, tenantId, newCheck.TenantId)
+	require.Greater(t, newCheck.Created, float64(0))
+	require.Greater(t, newCheck.Modified, float64(0))
+	require.Empty(t, cmp.Diff(&check, newCheck, ignoreIdField, ignoreTenantIdField, ignoreTimeFields),
+		"AddCheck mismatch (-want +got)")
+}
+
 func newTestServer(t *testing.T) (string, *http.ServeMux, func()) {
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
