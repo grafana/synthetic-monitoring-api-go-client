@@ -49,11 +49,11 @@ func (h *Client) Init(ctx context.Context, adminToken string) (*InitResponse, er
 	return &result, nil
 }
 
-func (h *Client) Save(ctx context.Context, adminToken string, metricInstanceID, logInstanceID int) error {
+func (h *Client) Save(ctx context.Context, adminToken string, metricInstanceID, logInstanceID int64) error {
 	saveReq := struct {
 		AdminToken        string `json:"apiToken"`
-		MetricsInstanceID int    `json:"metricsInstanceId"`
-		LogsInstanceID    int    `json:"logsInstanceId"`
+		MetricsInstanceID int64  `json:"metricsInstanceId"`
+		LogsInstanceID    int64  `json:"logsInstanceId"`
 	}{
 		AdminToken:        adminToken,
 		MetricsInstanceID: metricInstanceID,
