@@ -43,7 +43,7 @@ type TenantDescription struct {
 }
 
 type HostedInstance struct {
-	ID   int    `json:"id"`
+	ID   int64  `json:"id"`
 	Type string `json:"type"`
 	Name string `json:"name"`
 	URL  string `json:"url"`
@@ -56,12 +56,12 @@ type ProbeAddResponse struct {
 
 type ProbeDeleteResponse struct {
 	Msg     string `json:"msg"`
-	ProbeID int    `json:"probeId"`
+	ProbeID int64  `json:"probeId"`
 }
 
 type CheckDeleteResponse struct {
 	Msg     string `json:"msg"`
-	CheckID int    `json:"checkId"`
+	CheckID int64  `json:"checkId"`
 }
 
 func (e *ErrorResponse) Error() string {
