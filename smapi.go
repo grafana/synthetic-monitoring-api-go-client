@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/grafana/synthetic-monitoring-api-go-client/model"
+
 	"github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring"
 )
 
@@ -30,7 +32,7 @@ func NewClient(baseURL, accessToken string, client *http.Client) *Client {
 	}
 }
 
-func (h *Client) Init(ctx context.Context, adminToken string) (*InitResponse, error) {
+func (h *Client) Init(ctx context.Context, adminToken string) (*model.InitResponse, error) {
 	body := strings.NewReader(`{"apiToken": "` + adminToken + `"}`)
 
 	resp, err := h.postJSON(ctx, h.baseURL+"/register/init", nil, body)
@@ -38,7 +40,7 @@ func (h *Client) Init(ctx context.Context, adminToken string) (*InitResponse, er
 		return nil, fmt.Errorf("sending init request: %w", err)
 	}
 
-	var result InitResponse
+	var result model.InitResponse
 
 	if err := validateResponse("registration init request", resp, &result); err != nil {
 		return nil, err
@@ -93,7 +95,7 @@ func (h *Client) AddProbe(ctx context.Context, probe synthetic_monitoring.Probe)
 		return nil, nil, fmt.Errorf("adding probe: %w", err)
 	}
 
-	var result ProbeAddResponse
+	var result model.ProbeAddResponse
 
 	if err := validateResponse("probe add request", resp, &result); err != nil {
 		return nil, nil, err
@@ -108,7 +110,7 @@ func (h *Client) DeleteProbe(ctx context.Context, id int64) error {
 		return fmt.Errorf("sending probe delete request: %w", err)
 	}
 
-	var result ProbeDeleteResponse
+	var result model.ProbeDeleteResponse
 
 	if err := validateResponse("probe delete request", resp, &result); err != nil {
 		return err
@@ -143,7 +145,7 @@ func (h *Client) DeleteCheck(ctx context.Context, id int64) error {
 		return fmt.Errorf("sending check delete request: %w", err)
 	}
 
-	var result CheckDeleteResponse
+	var result model.CheckDeleteResponse
 
 	if err := validateResponse("check delete request", resp, &result); err != nil {
 		return err

@@ -1,4 +1,4 @@
-package smapi
+package model
 
 import (
 	"encoding/json"
