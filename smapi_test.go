@@ -181,9 +181,6 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestClientInit(t *testing.T) {
-	testOrg := orgs.findOrgById(1000)
-	testTenant := testOrg.tenant
-
 	url, mux, cleanup := newTestServer(t)
 	defer cleanup()
 
@@ -210,21 +207,52 @@ func TestClientInit(t *testing.T) {
 		writeResponse(w, http.StatusOK, &resp)
 	}))
 
-	c := NewClient(url, "", http.DefaultClient)
+	testOrg := orgs.findOrgById(1000)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	testcases := map[string]struct {
+		orgId       int64
+		shouldError bool
+	}{
+		"org exists":         {orgId: testOrg.id},
+		"org does not exist": {orgId: 1, shouldError: true},
+	}
 
-	resp, err := c.Init(ctx, testOrg.token)
+	for name, testcase := range testcases {
+		t.Run(name, func(t *testing.T) {
+			c := NewClient(url, "", http.DefaultClient)
 
-	require.NoError(t, err)
-	require.NotNil(t, resp)
-	require.Equal(t, testTenant.token, resp.AccessToken)
-	require.NotNil(t, resp.TenantInfo)
-	require.Equal(t, testTenant.id, resp.TenantInfo.ID)
-	require.NotNil(t, resp.Instances)
-	require.ElementsMatch(t, orgs.findInstancesByOrg(testOrg.id), resp.Instances)
-	require.Equal(t, resp.AccessToken, c.accessToken, "client access token should be set after successful init call")
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+
+			var (
+				token      string
+				testTenant tenantInfo
+			)
+
+			testOrg := orgs.findOrgById(testcase.orgId)
+			if testOrg != nil {
+				token = testOrg.token
+				testTenant = testOrg.tenant
+			}
+
+			resp, err := c.Init(ctx, token)
+
+			if testcase.shouldError {
+				require.Error(t, err)
+				require.Nil(t, resp)
+				return
+			}
+
+			require.NoError(t, err)
+			require.NotNil(t, resp)
+			require.Equal(t, testTenant.token, resp.AccessToken)
+			require.NotNil(t, resp.TenantInfo)
+			require.Equal(t, testTenant.id, resp.TenantInfo.ID)
+			require.NotNil(t, resp.Instances)
+			require.ElementsMatch(t, orgs.findInstancesByOrg(testOrg.id), resp.Instances)
+			require.Equal(t, resp.AccessToken, c.accessToken, "client access token should be set after successful init call")
+		})
+	}
 }
 
 func TestClientSave(t *testing.T) {
