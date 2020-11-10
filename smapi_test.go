@@ -18,52 +18,107 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	orgsByToken = map[string]int64{
-		"token-org-1000": 1000,
-	}
+type orgInfo struct {
+	id             int64
+	token          string
+	tenant         tenantInfo
+	metricInstance model.HostedInstance
+	logInstance    model.HostedInstance
+}
 
-	tenantsByOrg = map[int64]int64{
-		1000: 2000,
-	}
+type tenantInfo struct {
+	id     int64
+	token  string
+	probes []probeInfo
+}
 
-	tokensByTenant = map[int64]string{
-		2000: "token-tenant-2000",
-	}
+type probeInfo struct {
+	id    int64
+	token []byte
+}
 
-	tenantsByToken = func() map[string]int64 {
-		m := make(map[string]int64)
-		for k, v := range tokensByTenant {
-			m[v] = k
+type db []orgInfo
+
+func (db db) findOrgById(id int64) *orgInfo {
+	for _, org := range db {
+		if org.id == id {
+			return &org
 		}
-		return m
-	}()
+	}
 
-	instancesByOrg = map[int64][]model.HostedInstance{
-		1000: {
-			{
-				ID:   1,
-				Type: model.InstanceTypePrometheus,
-				Name: "org-1000-prom",
-				URL:  "https://prometheus.grafana",
-			},
-			{
-				ID:   2,
-				Type: model.InstanceTypeLogs,
-				Name: "org-1000-logs",
-				URL:  "https://logs.grafana",
+	return nil
+}
+
+func (db db) findOrgByToken(token string) *orgInfo {
+	for _, org := range db {
+		if org.token == token {
+			return &org
+		}
+	}
+
+	return nil
+}
+
+func (db db) findTenantByOrg(id int64) *tenantInfo {
+	org := db.findOrgById(id)
+	if org != nil {
+		return &org.tenant
+	}
+
+	return nil
+}
+
+func (db db) findTenantByToken(token string) *tenantInfo {
+	for _, org := range db {
+		if org.tenant.token == token {
+			return &org.tenant
+		}
+	}
+
+	return nil
+}
+
+func (db db) findInstancesByOrg(id int64) []model.HostedInstance {
+	for _, org := range db {
+		if org.id == id {
+			return []model.HostedInstance{
+				org.metricInstance,
+				org.logInstance,
+			}
+		}
+	}
+
+	return nil
+}
+
+var orgs = db{
+	{
+		id:    1000,
+		token: "token-org-1000",
+		tenant: tenantInfo{
+			id:    2000,
+			token: "token-tenant-2000",
+			probes: []probeInfo{
+				{
+					id:    1,
+					token: []byte{0x01, 0x02, 0x03, 0x04},
+				},
 			},
 		},
-	}
-
-	probesByTenantId = map[int64][]int64{
-		2000: {1},
-	}
-
-	probeTokensById = map[int64][]byte{
-		1: {0x01, 0x02, 0x03, 0x04},
-	}
-)
+		metricInstance: model.HostedInstance{
+			ID:   1,
+			Type: model.InstanceTypePrometheus,
+			Name: "org-1000-prom",
+			URL:  "https://prometheus.grafana",
+		},
+		logInstance: model.HostedInstance{
+			ID:   2,
+			Type: model.InstanceTypeLogs,
+			Name: "org-1000-logs",
+			URL:  "https://logs.grafana",
+		},
+	},
+}
 
 type AdminTokenGetter interface {
 	GetAdminToken() string
@@ -86,7 +141,8 @@ func (r *SaveRequest) GetAdminToken() string {
 }
 
 func TestClientInit(t *testing.T) {
-	testTenantId := int64(2000)
+	testOrg := orgs.findOrgById(1000)
+	testTenant := testOrg.tenant
 
 	url, mux, cleanup := newTestServer(t)
 	defer cleanup()
@@ -99,46 +155,41 @@ func TestClientInit(t *testing.T) {
 			return
 		}
 
-		tenantId, ok := tenantsByOrg[orgId]
-		if !ok {
-			errorResponse(w, http.StatusInternalServerError, "cannot get tenant")
-			return
-		}
+		org := orgs.findOrgById(orgId)
 
 		resp := model.InitResponse{
-			AccessToken: tokensByTenant[tenantId],
+			AccessToken: org.tenant.token,
 			TenantInfo: &model.TenantDescription{
-				ID:             tenantId,
+				ID:             org.tenant.id,
 				MetricInstance: model.HostedInstance{},
 				LogInstance:    model.HostedInstance{},
 			},
-			Instances: instancesByOrg[orgId],
+			Instances: orgs.findInstancesByOrg(org.id),
 		}
 
 		writeResponse(w, http.StatusOK, &resp)
 	}))
-
-	adminToken := "token-org-1000"
 
 	c := NewClient(url, "", http.DefaultClient)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	resp, err := c.Init(ctx, adminToken)
+	resp, err := c.Init(ctx, testOrg.token)
 
 	require.NoError(t, err)
 	require.NotNil(t, resp)
-	require.Equal(t, tokensByTenant[testTenantId], resp.AccessToken)
+	require.Equal(t, testTenant.token, resp.AccessToken)
 	require.NotNil(t, resp.TenantInfo)
-	require.Equal(t, tenantsByOrg[1000], resp.TenantInfo.ID)
+	require.Equal(t, testTenant.id, resp.TenantInfo.ID)
 	require.NotNil(t, resp.Instances)
-	require.ElementsMatch(t, resp.Instances, instancesByOrg[1000])
+	require.ElementsMatch(t, orgs.findInstancesByOrg(testOrg.id), resp.Instances)
 	require.Equal(t, resp.AccessToken, c.accessToken, "client access token should be set after successful init call")
 }
 
 func TestClientSave(t *testing.T) {
-	testTenantId := int64(2000)
+	testOrg := orgs.findOrgById(1000)
+	testTenant := testOrg.tenant
 
 	url, mux, cleanup := newTestServer(t)
 	defer cleanup()
@@ -150,13 +201,13 @@ func TestClientSave(t *testing.T) {
 			return
 		}
 
-		tenantId, ok := tenantsByOrg[orgId]
-		if !ok {
+		tenant := orgs.findTenantByOrg(orgId)
+		if tenant == nil {
 			errorResponse(w, http.StatusInternalServerError, "cannot get tenant")
 			return
 		}
-		if tenantId != testTenantId {
-			errorResponse(w, http.StatusExpectationFailed, fmt.Sprintf("expecting tenant ID %d, got %d", testTenantId, tenantId))
+		if tenant.id != testTenant.id {
+			errorResponse(w, http.StatusExpectationFailed, fmt.Sprintf("expecting tenant ID %d, got %d", testTenant.id, tenant.id))
 			return
 		}
 
@@ -175,44 +226,44 @@ func TestClientSave(t *testing.T) {
 		writeResponse(w, http.StatusOK, &resp)
 	}))
 
-	adminToken := "token-org-1000"
 	c := NewClient(url, "", http.DefaultClient)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := c.Save(ctx, adminToken, instancesByOrg[1000][0].ID, instancesByOrg[1000][1].ID)
+	err := c.Save(ctx, testOrg.token, testOrg.metricInstance.ID, testOrg.logInstance.ID)
 	require.NoError(t, err)
 }
 
 func TestAddProbe(t *testing.T) {
-	testTenantId := int64(2000)
+	testTenant := orgs.findTenantByOrg(1000)
 
 	url, mux, cleanup := newTestServer(t)
 	defer cleanup()
 	mux.Handle("/api/v1/probe/add", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req synthetic_monitoring.Probe
-		tenantId, err := readPostRequest(w, r, &req, testTenantId)
+		tenantId, err := readPostRequest(w, r, &req, testTenant.id)
 		if err != nil {
 			return
 		}
-		if tenantId != testTenantId {
-			errorResponse(w, http.StatusExpectationFailed, fmt.Sprintf("expecting tenant ID %d, got %d", testTenantId, tenantId))
+		if tenantId != testTenant.id {
+			errorResponse(w, http.StatusExpectationFailed, fmt.Sprintf("expecting tenant ID %d, got %d", testTenant.id, tenantId))
 			return
 		}
 
-		probeIds, found := probesByTenantId[tenantId]
-		if !found {
+		if len(testTenant.probes) < 1 {
 			errorResponse(w, http.StatusInternalServerError, "no probes for this tenant")
 			return
 		}
 
+		// TODO(mem): how to handle multiple probes?
+
 		resp := model.ProbeAddResponse{
-			Token: []byte{0x01, 0x02, 0x03, 0x04},
+			Token: testTenant.probes[0].token,
+			Probe: req,
 		}
 
-		resp.Probe = req
-		resp.Probe.Id = probeIds[0] // TODO(mem): how to handle multiple probes?
+		resp.Probe.Id = testTenant.probes[0].id
 		resp.Probe.TenantId = tenantId
 		resp.Probe.OnlineChange = 100
 		resp.Probe.Created = 101
@@ -221,7 +272,7 @@ func TestAddProbe(t *testing.T) {
 		writeResponse(w, http.StatusOK, &resp)
 	}))
 
-	c := NewClient(url, tokensByTenant[testTenantId], http.DefaultClient)
+	c := NewClient(url, testTenant.token, http.DefaultClient)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -232,17 +283,17 @@ func TestAddProbe(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, newProbe)
 	require.NotZero(t, newProbe.Id)
-	require.Equal(t, testTenantId, newProbe.TenantId)
+	require.Equal(t, testTenant.id, newProbe.TenantId)
 	require.Greater(t, newProbe.OnlineChange, float64(0))
 	require.Greater(t, newProbe.Created, float64(0))
 	require.Greater(t, newProbe.Modified, float64(0))
 	require.Empty(t, cmp.Diff(&probe, newProbe, ignoreIdField, ignoreTenantIdField, ignoreTimeFields),
 		"AddProbe mismatch (-want +got)")
-	require.Equal(t, probeTokensById[newProbe.Id], probeToken)
+	require.Equal(t, testTenant.probes[0].token, probeToken)
 }
 
 func TestDeleteProbe(t *testing.T) {
-	testTenantId := int64(2000)
+	testTenant := orgs.findTenantByOrg(1000)
 	testCheckId := int64(42)
 
 	url, mux, cleanup := newTestServer(t)
@@ -252,7 +303,7 @@ func TestDeleteProbe(t *testing.T) {
 			return
 		}
 
-		if _, err := requireAuth(w, r, testTenantId); err != nil {
+		if _, err := requireAuth(w, r, testTenant.id); err != nil {
 			return
 		}
 
@@ -268,7 +319,7 @@ func TestDeleteProbe(t *testing.T) {
 		writeResponse(w, http.StatusOK, &resp)
 	}))
 
-	c := NewClient(url, tokensByTenant[testTenantId], http.DefaultClient)
+	c := NewClient(url, testTenant.token, http.DefaultClient)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -278,7 +329,8 @@ func TestDeleteProbe(t *testing.T) {
 }
 
 func TestAddCheck(t *testing.T) {
-	testTenantId := int64(2000)
+	testTenant := orgs.findTenantByOrg(1000)
+	testTenantId := testTenant.id
 	testCheckId := int64(42)
 
 	url, mux, cleanup := newTestServer(t)
@@ -300,7 +352,7 @@ func TestAddCheck(t *testing.T) {
 		writeResponse(w, http.StatusOK, &resp)
 	}))
 
-	c := NewClient(url, tokensByTenant[testTenantId], http.DefaultClient)
+	c := NewClient(url, testTenant.token, http.DefaultClient)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -311,7 +363,7 @@ func TestAddCheck(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, newCheck)
 	require.Equal(t, testCheckId, newCheck.Id)
-	require.Equal(t, testTenantId, newCheck.TenantId)
+	require.Equal(t, testTenant.id, newCheck.TenantId)
 	require.Greater(t, newCheck.Created, float64(0))
 	require.Greater(t, newCheck.Modified, float64(0))
 	require.Empty(t, cmp.Diff(&check, newCheck, ignoreIdField, ignoreTenantIdField, ignoreTimeFields),
@@ -319,7 +371,8 @@ func TestAddCheck(t *testing.T) {
 }
 
 func TestDeleteCheck(t *testing.T) {
-	testTenantId := int64(2000)
+	testTenant := orgs.findTenantByOrg(1000)
+	testTenantId := testTenant.id
 	testCheckId := int64(42)
 
 	url, mux, cleanup := newTestServer(t)
@@ -345,7 +398,7 @@ func TestDeleteCheck(t *testing.T) {
 		writeResponse(w, http.StatusOK, &resp)
 	}))
 
-	c := NewClient(url, tokensByTenant[testTenantId], http.DefaultClient)
+	c := NewClient(url, testTenant.token, http.DefaultClient)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -408,12 +461,12 @@ func readPostRequest(w http.ResponseWriter, r *http.Request, req interface{}, ex
 	}
 
 	if req, ok := req.(AdminTokenGetter); ok {
-		orgId, ok := orgsByToken[req.GetAdminToken()]
-		if !ok {
+		org := orgs.findOrgByToken(req.GetAdminToken())
+		if org == nil {
 			errorResponse(w, http.StatusUnauthorized, "not authorized")
 			return -1, errors.New("not authorized")
 		}
-		return orgId, nil
+		return org.id, nil
 	}
 
 	return requireAuth(w, r, expectedTenantId)
@@ -426,14 +479,14 @@ func requireAuth(w http.ResponseWriter, r *http.Request, tenantId int64) (int64,
 	}
 
 	token := strings.TrimPrefix(authHeader, "Bearer ")
-	actualTenantId, ok := tenantsByToken[token]
-	if !ok {
+	actualTenant := orgs.findTenantByToken(token)
+	if actualTenant == nil {
 		errorResponse(w, http.StatusUnauthorized, "not authorized")
 		return 0, errors.New("not authorized")
 	}
 
-	if actualTenantId != tenantId {
-		errorResponse(w, http.StatusExpectationFailed, fmt.Sprintf("expecinting tenant ID %d, got %d", tenantId, actualTenantId))
+	if actualTenant.id != tenantId {
+		errorResponse(w, http.StatusExpectationFailed, fmt.Sprintf("expecinting tenant ID %d, got %d", tenantId, actualTenant.id))
 		return 0, errors.New("invalid tenantId")
 	}
 
