@@ -309,6 +309,43 @@ func TestAddCheck(t *testing.T) {
 		"AddCheck mismatch (-want +got)")
 }
 
+func TestDeleteCheck(t *testing.T) {
+	testTenantId := int64(2000)
+	testCheckId := int64(42)
+
+	url, mux, cleanup := newTestServer(t)
+	defer cleanup()
+	mux.Handle("/api/v1/check/delete/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := requireMethod(w, r, http.MethodDelete); err != nil {
+			return
+		}
+
+		if _, err := requireAuth(w, r, testTenantId); err != nil {
+			return
+		}
+
+		if err := requireId(w, r, testCheckId, "/api/v1/check/delete/"); err != nil {
+			return
+		}
+
+		resp := CheckDeleteResponse{
+			Msg:     "check deleted",
+			CheckID: testCheckId,
+		}
+
+		writeResponse(w, http.StatusOK, &resp)
+	}))
+
+	c := NewClient(url, tokensByTenant[testTenantId], http.DefaultClient)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := c.DeleteCheck(ctx, testCheckId)
+
+	require.NoError(t, err)
+}
+
 func newTestServer(t *testing.T) (string, *http.ServeMux, func()) {
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
