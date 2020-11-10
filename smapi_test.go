@@ -180,6 +180,50 @@ func TestNewClient(t *testing.T) {
 	}
 }
 
+// TestClientDo tests the "do" method of the API client in order to make
+// sure that it does handle errors correctly.
+func TestClientDo(t *testing.T) {
+	url, _, cleanup := newTestServer(t)
+	defer cleanup()
+
+	validate := func(t *testing.T, resp *http.Response, err error) {
+		t.Helper()
+
+		require.Error(t, err)
+		require.Nil(t, resp)
+
+		if err == nil && resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
+	}
+
+	t.Run("invalid method", func(t *testing.T) {
+		c := Client{client: http.DefaultClient}
+		resp, err := c.do(context.Background(), url, "/", nil, nil) //nolint:bodyclose
+		validate(t, resp, err)
+	})
+
+	t.Run("invalid context", func(t *testing.T) {
+		c := Client{client: http.DefaultClient}
+		resp, err := c.do(nil, url, http.MethodGet, nil, nil) //nolint:staticcheck,bodyclose // passing nil context on purpose
+		validate(t, resp, err)
+	})
+
+	t.Run("invalid url", func(t *testing.T) {
+		c := Client{client: http.DefaultClient}
+		resp, err := c.do(context.Background(), "://", http.MethodGet, nil, nil) //nolint:bodyclose
+		validate(t, resp, err)
+	})
+
+	t.Run("context canceled", func(t *testing.T) {
+		c := Client{client: http.DefaultClient}
+		ctx, cancel := context.WithCancel(context.Background())
+		cancel()                                              // cancel context now
+		resp, err := c.do(ctx, url, http.MethodGet, nil, nil) //nolint:bodyclose
+		validate(t, resp, err)
+	})
+}
+
 func TestClientInit(t *testing.T) {
 	url, mux, cleanup := newTestServer(t)
 	defer cleanup()
