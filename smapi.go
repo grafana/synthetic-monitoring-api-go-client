@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"path"
 	"strings"
 
 	"github.com/grafana/synthetic-monitoring-api-go-client/model"
@@ -25,10 +27,17 @@ func NewClient(baseURL, accessToken string, client *http.Client) *Client {
 		client = http.DefaultClient
 	}
 
+	u, err := url.Parse(baseURL + "/api/v1")
+	if err != nil {
+		return nil
+	}
+
+	u.Path = path.Clean(u.Path)
+
 	return &Client{
 		client:      client,
 		accessToken: accessToken,
-		baseURL:     baseURL + "/api/v1",
+		baseURL:     u.String(),
 	}
 }
 
