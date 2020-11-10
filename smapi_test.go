@@ -3,6 +3,8 @@ package smapi
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -75,13 +77,15 @@ func (r *SaveRequest) GetAdminToken() string {
 }
 
 func TestClientInit(t *testing.T) {
+	testTenantId := int64(2000)
+
 	url, mux, cleanup := newTestServer(t)
 	defer cleanup()
 
 	mux.Handle("/api/v1/register/init", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req InitRequest
 
-		orgId := readPostRequest(w, r, &req)
+		orgId := readPostRequest(w, r, &req, -1000)
 		if orgId < 0 {
 			return
 		}
@@ -116,7 +120,7 @@ func TestClientInit(t *testing.T) {
 
 	require.NoError(t, err)
 	require.NotNil(t, resp)
-	require.Equal(t, tokensByTenant[2000], resp.AccessToken)
+	require.Equal(t, tokensByTenant[testTenantId], resp.AccessToken)
 	require.NotNil(t, resp.TenantInfo)
 	require.Equal(t, tenantsByOrg[1000], resp.TenantInfo.ID)
 	require.NotNil(t, resp.Instances)
@@ -125,19 +129,25 @@ func TestClientInit(t *testing.T) {
 }
 
 func TestClientSave(t *testing.T) {
+	testTenantId := int64(2000)
+
 	url, mux, cleanup := newTestServer(t)
 	defer cleanup()
 	mux.Handle("/api/v1/register/save", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req SaveRequest
 
-		orgId := readPostRequest(w, r, &req)
+		orgId := readPostRequest(w, r, &req, -1000)
 		if orgId < 0 {
 			return
 		}
 
-		_, ok := tenantsByOrg[orgId]
+		tenantId, ok := tenantsByOrg[orgId]
 		if !ok {
 			errorResponse(w, http.StatusInternalServerError, "cannot get tenant")
+			return
+		}
+		if tenantId != testTenantId {
+			errorResponse(w, http.StatusExpectationFailed, fmt.Sprintf("expecting tenant ID %d, got %d", testTenantId, tenantId))
 			return
 		}
 
@@ -167,12 +177,18 @@ func TestClientSave(t *testing.T) {
 }
 
 func TestAddProbe(t *testing.T) {
+	testTenantId := int64(2000)
+
 	url, mux, cleanup := newTestServer(t)
 	defer cleanup()
 	mux.Handle("/api/v1/probe/add", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req synthetic_monitoring.Probe
-		tenantId := readPostRequest(w, r, &req)
+		tenantId := readPostRequest(w, r, &req, testTenantId)
 		if tenantId < 0 {
+			return
+		}
+		if tenantId != testTenantId {
+			errorResponse(w, http.StatusExpectationFailed, fmt.Sprintf("expecting tenant ID %d, got %d", testTenantId, tenantId))
 			return
 		}
 
@@ -196,8 +212,7 @@ func TestAddProbe(t *testing.T) {
 		writeResponse(w, http.StatusOK, &resp)
 	}))
 
-	tenantId := int64(2000)
-	c := NewClient(url, tokensByTenant[tenantId], http.DefaultClient)
+	c := NewClient(url, tokensByTenant[testTenantId], http.DefaultClient)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -208,7 +223,7 @@ func TestAddProbe(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, newProbe)
 	require.NotZero(t, newProbe.Id)
-	require.Equal(t, tenantId, newProbe.TenantId)
+	require.Equal(t, testTenantId, newProbe.TenantId)
 	require.Greater(t, newProbe.OnlineChange, float64(0))
 	require.Greater(t, newProbe.Created, float64(0))
 	require.Greater(t, newProbe.Modified, float64(0))
@@ -218,75 +233,57 @@ func TestAddProbe(t *testing.T) {
 }
 
 func TestDeleteProbe(t *testing.T) {
+	testTenantId := int64(2000)
+	testCheckId := int64(42)
+
 	url, mux, cleanup := newTestServer(t)
 	defer cleanup()
 	mux.Handle("/api/v1/probe/delete/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodDelete {
-			errorResponse(w, http.StatusBadRequest, "invalid request method")
+		if err := requireMethod(w, r, http.MethodDelete); err != nil {
 			return
 		}
 
-		tenantId := authorizeTenant(w, r)
-		if tenantId < 0 {
-			// the tenant exists, but the authorization is incorrect
-			return
-		} else if tenantId == 0 {
-			// the tenant does not exist
-			errorResponse(w, http.StatusUnauthorized, "invalid authorization credentials")
+		if _, err := requireAuth(w, r, testTenantId); err != nil {
 			return
 		}
 
-		probeId, err := strconv.ParseInt(strings.TrimPrefix(r.URL.Path, "/api/v1/probe/delete/"), 10, 64)
-		if err != nil {
-			errorResponse(w, http.StatusBadRequest, "invalid probe ID")
-			return
-		}
-
-		found := false
-
-		for _, id := range probesByTenantId[tenantId] {
-			if id == probeId {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			errorResponse(w, http.StatusBadRequest, "invalid probe ID")
+		if err := requireId(w, r, testCheckId, "/api/v1/probe/delete/"); err != nil {
 			return
 		}
 
 		resp := ProbeDeleteResponse{
 			Msg:     "probe deleted",
-			ProbeID: probeId,
+			ProbeID: testCheckId,
 		}
 
 		writeResponse(w, http.StatusOK, &resp)
 	}))
 
-	tenantId := int64(2000)
-	c := NewClient(url, tokensByTenant[tenantId], http.DefaultClient)
+	c := NewClient(url, tokensByTenant[testTenantId], http.DefaultClient)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := c.DeleteProbe(ctx, probesByTenantId[tenantId][0])
+	err := c.DeleteProbe(ctx, testCheckId)
 	require.NoError(t, err)
 }
 
 func TestAddCheck(t *testing.T) {
+	testTenantId := int64(2000)
+	testCheckId := int64(42)
+
 	url, mux, cleanup := newTestServer(t)
 	defer cleanup()
 	mux.Handle("/api/v1/check/add", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req synthetic_monitoring.Check
-		tenantId := readPostRequest(w, r, &req)
+		tenantId := readPostRequest(w, r, &req, testTenantId)
 		if tenantId < 0 {
 			return
 		}
 
 		resp := req
 
-		resp.Id = 1
+		resp.Id = testCheckId
 		resp.TenantId = tenantId
 		resp.Created = 200
 		resp.Modified = 201
@@ -294,8 +291,7 @@ func TestAddCheck(t *testing.T) {
 		writeResponse(w, http.StatusOK, &resp)
 	}))
 
-	tenantId := int64(2000)
-	c := NewClient(url, tokensByTenant[tenantId], http.DefaultClient)
+	c := NewClient(url, tokensByTenant[testTenantId], http.DefaultClient)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -305,8 +301,8 @@ func TestAddCheck(t *testing.T) {
 
 	require.NoError(t, err)
 	require.NotNil(t, newCheck)
-	require.NotZero(t, newCheck.Id)
-	require.Equal(t, tenantId, newCheck.TenantId)
+	require.Equal(t, testCheckId, newCheck.Id)
+	require.Equal(t, testTenantId, newCheck.TenantId)
 	require.Greater(t, newCheck.Created, float64(0))
 	require.Greater(t, newCheck.Modified, float64(0))
 	require.Empty(t, cmp.Diff(&check, newCheck, ignoreIdField, ignoreTenantIdField, ignoreTimeFields),
@@ -325,7 +321,33 @@ func newTestServer(t *testing.T) (string, *http.ServeMux, func()) {
 	return server.URL, mux, server.Close
 }
 
-func readPostRequest(w http.ResponseWriter, r *http.Request, req interface{}) int64 {
+func requireMethod(w http.ResponseWriter, r *http.Request, method string) error {
+	if r.Method != method {
+		errorResponse(w, http.StatusBadRequest, fmt.Sprintf("invalid request method %s, expecting %s", r.Method, method))
+		return errors.New("bad request")
+	}
+
+	return nil
+}
+
+func requireId(w http.ResponseWriter, r *http.Request, expected int64, prefix string) error {
+	str := strings.TrimPrefix(r.URL.Path, prefix)
+	if actual, err := strconv.ParseInt(str, 10, 64); err != nil {
+		errorResponse(w, http.StatusBadRequest, fmt.Sprintf("invalid ID: %s", str))
+		return err
+	} else if actual != expected {
+		errorResponse(w, http.StatusBadRequest, fmt.Sprintf("expecting ID %d, got %d ", expected, actual))
+		return errors.New("unexpected ID")
+	}
+
+	return nil
+}
+
+func readPostRequest(w http.ResponseWriter, r *http.Request, req interface{}, expectedTenantId int64) int64 {
+	if err := requireMethod(w, r, http.MethodPost); err != nil {
+		return -1
+	}
+
 	if r.Body == nil {
 		errorResponse(w, http.StatusBadRequest, "invalid request")
 		return -1
@@ -336,38 +358,44 @@ func readPostRequest(w http.ResponseWriter, r *http.Request, req interface{}) in
 	err := dec.Decode(req)
 	if err != nil {
 		errorResponse(w, http.StatusInternalServerError, "cannot decode request")
-		return -2
+		return -1
 	}
 
 	if req, ok := req.(AdminTokenGetter); ok {
 		orgId, ok := orgsByToken[req.GetAdminToken()]
 		if !ok {
 			errorResponse(w, http.StatusUnauthorized, "not authorized")
-			return -3
+			return -1
 		}
 		return orgId
 	}
 
-	if tenantId := authorizeTenant(w, r); tenantId != 0 {
+	if tenantId, err := requireAuth(w, r, expectedTenantId); err == nil {
 		return tenantId
 	}
 
-	errorResponse(w, http.StatusUnauthorized, "invalid authorization credentials")
-	return -4
+	return -1
 }
 
-func authorizeTenant(w http.ResponseWriter, r *http.Request) int64 {
-	if authHeader := r.Header.Get("authorization"); authHeader != "" {
-		token := strings.TrimPrefix(authHeader, "Bearer ")
-		tenantId, ok := tenantsByToken[token]
-		if !ok {
-			errorResponse(w, http.StatusUnauthorized, "not authorized")
-			return -10
-		}
-		return tenantId
+func requireAuth(w http.ResponseWriter, r *http.Request, tenantId int64) (int64, error) {
+	authHeader := r.Header.Get("authorization")
+	if authHeader == "" {
+		return 0, errors.New("no authorization header")
 	}
 
-	return 0 // no action here
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	actualTenantId, ok := tenantsByToken[token]
+	if !ok {
+		errorResponse(w, http.StatusUnauthorized, "not authorized")
+		return 0, errors.New("not authorized")
+	}
+
+	if actualTenantId != tenantId {
+		errorResponse(w, http.StatusExpectationFailed, fmt.Sprintf("expecinting tenant ID %d, got %d", tenantId, actualTenantId))
+		return 0, errors.New("invalid tenantId")
+	}
+
+	return tenantId, nil
 }
 
 func writeResponse(w http.ResponseWriter, code int, resp interface{}) {
@@ -377,5 +405,5 @@ func writeResponse(w http.ResponseWriter, code int, resp interface{}) {
 }
 
 func errorResponse(w http.ResponseWriter, code int, msg string) {
-	writeResponse(w, http.StatusInternalServerError, &ErrorResponse{Msg: msg})
+	writeResponse(w, code, &ErrorResponse{Msg: msg})
 }
