@@ -140,6 +140,46 @@ func (r *SaveRequest) GetAdminToken() string {
 	return r.AdminToken
 }
 
+func TestNewClient(t *testing.T) {
+	url, _, cleanup := newTestServer(t)
+	defer cleanup()
+
+	testcases := map[string]struct {
+		url         string
+		accessToken string
+		client      *http.Client
+	}{
+		"trivial": {
+			url: url,
+		},
+		"extra slash": {
+			url: url + "/",
+		},
+		"access token": {
+			url:         url,
+			accessToken: "123",
+		},
+		"default http client": {
+			url:    url,
+			client: http.DefaultClient,
+		},
+	}
+
+	for name, testcase := range testcases {
+		t.Run(name, func(t *testing.T) {
+			c := NewClient(testcase.url, testcase.accessToken, testcase.client)
+
+			require.NotNil(t, c)
+			require.NotNil(t, c.client)
+			if testcase.client != nil {
+				require.Equal(t, testcase.client, c.client)
+			}
+			require.Equal(t, c.accessToken, testcase.accessToken)
+			require.Equal(t, c.baseURL, url+"/api/v1")
+		})
+	}
+}
+
 func TestClientInit(t *testing.T) {
 	testOrg := orgs.findOrgById(1000)
 	testTenant := testOrg.tenant
