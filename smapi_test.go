@@ -94,8 +94,8 @@ func TestClientInit(t *testing.T) {
 	mux.Handle("/api/v1/register/init", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req InitRequest
 
-		orgId := readPostRequest(w, r, &req, -1000)
-		if orgId < 0 {
+		orgId, err := readPostRequest(w, r, &req, -1000)
+		if err != nil {
 			return
 		}
 
@@ -145,8 +145,8 @@ func TestClientSave(t *testing.T) {
 	mux.Handle("/api/v1/register/save", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req SaveRequest
 
-		orgId := readPostRequest(w, r, &req, -1000)
-		if orgId < 0 {
+		orgId, err := readPostRequest(w, r, &req, -1000)
+		if err != nil {
 			return
 		}
 
@@ -192,8 +192,8 @@ func TestAddProbe(t *testing.T) {
 	defer cleanup()
 	mux.Handle("/api/v1/probe/add", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req synthetic_monitoring.Probe
-		tenantId := readPostRequest(w, r, &req, testTenantId)
-		if tenantId < 0 {
+		tenantId, err := readPostRequest(w, r, &req, testTenantId)
+		if err != nil {
 			return
 		}
 		if tenantId != testTenantId {
@@ -285,8 +285,8 @@ func TestAddCheck(t *testing.T) {
 	defer cleanup()
 	mux.Handle("/api/v1/check/add", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var req synthetic_monitoring.Check
-		tenantId := readPostRequest(w, r, &req, testTenantId)
-		if tenantId < 0 {
+		tenantId, err := readPostRequest(w, r, &req, testTenantId)
+		if err != nil {
 			return
 		}
 
@@ -389,14 +389,14 @@ func requireId(w http.ResponseWriter, r *http.Request, expected int64, prefix st
 	return nil
 }
 
-func readPostRequest(w http.ResponseWriter, r *http.Request, req interface{}, expectedTenantId int64) int64 {
+func readPostRequest(w http.ResponseWriter, r *http.Request, req interface{}, expectedTenantId int64) (int64, error) {
 	if err := requireMethod(w, r, http.MethodPost); err != nil {
-		return -1
+		return -1, errors.New("invalid method")
 	}
 
 	if r.Body == nil {
 		errorResponse(w, http.StatusBadRequest, "invalid request")
-		return -1
+		return -1, errors.New("invalid request")
 	}
 	defer r.Body.Close()
 
@@ -404,23 +404,19 @@ func readPostRequest(w http.ResponseWriter, r *http.Request, req interface{}, ex
 	err := dec.Decode(req)
 	if err != nil {
 		errorResponse(w, http.StatusInternalServerError, "cannot decode request")
-		return -1
+		return -1, errors.New("cannot decode request")
 	}
 
 	if req, ok := req.(AdminTokenGetter); ok {
 		orgId, ok := orgsByToken[req.GetAdminToken()]
 		if !ok {
 			errorResponse(w, http.StatusUnauthorized, "not authorized")
-			return -1
+			return -1, errors.New("not authorized")
 		}
-		return orgId
+		return orgId, nil
 	}
 
-	if tenantId, err := requireAuth(w, r, expectedTenantId); err == nil {
-		return tenantId
-	}
-
-	return -1
+	return requireAuth(w, r, expectedTenantId)
 }
 
 func requireAuth(w http.ResponseWriter, r *http.Request, tenantId int64) (int64, error) {
