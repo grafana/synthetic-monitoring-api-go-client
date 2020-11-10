@@ -14,6 +14,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring"
+	"github.com/grafana/synthetic-monitoring-api-go-client/model"
 	"github.com/stretchr/testify/require"
 )
 
@@ -38,17 +39,17 @@ var (
 		return m
 	}()
 
-	instancesByOrg = map[int64][]HostedInstance{
+	instancesByOrg = map[int64][]model.HostedInstance{
 		1000: {
 			{
 				ID:   1,
-				Type: InstanceTypePrometheus,
+				Type: model.InstanceTypePrometheus,
 				Name: "org-1000-prom",
 				URL:  "https://prometheus.grafana",
 			},
 			{
 				ID:   2,
-				Type: InstanceTypeLogs,
+				Type: model.InstanceTypeLogs,
 				Name: "org-1000-logs",
 				URL:  "https://logs.grafana",
 			},
@@ -68,8 +69,16 @@ type AdminTokenGetter interface {
 	GetAdminToken() string
 }
 
+type InitRequest struct {
+	model.InitRequest
+}
+
 func (r *InitRequest) GetAdminToken() string {
 	return r.AdminToken
+}
+
+type SaveRequest struct {
+	model.SaveRequest
 }
 
 func (r *SaveRequest) GetAdminToken() string {
@@ -96,12 +105,12 @@ func TestClientInit(t *testing.T) {
 			return
 		}
 
-		resp := InitResponse{
+		resp := model.InitResponse{
 			AccessToken: tokensByTenant[tenantId],
-			TenantInfo: &TenantDescription{
+			TenantInfo: &model.TenantDescription{
 				ID:             tenantId,
-				MetricInstance: HostedInstance{},
-				LogInstance:    HostedInstance{},
+				MetricInstance: model.HostedInstance{},
+				LogInstance:    model.HostedInstance{},
 			},
 			Instances: instancesByOrg[orgId],
 		}
@@ -161,7 +170,7 @@ func TestClientSave(t *testing.T) {
 			return
 		}
 
-		resp := SaveResponse{}
+		resp := model.SaveResponse{}
 
 		writeResponse(w, http.StatusOK, &resp)
 	}))
@@ -198,7 +207,7 @@ func TestAddProbe(t *testing.T) {
 			return
 		}
 
-		resp := ProbeAddResponse{
+		resp := model.ProbeAddResponse{
 			Token: []byte{0x01, 0x02, 0x03, 0x04},
 		}
 
@@ -251,7 +260,7 @@ func TestDeleteProbe(t *testing.T) {
 			return
 		}
 
-		resp := ProbeDeleteResponse{
+		resp := model.ProbeDeleteResponse{
 			Msg:     "probe deleted",
 			ProbeID: testCheckId,
 		}
@@ -328,7 +337,7 @@ func TestDeleteCheck(t *testing.T) {
 			return
 		}
 
-		resp := CheckDeleteResponse{
+		resp := model.CheckDeleteResponse{
 			Msg:     "check deleted",
 			CheckID: testCheckId,
 		}
@@ -442,5 +451,5 @@ func writeResponse(w http.ResponseWriter, code int, resp interface{}) {
 }
 
 func errorResponse(w http.ResponseWriter, code int, msg string) {
-	writeResponse(w, code, &ErrorResponse{Msg: msg})
+	writeResponse(w, code, &model.ErrorResponse{Msg: msg})
 }
