@@ -148,6 +148,26 @@ func (h *Client) UpdateProbe(ctx context.Context, probe synthetic_monitoring.Pro
 	return &result.Probe, nil
 }
 
+func (h *Client) ResetProbeToken(ctx context.Context, probe synthetic_monitoring.Probe) (*synthetic_monitoring.Probe, []byte, error) {
+	body, err := json.Marshal(&probe)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := h.postJSON(ctx, h.baseURL+"/probe/update?reset-token", true, bytes.NewReader(body))
+	if err != nil {
+		return nil, nil, fmt.Errorf("sending probe update request: %w", err)
+	}
+
+	var result model.ProbeUpdateResponse
+
+	if err := validateResponse("probe update request", resp, &result); err != nil {
+		return nil, nil, err
+	}
+
+	return &result.Probe, result.Token, nil
+}
+
 func (h *Client) AddCheck(ctx context.Context, check synthetic_monitoring.Check) (*synthetic_monitoring.Check, error) {
 	body, err := json.Marshal(&check)
 	if err != nil {
