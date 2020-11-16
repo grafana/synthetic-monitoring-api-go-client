@@ -199,27 +199,27 @@ func TestClientDo(t *testing.T) {
 
 	t.Run("invalid method", func(t *testing.T) {
 		c := Client{client: http.DefaultClient}
-		resp, err := c.do(context.Background(), url, "/", nil, nil) //nolint:bodyclose
+		resp, err := c.do(context.Background(), url, "/", false, nil, nil) //nolint:bodyclose
 		validate(t, resp, err)
 	})
 
 	t.Run("invalid context", func(t *testing.T) {
 		c := Client{client: http.DefaultClient}
-		resp, err := c.do(nil, url, http.MethodGet, nil, nil) //nolint:staticcheck,bodyclose // passing nil context on purpose
+		resp, err := c.do(nil, url, http.MethodGet, false, nil, nil) //nolint:staticcheck,bodyclose // passing nil context on purpose
 		validate(t, resp, err)
 	})
 
 	t.Run("invalid url", func(t *testing.T) {
 		c := Client{client: http.DefaultClient}
-		resp, err := c.do(context.Background(), "://", http.MethodGet, nil, nil) //nolint:bodyclose
+		resp, err := c.do(context.Background(), "://", http.MethodGet, false, nil, nil) //nolint:bodyclose
 		validate(t, resp, err)
 	})
 
 	t.Run("context canceled", func(t *testing.T) {
 		c := Client{client: http.DefaultClient}
 		ctx, cancel := context.WithCancel(context.Background())
-		cancel()                                              // cancel context now
-		resp, err := c.do(ctx, url, http.MethodGet, nil, nil) //nolint:bodyclose
+		cancel()                                                     // cancel context now
+		resp, err := c.do(ctx, url, http.MethodGet, false, nil, nil) //nolint:bodyclose
 		validate(t, resp, err)
 	})
 }

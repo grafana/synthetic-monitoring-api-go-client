@@ -44,7 +44,7 @@ func NewClient(baseURL, accessToken string, client *http.Client) *Client {
 func (h *Client) Init(ctx context.Context, adminToken string) (*model.InitResponse, error) {
 	body := strings.NewReader(`{"apiToken": "` + adminToken + `"}`)
 
-	resp, err := h.postJSON(ctx, h.baseURL+"/register/init", nil, body)
+	resp, err := h.postJSON(ctx, h.baseURL+"/register/init", false, body)
 	if err != nil {
 		return nil, fmt.Errorf("sending init request: %w", err)
 	}
@@ -79,7 +79,7 @@ func (h *Client) Save(ctx context.Context, adminToken string, metricInstanceID, 
 		return fmt.Errorf("cannot encode request")
 	}
 
-	resp, err := h.postJSON(ctx, h.baseURL+"/register/save", http.Header{"Authorization": []string{"Bearer " + h.accessToken}}, &body)
+	resp, err := h.postJSON(ctx, h.baseURL+"/register/save", true, &body)
 	if err != nil {
 		return fmt.Errorf("sending save request: %w", err)
 	}
@@ -99,7 +99,7 @@ func (h *Client) AddProbe(ctx context.Context, probe synthetic_monitoring.Probe)
 		return nil, nil, err
 	}
 
-	resp, err := h.postJSON(ctx, h.baseURL+"/probe/add", http.Header{"Authorization": []string{"Bearer " + h.accessToken}}, bytes.NewReader(body))
+	resp, err := h.postJSON(ctx, h.baseURL+"/probe/add", true, bytes.NewReader(body))
 	if err != nil {
 		return nil, nil, fmt.Errorf("adding probe: %w", err)
 	}
@@ -114,7 +114,7 @@ func (h *Client) AddProbe(ctx context.Context, probe synthetic_monitoring.Probe)
 }
 
 func (h *Client) DeleteProbe(ctx context.Context, id int64) error {
-	resp, err := h.delete(ctx, fmt.Sprintf("%s%s/%d", h.baseURL, "/probe/delete", id), http.Header{"Authorization": []string{"Bearer " + h.accessToken}})
+	resp, err := h.delete(ctx, fmt.Sprintf("%s%s/%d", h.baseURL, "/probe/delete", id), true)
 	if err != nil {
 		return fmt.Errorf("sending probe delete request: %w", err)
 	}
@@ -134,7 +134,7 @@ func (h *Client) UpdateProbe(ctx context.Context, probe synthetic_monitoring.Pro
 		return nil, err
 	}
 
-	resp, err := h.postJSON(ctx, h.baseURL+"/probe/update", http.Header{"Authorization": []string{"Bearer " + h.accessToken}}, bytes.NewReader(body))
+	resp, err := h.postJSON(ctx, h.baseURL+"/probe/update", true, bytes.NewReader(body))
 	if err != nil {
 		return nil, fmt.Errorf("sending probe update request: %w", err)
 	}
@@ -154,7 +154,7 @@ func (h *Client) AddCheck(ctx context.Context, check synthetic_monitoring.Check)
 		return nil, err
 	}
 
-	resp, err := h.postJSON(ctx, h.baseURL+"/check/add", http.Header{"Authorization": []string{"Bearer " + h.accessToken}}, bytes.NewReader(body))
+	resp, err := h.postJSON(ctx, h.baseURL+"/check/add", true, bytes.NewReader(body))
 	if err != nil {
 		return nil, fmt.Errorf("sending check add request: %w", err)
 	}
@@ -169,7 +169,7 @@ func (h *Client) AddCheck(ctx context.Context, check synthetic_monitoring.Check)
 }
 
 func (h *Client) DeleteCheck(ctx context.Context, id int64) error {
-	resp, err := h.delete(ctx, fmt.Sprintf("%s%s/%d", h.baseURL, "/check/delete", id), http.Header{"Authorization": []string{"Bearer " + h.accessToken}})
+	resp, err := h.delete(ctx, fmt.Sprintf("%s%s/%d", h.baseURL, "/check/delete", id), true)
 	if err != nil {
 		return fmt.Errorf("sending check delete request: %w", err)
 	}
@@ -183,7 +183,7 @@ func (h *Client) DeleteCheck(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (h *Client) do(ctx context.Context, url, method string, headers http.Header, body io.Reader) (*http.Response, error) {
+func (h *Client) do(ctx context.Context, url, method string, auth bool, headers http.Header, body io.Reader) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		return nil, err
@@ -193,28 +193,32 @@ func (h *Client) do(ctx context.Context, url, method string, headers http.Header
 		req.Header = headers
 	}
 
+	if auth {
+		if req.Header == nil {
+			req.Header = make(http.Header)
+		}
+		req.Header.Set("Authorization", "Bearer "+h.accessToken)
+	}
+
 	return h.client.Do(req)
 }
 
-func (h *Client) post(ctx context.Context, url string, headers http.Header, body io.Reader) (*http.Response, error) {
-	return h.do(ctx, url, http.MethodPost, headers, body)
+func (h *Client) post(ctx context.Context, url string, auth bool, headers http.Header, body io.Reader) (*http.Response, error) {
+	return h.do(ctx, url, http.MethodPost, auth, headers, body)
 }
 
-func (h *Client) postJSON(ctx context.Context, url string, headers http.Header, body io.Reader) (*http.Response, error) {
+func (h *Client) postJSON(ctx context.Context, url string, auth bool, body io.Reader) (*http.Response, error) {
+	var headers http.Header
 	if body != nil {
-		if headers != nil {
-			headers = headers.Clone()
-		} else {
-			headers = make(http.Header)
-		}
+		headers = make(http.Header)
 		headers.Set("Content-type", "application/json; charset=utf-8")
 	}
 
-	return h.post(ctx, url, headers, body)
+	return h.post(ctx, url, auth, headers, body)
 }
 
-func (h *Client) delete(ctx context.Context, url string, headers http.Header) (*http.Response, error) {
-	return h.do(ctx, url, http.MethodDelete, headers, nil)
+func (h *Client) delete(ctx context.Context, url string, auth bool) (*http.Response, error) {
+	return h.do(ctx, url, http.MethodDelete, auth, nil, nil)
 }
 
 type HttpError struct {
