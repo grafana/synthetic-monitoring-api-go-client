@@ -128,6 +128,26 @@ func (h *Client) DeleteProbe(ctx context.Context, id int64) error {
 	return nil
 }
 
+func (h *Client) UpdateProbe(ctx context.Context, probe synthetic_monitoring.Probe) (*synthetic_monitoring.Probe, error) {
+	body, err := json.Marshal(&probe)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := h.postJSON(ctx, h.baseURL+"/probe/update", http.Header{"Authorization": []string{"Bearer " + h.accessToken}}, bytes.NewReader(body))
+	if err != nil {
+		return nil, fmt.Errorf("sending probe update request: %w", err)
+	}
+
+	var result model.ProbeUpdateResponse
+
+	if err := validateResponse("probe update request", resp, &result); err != nil {
+		return nil, err
+	}
+
+	return &result.Probe, nil
+}
+
 func (h *Client) AddCheck(ctx context.Context, check synthetic_monitoring.Check) (*synthetic_monitoring.Check, error) {
 	body, err := json.Marshal(&check)
 	if err != nil {

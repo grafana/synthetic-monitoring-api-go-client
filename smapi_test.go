@@ -404,6 +404,73 @@ func TestAddProbe(t *testing.T) {
 	require.Equal(t, testTenant.probes[0].token, probeToken)
 }
 
+func TestUpdateProbe(t *testing.T) {
+	testTenant := orgs.findTenantByOrg(1000)
+
+	url, mux, cleanup := newTestServer(t)
+	defer cleanup()
+	mux.Handle("/api/v1/probe/update", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := requireMethod(w, r, http.MethodPost); err != nil {
+			return
+		}
+
+		var req synthetic_monitoring.Probe
+
+		tenantId, err := readPostRequest(w, r, &req, testTenant.id)
+		if err != nil {
+			return
+		}
+		if tenantId != testTenant.id {
+			errorResponse(w, http.StatusExpectationFailed, fmt.Sprintf("expecting tenant ID %d, got %d", testTenant.id, tenantId))
+			return
+		}
+
+		found := false
+		for _, probe := range testTenant.probes {
+			if probe.id == req.Id {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			errorResponse(w, http.StatusNotFound, fmt.Sprintf("probe %d for tenant %d not found", req.Id, tenantId))
+			return
+		}
+
+		var resp model.ProbeUpdateResponse
+		resp.Probe.Id = req.Id
+		resp.Probe.TenantId = tenantId
+		resp.Probe.OnlineChange = 100
+		resp.Probe.Created = 101
+		resp.Probe.Modified = 102
+
+		writeResponse(w, http.StatusOK, &resp)
+	}))
+
+	c := NewClient(url, testTenant.token, http.DefaultClient)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	require.NotZero(t, len(testTenant.probes))
+
+	probe := synthetic_monitoring.Probe{
+		Id: testTenant.probes[0].id,
+	}
+	newProbe, err := c.UpdateProbe(ctx, probe)
+
+	require.NoError(t, err)
+	require.NotNil(t, newProbe)
+	require.Equal(t, probe.Id, newProbe.Id)
+	require.Equal(t, testTenant.id, newProbe.TenantId)
+	require.Greater(t, newProbe.OnlineChange, float64(0))
+	require.Greater(t, newProbe.Created, float64(0))
+	require.Greater(t, newProbe.Modified, float64(0))
+	require.Empty(t, cmp.Diff(&probe, newProbe, ignoreIdField, ignoreTenantIdField, ignoreTimeFields),
+		"UpdateProbe mismatch (-want +got)")
+}
+
 func TestDeleteProbe(t *testing.T) {
 	testTenant := orgs.findTenantByOrg(1000)
 	testCheckId := int64(42)

@@ -59,6 +59,11 @@ type ProbeDeleteResponse struct {
 	ProbeID int64  `json:"probeId"`
 }
 
+type ProbeUpdateResponse struct {
+	Probe synthetic_monitoring.Probe `json:"probe"`
+	Token []byte                     `json:"token,omitempty"`
+}
+
 type CheckDeleteResponse struct {
 	Msg     string `json:"msg"`
 	CheckID int64  `json:"checkId"`
