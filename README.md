@@ -17,5 +17,5 @@ probes](https://github.com/grafana/synthetic-monitoring-agent).
 API documentation
 -----------------
 
-Please consult the [docs/API.md](documentation for the API) that this
+Please consult the [documentation for the API](docs/API.md) that this
 library accesses.
