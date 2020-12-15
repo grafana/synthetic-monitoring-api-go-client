@@ -5,6 +5,7 @@ This document describes the Synthetic Monitoring API. All the entry
 points return results formatted as JSON objects.
 
 ## Authentication
+Synthetic Monitoring API is hosted at [synthetic-monitoring-api.grafana.net](https://synthetic-monitoring-api.grafana.net)
 
 All the entry points that indicate that they require authentication must
 provide an access token obtained by calling `/api/v1/register/install`.
