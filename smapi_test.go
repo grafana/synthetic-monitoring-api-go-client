@@ -495,7 +495,7 @@ func TestResetProbeToken(t *testing.T) {
 		found := false
 		for key, values := range r.URL.Query() {
 			if key == "reset-token" {
-				if values != nil && len(values) != 0 && values[0] != "" {
+				if len(values) != 0 && values[0] != "" {
 					errorResponse(w, http.StatusBadRequest, fmt.Sprintf(`"reset-token" should not have a value, got %q`, strings.Join(values, ",")))
 					return
 				}
