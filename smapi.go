@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,12 +17,24 @@ import (
 	"github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring"
 )
 
+// ErrAuthorizationTokenRequired is the error returned by client calls
+// that require an authorization token.
+//
+// Authorization tokens can be obtained using Install or Init.
+var ErrAuthorizationTokenRequired = errors.New("authorization token required")
+
 type Client struct {
 	client      *http.Client
 	accessToken string
 	baseURL     string
 }
 
+// NewClient creates a new client for the Synthetic Monitoring API.
+//
+// The accessToken is optional. If it's not specified, it's necessary to
+// use one of the registration calls to obtain one, Install or Init.
+//
+// If no client is provided, http.DefaultClient will be used.
 func NewClient(baseURL, accessToken string, client *http.Client) *Client {
 	if client == nil {
 		client = http.DefaultClient
@@ -127,6 +140,10 @@ func (h *Client) Save(ctx context.Context, adminToken string, metricInstanceID, 
 }
 
 func (h *Client) AddProbe(ctx context.Context, probe synthetic_monitoring.Probe) (*synthetic_monitoring.Probe, []byte, error) {
+	if err := h.requireAuthToken(); err != nil {
+		return nil, nil, err
+	}
+
 	body, err := json.Marshal(&probe)
 	if err != nil {
 		return nil, nil, err
@@ -147,6 +164,10 @@ func (h *Client) AddProbe(ctx context.Context, probe synthetic_monitoring.Probe)
 }
 
 func (h *Client) DeleteProbe(ctx context.Context, id int64) error {
+	if err := h.requireAuthToken(); err != nil {
+		return err
+	}
+
 	resp, err := h.delete(ctx, fmt.Sprintf("%s%s/%d", h.baseURL, "/probe/delete", id), true)
 	if err != nil {
 		return fmt.Errorf("sending probe delete request: %w", err)
@@ -162,6 +183,10 @@ func (h *Client) DeleteProbe(ctx context.Context, id int64) error {
 }
 
 func (h *Client) UpdateProbe(ctx context.Context, probe synthetic_monitoring.Probe) (*synthetic_monitoring.Probe, error) {
+	if err := h.requireAuthToken(); err != nil {
+		return nil, err
+	}
+
 	body, err := json.Marshal(&probe)
 	if err != nil {
 		return nil, err
@@ -182,6 +207,10 @@ func (h *Client) UpdateProbe(ctx context.Context, probe synthetic_monitoring.Pro
 }
 
 func (h *Client) ResetProbeToken(ctx context.Context, probe synthetic_monitoring.Probe) (*synthetic_monitoring.Probe, []byte, error) {
+	if err := h.requireAuthToken(); err != nil {
+		return nil, nil, err
+	}
+
 	body, err := json.Marshal(&probe)
 	if err != nil {
 		return nil, nil, err
@@ -202,6 +231,10 @@ func (h *Client) ResetProbeToken(ctx context.Context, probe synthetic_monitoring
 }
 
 func (h *Client) AddCheck(ctx context.Context, check synthetic_monitoring.Check) (*synthetic_monitoring.Check, error) {
+	if err := h.requireAuthToken(); err != nil {
+		return nil, err
+	}
+
 	body, err := json.Marshal(&check)
 	if err != nil {
 		return nil, err
@@ -222,6 +255,10 @@ func (h *Client) AddCheck(ctx context.Context, check synthetic_monitoring.Check)
 }
 
 func (h *Client) DeleteCheck(ctx context.Context, id int64) error {
+	if err := h.requireAuthToken(); err != nil {
+		return err
+	}
+
 	resp, err := h.delete(ctx, fmt.Sprintf("%s%s/%d", h.baseURL, "/check/delete", id), true)
 	if err != nil {
 		return fmt.Errorf("sending check delete request: %w", err)
@@ -231,6 +268,14 @@ func (h *Client) DeleteCheck(ctx context.Context, id int64) error {
 
 	if err := validateResponse("check delete request", resp, &result); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (h *Client) requireAuthToken() error {
+	if h.accessToken == "" {
+		return ErrAuthorizationTokenRequired
 	}
 
 	return nil
