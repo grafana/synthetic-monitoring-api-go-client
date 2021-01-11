@@ -31,6 +31,8 @@ GO_BUILD_FLAGS := $(GO_BUILD_MOD_FLAGS) $(GO_BUILD_COMMON_FLAGS)
 GO_PKGS ?= ./...
 SH_FILES ?= $(shell find ./scripts -name *.sh)
 
+GO_TEST_ARGS ?= $(GO_PKGS)
+
 COMMANDS := $(shell test -d cmd && $(GO) list $(GO_BUILD_MOD_FLAGS) ./cmd/...)
 
 VERSION_PKG := $(shell test -d internal/version && $(GO) list $(GO_BUILD_MOD_FLAGS) ./internal/version)
@@ -111,7 +113,7 @@ test-go: $(GOTESTSUM) ## Run Go tests.
 		-cover \
 		-coverprofile=$(TEST_OUTPUT).cov \
 		-race \
-		./...
+		$(GO_TEST_ARGS)
 
 .PHONY: test
 test: test-go ## Run all tests.
