@@ -18,12 +18,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type stackInfo struct {
+	id               int64
+	metricInstanceId int64
+	logInstanceId    int64
+}
+
 type orgInfo struct {
 	id             int64
-	token          string
+	adminToken     string
+	publisherToken string
 	tenant         tenantInfo
 	metricInstance model.HostedInstance
 	logInstance    model.HostedInstance
+	stacks         []stackInfo
 }
 
 type tenantInfo struct {
@@ -49,9 +57,15 @@ func (db db) findOrgById(id int64) *orgInfo {
 	return nil
 }
 
+// findOrgByToken finds the organization that corresponds to the given
+// token.
 func (db db) findOrgByToken(token string) *orgInfo {
 	for _, org := range db {
-		if org.token == token {
+		if org.adminToken == token {
+			return &org
+		}
+
+		if org.publisherToken == token {
 			return &org
 		}
 	}
@@ -93,8 +107,9 @@ func (db db) findInstancesByOrg(id int64) []model.HostedInstance {
 
 var orgs = db{
 	{
-		id:    1000,
-		token: "token-org-1000",
+		id:             1000,
+		adminToken:     "token-org-1000",
+		publisherToken: "publisher-token-org-1000",
 		tenant: tenantInfo{
 			id:    2000,
 			token: "token-tenant-2000",
@@ -117,18 +132,37 @@ var orgs = db{
 			Name: "org-1000-logs",
 			URL:  "https://logs.grafana",
 		},
+		stacks: []stackInfo{
+			{
+				id:               3,
+				metricInstanceId: 1,
+				logInstanceId:    2,
+			},
+		},
 	},
 }
 
-type AdminTokenGetter interface {
-	GetAdminToken() string
+func (org orgInfo) validateStackByIds(id, metricsInstanceId, logsInstanceId int64) bool {
+	for _, stack := range org.stacks {
+		if id == stack.id &&
+			metricsInstanceId == stack.metricInstanceId &&
+			logsInstanceId == stack.logInstanceId {
+			return true
+		}
+	}
+
+	return false
+}
+
+type AuthTokenGetter interface {
+	GetAuthToken(*http.Request) string
 }
 
 type InitRequest struct {
 	model.InitRequest
 }
 
-func (r *InitRequest) GetAdminToken() string {
+func (r *InitRequest) GetAuthToken(_ *http.Request) string {
 	return r.AdminToken
 }
 
@@ -136,8 +170,21 @@ type SaveRequest struct {
 	model.SaveRequest
 }
 
-func (r *SaveRequest) GetAdminToken() string {
+func (r *SaveRequest) GetAuthToken(_ *http.Request) string {
 	return r.AdminToken
+}
+
+type RegistrationInstallRequest struct {
+	model.RegistrationInstallRequest
+}
+
+func (r *RegistrationInstallRequest) GetAuthToken(req *http.Request) string {
+	authHeader := req.Header.Get("authorization")
+	if !strings.HasPrefix(authHeader, "Bearer ") {
+		return ""
+	}
+
+	return strings.TrimPrefix(authHeader, "Bearer ")
 }
 
 func TestNewClient(t *testing.T) {
@@ -224,6 +271,99 @@ func TestClientDo(t *testing.T) {
 	})
 }
 
+func TestClientRegistrationInstall(t *testing.T) {
+	url, mux, cleanup := newTestServer(t)
+	defer cleanup()
+
+	mux.Handle("/api/v1/register/install", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req RegistrationInstallRequest
+
+		orgId, err := readPostRequest(w, r, &req, -1000)
+		if err != nil {
+			return
+		}
+
+		org := orgs.findOrgById(orgId)
+		if org == nil {
+			errorResponse(w, http.StatusBadRequest, "org not found")
+			return
+		}
+
+		if !org.validateStackByIds(req.StackID, req.MetricsInstanceID, req.LogsInstanceID) {
+			errorResponse(w, http.StatusBadRequest, "invalid stack")
+			return
+		}
+
+		resp := model.RegistrationInstallResponse{
+			AccessToken: org.tenant.token,
+			TenantInfo: &model.TenantDescription{
+				ID:             org.tenant.id,
+				MetricInstance: model.HostedInstance{ID: req.MetricsInstanceID},
+				LogInstance:    model.HostedInstance{ID: req.LogsInstanceID},
+			},
+		}
+
+		writeResponse(w, http.StatusOK, &resp)
+	}))
+
+	testOrg := orgs.findOrgById(1000)
+	require.NotNil(t, testOrg)
+	require.NotEmpty(t, testOrg.stacks)
+
+	testcases := map[string]struct {
+		stackId           int64
+		metricsInstanceId int64
+		logsInstanceId    int64
+		authToken         string
+		shouldError       bool
+	}{
+		"org exists": {
+			stackId:           testOrg.stacks[0].id,
+			metricsInstanceId: testOrg.stacks[0].metricInstanceId,
+			logsInstanceId:    testOrg.stacks[0].logInstanceId,
+			authToken:         testOrg.publisherToken,
+		},
+		"token does not exist": {
+			stackId:           100,
+			metricsInstanceId: 200,
+			logsInstanceId:    300,
+			authToken:         "invalid",
+			shouldError:       true,
+		},
+		"valid token, invalid stack": {
+			stackId:           100,
+			metricsInstanceId: 200,
+			logsInstanceId:    300,
+			authToken:         testOrg.publisherToken,
+			shouldError:       true,
+		},
+	}
+
+	for name, testcase := range testcases {
+		t.Run(name, func(t *testing.T) {
+			c := NewClient(url, "", http.DefaultClient)
+
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+
+			resp, err := c.Install(ctx, testcase.stackId, testcase.metricsInstanceId, testcase.logsInstanceId, testcase.authToken)
+
+			if testcase.shouldError {
+				require.Error(t, err)
+				require.Nil(t, resp)
+			} else {
+				require.NoError(t, err)
+				require.NotNil(t, resp)
+				require.Equal(t, resp.AccessToken, testOrg.tenant.token)
+				require.NotNil(t, resp.TenantInfo, testOrg.tenant.token)
+				require.Equal(t, resp.TenantInfo.ID, testOrg.tenant.id)
+				require.Equal(t, resp.TenantInfo.MetricInstance.ID, testcase.metricsInstanceId)
+				require.Equal(t, resp.TenantInfo.LogInstance.ID, testcase.logsInstanceId)
+			}
+		})
+	}
+}
+
 func TestClientInit(t *testing.T) {
 	url, mux, cleanup := newTestServer(t)
 	defer cleanup()
@@ -275,7 +415,7 @@ func TestClientInit(t *testing.T) {
 
 			testOrg := orgs.findOrgById(testcase.orgId)
 			if testOrg != nil {
-				token = testOrg.token
+				token = testOrg.adminToken
 				testTenant = testOrg.tenant
 			}
 
@@ -343,7 +483,7 @@ func TestClientSave(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := c.Save(ctx, testOrg.token, testOrg.metricInstance.ID, testOrg.logInstance.ID)
+	err := c.Save(ctx, testOrg.adminToken, testOrg.metricInstance.ID, testOrg.logInstance.ID)
 	require.NoError(t, err)
 }
 
@@ -724,8 +864,8 @@ func readPostRequest(w http.ResponseWriter, r *http.Request, req interface{}, ex
 		return -1, errors.New("cannot decode request")
 	}
 
-	if req, ok := req.(AdminTokenGetter); ok {
-		org := orgs.findOrgByToken(req.GetAdminToken())
+	if req, ok := req.(AuthTokenGetter); ok {
+		org := orgs.findOrgByToken(req.GetAuthToken(r))
 		if org == nil {
 			errorResponse(w, http.StatusUnauthorized, "not authorized")
 			return -1, errors.New("not authorized")

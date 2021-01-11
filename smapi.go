@@ -41,6 +41,39 @@ func NewClient(baseURL, accessToken string, client *http.Client) *Client {
 	}
 }
 
+func (h *Client) Install(ctx context.Context, stackID, metricsInstanceID, logsInstanceID int64, publisherToken string) (*model.RegistrationInstallResponse, error) {
+	request := model.RegistrationInstallRequest{
+		LogsInstanceID:    logsInstanceID,
+		MetricsInstanceID: metricsInstanceID,
+		StackID:           stackID,
+	}
+
+	buf, err := json.Marshal(&request)
+	if err != nil {
+		return nil, err
+	}
+
+	body := bytes.NewReader(buf)
+
+	headers := defaultHeaders()
+	headers.Set("Authorization", "Bearer "+publisherToken)
+
+	resp, err := h.post(ctx, h.baseURL+"/register/install", false, headers, body)
+	if err != nil {
+		return nil, fmt.Errorf("sending install request: %w", err)
+	}
+
+	var result model.RegistrationInstallResponse
+
+	if err := validateResponse("registration install request", resp, &result); err != nil {
+		return nil, err
+	}
+
+	h.accessToken = result.AccessToken
+
+	return &result, nil
+}
+
 func (h *Client) Init(ctx context.Context, adminToken string) (*model.InitResponse, error) {
 	body := strings.NewReader(`{"apiToken": "` + adminToken + `"}`)
 
@@ -230,8 +263,7 @@ func (h *Client) post(ctx context.Context, url string, auth bool, headers http.H
 func (h *Client) postJSON(ctx context.Context, url string, auth bool, body io.Reader) (*http.Response, error) {
 	var headers http.Header
 	if body != nil {
-		headers = make(http.Header)
-		headers.Set("Content-type", "application/json; charset=utf-8")
+		headers = defaultHeaders()
 	}
 
 	return h.post(ctx, url, auth, headers, body)
@@ -249,6 +281,12 @@ type HttpError struct {
 
 func (e *HttpError) Error() string {
 	return fmt.Sprintf("%s: %s", e.Action, e.Status)
+}
+
+func defaultHeaders() http.Header {
+	headers := make(http.Header)
+	headers.Set("Content-type", "application/json; charset=utf-8")
+	return headers
 }
 
 func validateResponse(action string, resp *http.Response, result interface{}) error {
