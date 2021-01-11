@@ -17,6 +17,17 @@ type ErrorResponse struct {
 	Err error  `json:"err,omitempty"`
 }
 
+type RegistrationInstallRequest struct {
+	StackID           int64 `json:"stackId"`
+	MetricsInstanceID int64 `json:"metricsInstanceId"`
+	LogsInstanceID    int64 `json:"logsInstanceId"`
+}
+
+type RegistrationInstallResponse struct {
+	AccessToken string             `json:"accessToken"`
+	TenantInfo  *TenantDescription `json:"tenantInfo,omitempty"`
+}
+
 type InitRequest struct {
 	AdminToken string `json:"apiToken"`
 }
