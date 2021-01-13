@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"strings"
 
 	"github.com/grafana/synthetic-monitoring-api-go-client/model"
 
@@ -71,7 +70,7 @@ func (h *Client) Install(ctx context.Context, stackID, metricsInstanceID, logsIn
 	headers := defaultHeaders()
 	headers.Set("Authorization", "Bearer "+publisherToken)
 
-	resp, err := h.post(ctx, h.baseURL+"/register/install", false, headers, body)
+	resp, err := h.post(ctx, "/register/install", false, headers, body)
 	if err != nil {
 		return nil, fmt.Errorf("sending install request: %w", err)
 	}
@@ -88,9 +87,13 @@ func (h *Client) Install(ctx context.Context, stackID, metricsInstanceID, logsIn
 }
 
 func (h *Client) Init(ctx context.Context, adminToken string) (*model.InitResponse, error) {
-	body := strings.NewReader(`{"apiToken": "` + adminToken + `"}`)
+	req := struct {
+		ApiToken string `json:"apiToken"`
+	}{
+		ApiToken: adminToken,
+	}
 
-	resp, err := h.postJSON(ctx, h.baseURL+"/register/init", false, body)
+	resp, err := h.postJSON(ctx, "/register/init", false, &req)
 	if err != nil {
 		return nil, fmt.Errorf("sending init request: %w", err)
 	}
@@ -117,15 +120,7 @@ func (h *Client) Save(ctx context.Context, adminToken string, metricInstanceID, 
 		LogsInstanceID:    logInstanceID,
 	}
 
-	var body bytes.Buffer
-
-	enc := json.NewEncoder(&body)
-
-	if err := enc.Encode(&saveReq); err != nil {
-		return fmt.Errorf("cannot encode request")
-	}
-
-	resp, err := h.postJSON(ctx, h.baseURL+"/register/save", true, &body)
+	resp, err := h.postJSON(ctx, "/register/save", true, &saveReq)
 	if err != nil {
 		return fmt.Errorf("sending save request: %w", err)
 	}
@@ -144,12 +139,7 @@ func (h *Client) AddProbe(ctx context.Context, probe synthetic_monitoring.Probe)
 		return nil, nil, err
 	}
 
-	body, err := json.Marshal(&probe)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	resp, err := h.postJSON(ctx, h.baseURL+"/probe/add", true, bytes.NewReader(body))
+	resp, err := h.postJSON(ctx, "/probe/add", true, &probe)
 	if err != nil {
 		return nil, nil, fmt.Errorf("adding probe: %w", err)
 	}
@@ -187,12 +177,7 @@ func (h *Client) UpdateProbe(ctx context.Context, probe synthetic_monitoring.Pro
 		return nil, err
 	}
 
-	body, err := json.Marshal(&probe)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := h.postJSON(ctx, h.baseURL+"/probe/update", true, bytes.NewReader(body))
+	resp, err := h.postJSON(ctx, "/probe/update", true, &probe)
 	if err != nil {
 		return nil, fmt.Errorf("sending probe update request: %w", err)
 	}
@@ -211,12 +196,7 @@ func (h *Client) ResetProbeToken(ctx context.Context, probe synthetic_monitoring
 		return nil, nil, err
 	}
 
-	body, err := json.Marshal(&probe)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	resp, err := h.postJSON(ctx, h.baseURL+"/probe/update?reset-token", true, bytes.NewReader(body))
+	resp, err := h.postJSON(ctx, "/probe/update?reset-token", true, &probe)
 	if err != nil {
 		return nil, nil, fmt.Errorf("sending probe update request: %w", err)
 	}
@@ -235,12 +215,7 @@ func (h *Client) AddCheck(ctx context.Context, check synthetic_monitoring.Check)
 		return nil, err
 	}
 
-	body, err := json.Marshal(&check)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := h.postJSON(ctx, h.baseURL+"/check/add", true, bytes.NewReader(body))
+	resp, err := h.postJSON(ctx, "/check/add", true, &check)
 	if err != nil {
 		return nil, fmt.Errorf("sending check add request: %w", err)
 	}
@@ -302,16 +277,25 @@ func (h *Client) do(ctx context.Context, url, method string, auth bool, headers 
 }
 
 func (h *Client) post(ctx context.Context, url string, auth bool, headers http.Header, body io.Reader) (*http.Response, error) {
-	return h.do(ctx, url, http.MethodPost, auth, headers, body)
+	return h.do(ctx, h.baseURL+url, http.MethodPost, auth, headers, body)
 }
 
-func (h *Client) postJSON(ctx context.Context, url string, auth bool, body io.Reader) (*http.Response, error) {
+func (h *Client) postJSON(ctx context.Context, url string, auth bool, req interface{}) (*http.Response, error) {
+	var body bytes.Buffer
+
 	var headers http.Header
-	if body != nil {
+	if req != nil {
 		headers = defaultHeaders()
+
+		enc := json.NewEncoder(&body)
+		err := enc.Encode(&req)
+
+		if err != nil {
+			return nil, fmt.Errorf("cannot encode request")
+		}
 	}
 
-	return h.post(ctx, url, auth, headers, body)
+	return h.post(ctx, url, auth, headers, &body)
 }
 
 func (h *Client) delete(ctx context.Context, url string, auth bool) (*http.Response, error) {
