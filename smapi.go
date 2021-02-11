@@ -1,3 +1,4 @@
+// Package smapi provides access to the Synthetic Monitoring API.
 package smapi
 
 import (
@@ -16,12 +17,22 @@ import (
 	"github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring"
 )
 
-// ErrAuthorizationTokenRequired is the error returned by client calls
-// that require an authorization token.
-//
-// Authorization tokens can be obtained using Install or Init.
-var ErrAuthorizationTokenRequired = errors.New("authorization token required")
+var (
+	// ErrAuthorizationTokenRequired is the error returned by client
+	// calls that require an authorization token.
+	//
+	// Authorization tokens can be obtained using Install or Init.
+	ErrAuthorizationTokenRequired = errors.New("authorization token required")
 
+	// ErrCannotEncodeJSONRequest is the error returned if it's not
+	// possible to encode the request as a JSON object. This error
+	// should never happen.
+	ErrCannotEncodeJSONRequest = errors.New("cannot encode request")
+)
+
+// Client is a Synthetic Monitoring API client.
+//
+// It should be initialized using the NewClient function in this package.
 type Client struct {
 	client      *http.Client
 	accessToken string
@@ -53,6 +64,17 @@ func NewClient(baseURL, accessToken string, client *http.Client) *Client {
 	}
 }
 
+// Install takes a stack ID, a hosted metrics instance ID, a hosted logs
+// instance ID and a publisher token that can be used to publish data to those
+// instances and sets up a new Synthetic Monitoring tenant using those
+// parameters.
+//
+// Note that the client will not any validation on these arguments and it will
+// simply pass them to the corresponding API server.
+//
+// The returned RegistrationInstallResponse will contain the access token used
+// to make further calls to the API server. This call will _modify_ the client
+// in order to use that access token.
 func (h *Client) Install(ctx context.Context, stackID, metricsInstanceID, logsInstanceID int64, publisherToken string) (*model.RegistrationInstallResponse, error) {
 	request := model.RegistrationInstallRequest{
 		LogsInstanceID:    logsInstanceID,
@@ -62,7 +84,7 @@ func (h *Client) Install(ctx context.Context, stackID, metricsInstanceID, logsIn
 
 	buf, err := json.Marshal(&request)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unmarshalling install request: %w", err)
 	}
 
 	body := bytes.NewReader(buf)
@@ -86,11 +108,20 @@ func (h *Client) Install(ctx context.Context, stackID, metricsInstanceID, logsIn
 	return &result, nil
 }
 
-func (h *Client) Init(ctx context.Context, adminToken string) (*model.InitResponse, error) {
+// Init uses provided admin token to call the deprecated registration init
+// entrypoint in order to create a Synthetic Monitoring tenant.
+//
+// Note that the client will not any validation on the provided token and it
+// will simply pass it to the corresponding API server.
+//
+// The returned RegistrationInitResponse will contain the access token used to
+// make further calls to the API server. This call will _modify_ the client in
+// order to use that access token.
+func (h *Client) Init(ctx context.Context, adminToken string) (*model.RegistrationInitResponse, error) {
 	req := struct {
-		ApiToken string `json:"apiToken"`
+		APIToken string `json:"apiToken"`
 	}{
-		ApiToken: adminToken,
+		APIToken: adminToken,
 	}
 
 	resp, err := h.postJSON(ctx, "/register/init", false, &req)
@@ -98,7 +129,7 @@ func (h *Client) Init(ctx context.Context, adminToken string) (*model.InitRespon
 		return nil, fmt.Errorf("sending init request: %w", err)
 	}
 
-	var result model.InitResponse
+	var result model.RegistrationInitResponse
 
 	if err := validateResponse("registration init request", resp, &result); err != nil {
 		return nil, err
@@ -109,6 +140,13 @@ func (h *Client) Init(ctx context.Context, adminToken string) (*model.InitRespon
 	return &result, nil
 }
 
+// Save should be called after Init to select the desired hosted metrics and
+// hosted logs instance to be used by Synthetic Monitoring probes.
+//
+// After this call, the tenant is fully configured and can be used to create
+// checks and probes.
+//
+// Just as Init, Save is deprecated.
 func (h *Client) Save(ctx context.Context, adminToken string, metricInstanceID, logInstanceID int64) error {
 	saveReq := struct {
 		AdminToken        string `json:"apiToken"`
@@ -134,6 +172,11 @@ func (h *Client) Save(ctx context.Context, adminToken string, metricInstanceID, 
 	return nil
 }
 
+// AddProbe is used to create a new Synthetic Monitoring probe.
+//
+// The return value includes the assigned probe ID as well as the access token
+// that should be used by that probe to communicate with the Synthetic
+// Monitoring API.
 func (h *Client) AddProbe(ctx context.Context, probe synthetic_monitoring.Probe) (*synthetic_monitoring.Probe, []byte, error) {
 	if err := h.requireAuthToken(); err != nil {
 		return nil, nil, err
@@ -153,6 +196,7 @@ func (h *Client) AddProbe(ctx context.Context, probe synthetic_monitoring.Probe)
 	return &result.Probe, result.Token, nil
 }
 
+// DeleteProbe is used to remove a new Synthetic Monitoring probe.
 func (h *Client) DeleteProbe(ctx context.Context, id int64) error {
 	if err := h.requireAuthToken(); err != nil {
 		return err
@@ -172,6 +216,11 @@ func (h *Client) DeleteProbe(ctx context.Context, id int64) error {
 	return nil
 }
 
+// UpdateProbe is used to update details about an existing Synthetic Monitoring
+// probe.
+//
+// The return value contains the new representation of the probe according the
+// Synthetic Monitoring API server.
 func (h *Client) UpdateProbe(ctx context.Context, probe synthetic_monitoring.Probe) (*synthetic_monitoring.Probe, error) {
 	if err := h.requireAuthToken(); err != nil {
 		return nil, err
@@ -191,6 +240,7 @@ func (h *Client) UpdateProbe(ctx context.Context, probe synthetic_monitoring.Pro
 	return &result.Probe, nil
 }
 
+// ResetProbeToken requests a _new_ token for the probe.
 func (h *Client) ResetProbeToken(ctx context.Context, probe synthetic_monitoring.Probe) (*synthetic_monitoring.Probe, []byte, error) {
 	if err := h.requireAuthToken(); err != nil {
 		return nil, nil, err
@@ -210,6 +260,9 @@ func (h *Client) ResetProbeToken(ctx context.Context, probe synthetic_monitoring
 	return &result.Probe, result.Token, nil
 }
 
+// AddCheck creates a new Synthetic Monitoring check in the API server.
+//
+// The return value contains the assigned ID.
 func (h *Client) AddCheck(ctx context.Context, check synthetic_monitoring.Check) (*synthetic_monitoring.Check, error) {
 	if err := h.requireAuthToken(); err != nil {
 		return nil, err
@@ -229,6 +282,8 @@ func (h *Client) AddCheck(ctx context.Context, check synthetic_monitoring.Check)
 	return &result, nil
 }
 
+// DeleteCheck deletes an existing Synthetic Monitoring check from the API
+// server.
 func (h *Client) DeleteCheck(ctx context.Context, id int64) error {
 	if err := h.requireAuthToken(); err != nil {
 		return err
@@ -259,7 +314,7 @@ func (h *Client) requireAuthToken() error {
 func (h *Client) do(ctx context.Context, url, method string, auth bool, headers http.Header, body io.Reader) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("creating new HTTP request: %w", err)
 	}
 
 	if headers != nil {
@@ -287,11 +342,8 @@ func (h *Client) postJSON(ctx context.Context, url string, auth bool, req interf
 	if req != nil {
 		headers = defaultHeaders()
 
-		enc := json.NewEncoder(&body)
-		err := enc.Encode(&req)
-
-		if err != nil {
-			return nil, fmt.Errorf("cannot encode request")
+		if err := json.NewEncoder(&body).Encode(&req); err != nil {
+			return nil, ErrCannotEncodeJSONRequest
 		}
 	}
 
@@ -302,25 +354,31 @@ func (h *Client) delete(ctx context.Context, url string, auth bool) (*http.Respo
 	return h.do(ctx, url, http.MethodDelete, auth, nil, nil)
 }
 
-type HttpError struct {
+// HTTPError represents errors returned from the Synthetic Monitoring API
+// server.
+//
+// It implements the error interface, so it can be returned from functions
+// interacting with the Synthetic Monitoring API server.
+type HTTPError struct {
 	Code   int
 	Status string
 	Action string
 }
 
-func (e *HttpError) Error() string {
+func (e *HTTPError) Error() string {
 	return fmt.Sprintf("%s: %s", e.Action, e.Status)
 }
 
 func defaultHeaders() http.Header {
 	headers := make(http.Header)
 	headers.Set("Content-type", "application/json; charset=utf-8")
+
 	return headers
 }
 
 func validateResponse(action string, resp *http.Response, result interface{}) error {
 	if resp.StatusCode != http.StatusOK {
-		return &HttpError{Code: resp.StatusCode, Status: resp.Status, Action: action}
+		return &HTTPError{Code: resp.StatusCode, Status: resp.Status, Action: action}
 	}
 
 	if resp.Body != nil {
