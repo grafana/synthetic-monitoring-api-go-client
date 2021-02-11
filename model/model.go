@@ -28,24 +28,23 @@ type RegistrationInstallResponse struct {
 	TenantInfo  *TenantDescription `json:"tenantInfo,omitempty"`
 }
 
-type InitRequest struct {
+type RegistrationInitRequest struct {
 	AdminToken string `json:"apiToken"`
 }
 
-type InitResponse struct {
+type RegistrationInitResponse struct {
 	AccessToken string             `json:"accessToken"`
 	TenantInfo  *TenantDescription `json:"tenantInfo,omitempty"`
 	Instances   []HostedInstance   `json:"instances"`
 }
 
-type SaveRequest struct {
+type RegistrationSaveRequest struct {
 	AdminToken       string `json:"apiToken"`
 	MetricInstanceId int64  `json:"metricsInstanceId"`
 	LogInstanceId    int64  `json:"logsInstanceId"`
 }
 
-type SaveResponse struct {
-}
+type RegistrationSaveResponse struct{}
 
 type TenantDescription struct {
 	ID             int64          `json:"id"`

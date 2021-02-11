@@ -6,18 +6,38 @@ run:
 linters:
   disable-all: true
   enable:
+    - asciicheck
     - bodyclose
     - deadcode
     - depguard
     - dogsled
+    - dupl
     - errcheck
+    - errorlint
+    - exhaustive
     - exportloopref
-    - goconst
-    - gocritic
+    # - funlen
+    - gochecknoglobals
+    - gochecknoinits
+    - godot
+    - goerr113
+    - gomnd
     - gocognit
+    - ifshort
+    - interfacer
+    - nestif
+    - nlreturn
+    - noctx
+    - goconst
+    - prealloc
+    - predeclared
+    - scopelint
+    - thelper
+    - wrapcheck
+    - gocritic
     - gocyclo
     - gofmt
-    # - gofumpt
+    - gofumpt
     - goimports
     - golint
     - goprintffuncname
