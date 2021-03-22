@@ -303,6 +303,27 @@ func (h *Client) DeleteCheck(ctx context.Context, id int64) error {
 	return nil
 }
 
+// ListChecks returns the list of Synthetic Monitoring checks for the
+// authenticated tenant.
+func (h *Client) ListChecks(ctx context.Context) ([]synthetic_monitoring.Check, error) {
+	if err := h.requireAuthToken(); err != nil {
+		return nil, err
+	}
+
+	resp, err := h.get(ctx, "/check/list", true, nil)
+	if err != nil {
+		return nil, fmt.Errorf("sending check list request: %w", err)
+	}
+
+	var result []synthetic_monitoring.Check
+
+	if err := validateResponse("check list request", resp, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func (h *Client) requireAuthToken() error {
 	if h.accessToken == "" {
 		return ErrAuthorizationTokenRequired
@@ -329,6 +350,10 @@ func (h *Client) do(ctx context.Context, url, method string, auth bool, headers 
 	}
 
 	return h.client.Do(req)
+}
+
+func (h *Client) get(ctx context.Context, url string, auth bool, headers http.Header) (*http.Response, error) {
+	return h.do(ctx, h.baseURL+url, http.MethodGet, auth, headers, nil)
 }
 
 func (h *Client) post(ctx context.Context, url string, auth bool, headers http.Header, body io.Reader) (*http.Response, error) {
