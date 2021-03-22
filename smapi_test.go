@@ -925,6 +925,48 @@ func TestDeleteCheck(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestListChecks(t *testing.T) {
+	orgs := orgs()
+	testTenant := orgs.findTenantByOrg(1000)
+	testTenantID := testTenant.id
+	checks := []synthetic_monitoring.Check{
+		{
+			Id:       42,
+			TenantId: testTenantID,
+		},
+		{
+			Id:       43,
+			TenantId: testTenantID,
+		},
+	}
+
+	url, mux, cleanup := newTestServer(t)
+	defer cleanup()
+	mux.Handle("/api/v1/check/list", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := requireMethod(w, r, http.MethodGet); err != nil {
+			return
+		}
+
+		if _, err := requireAuth(orgs, w, r, testTenantID); err != nil {
+			return
+		}
+
+		resp := checks
+
+		writeResponse(w, http.StatusOK, &resp)
+	}))
+
+	c := NewClient(url, testTenant.token, http.DefaultClient)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	actualChecks, err := c.ListChecks(ctx)
+	require.NoError(t, err)
+	require.NotNil(t, actualChecks)
+	require.ElementsMatch(t, checks, actualChecks)
+}
+
 func newTestServer(t *testing.T) (string, *http.ServeMux, func()) {
 	t.Helper()
 
