@@ -282,6 +282,29 @@ func (h *Client) AddCheck(ctx context.Context, check synthetic_monitoring.Check)
 	return &result, nil
 }
 
+// UpdateCheck updates an existing check in the API server.
+//
+// The return value contains the updated check (updated timestamps,
+// etc).
+func (h *Client) UpdateCheck(ctx context.Context, check synthetic_monitoring.Check) (*synthetic_monitoring.Check, error) {
+	if err := h.requireAuthToken(); err != nil {
+		return nil, err
+	}
+
+	resp, err := h.postJSON(ctx, "/check/update", true, &check)
+	if err != nil {
+		return nil, fmt.Errorf("sending check update request: %w", err)
+	}
+
+	var result synthetic_monitoring.Check
+
+	if err := validateResponse("check update request", resp, &result); err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
 // DeleteCheck deletes an existing Synthetic Monitoring check from the API
 // server.
 func (h *Client) DeleteCheck(ctx context.Context, id int64) error {
