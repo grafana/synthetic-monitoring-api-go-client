@@ -823,6 +823,69 @@ func TestAddCheck(t *testing.T) {
 		"AddCheck mismatch (-want +got)")
 }
 
+func TestUpdateCheck(t *testing.T) {
+	orgs := orgs()
+	testTenant := orgs.findTenantByOrg(1000)
+	testTenantID := testTenant.id
+	testCheckID := int64(42)
+
+	url, mux, cleanup := newTestServer(t)
+	defer cleanup()
+	mux.Handle("/api/v1/check/update", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req synthetic_monitoring.Check
+		tenantID, err := readPostRequest(orgs, w, r, &req, testTenantID)
+		if err != nil {
+			return
+		}
+
+		if req.Id != testCheckID {
+			errorResponse(w, http.StatusBadRequest, fmt.Sprintf("expecting ID %d, got %d ", testCheckID, req.Id))
+
+			return
+		}
+
+		if req.TenantId != tenantID {
+			errorResponse(w, http.StatusBadRequest, fmt.Sprintf("expecting tenant ID %d, got %d ", tenantID, req.TenantId))
+
+			return
+		}
+
+		resp := req
+
+		resp.Created = 200
+		resp.Modified = 201
+
+		writeResponse(w, http.StatusOK, &resp)
+	}))
+
+	c := NewClient(url, testTenant.token, http.DefaultClient)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	check := synthetic_monitoring.Check{
+		Id:               testCheckID,
+		TenantId:         testTenantID,
+		Frequency:        1000,
+		Timeout:          500,
+		Offset:           1,
+		Target:           "target",
+		Job:              "job",
+		BasicMetricsOnly: true,
+		Enabled:          true,
+	}
+	newCheck, err := c.UpdateCheck(ctx, check)
+
+	require.NoError(t, err)
+	require.NotNil(t, newCheck)
+	require.Equal(t, testCheckID, newCheck.Id)
+	require.Equal(t, testTenant.id, newCheck.TenantId)
+	require.Greater(t, newCheck.Created, float64(0))
+	require.Greater(t, newCheck.Modified, float64(0))
+	require.Empty(t, cmp.Diff(&check, newCheck, ignoreIDField(), ignoreTenantIDField(), ignoreTimeFields()),
+		"AddCheck mismatch (-want +got)")
+}
+
 func TestDeleteCheck(t *testing.T) {
 	orgs := orgs()
 	testTenant := orgs.findTenantByOrg(1000)
