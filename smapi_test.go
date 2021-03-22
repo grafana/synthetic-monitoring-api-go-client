@@ -743,6 +743,56 @@ func TestResetProbeToken(t *testing.T) {
 		"UpdateProbe mismatch (-want +got)")
 }
 
+func TestListProbes(t *testing.T) {
+	orgs := orgs()
+	testTenant := orgs.findTenantByOrg(1000)
+	testTenantID := testTenant.id
+	probes := []synthetic_monitoring.Probe{
+		{
+			Id:        42,
+			TenantId:  1,
+			Name:      "probe-42",
+			Latitude:  -33,
+			Longitude: 151,
+			Public:    true,
+		},
+		{
+			Id:        43,
+			TenantId:  testTenantID,
+			Name:      "probe-43",
+			Latitude:  10,
+			Longitude: -84,
+			Public:    false,
+		},
+	}
+
+	url, mux, cleanup := newTestServer(t)
+	defer cleanup()
+	mux.Handle("/api/v1/probe/list", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := requireMethod(w, r, http.MethodGet); err != nil {
+			return
+		}
+
+		if _, err := requireAuth(orgs, w, r, testTenantID); err != nil {
+			return
+		}
+
+		resp := probes
+
+		writeResponse(w, http.StatusOK, &resp)
+	}))
+
+	c := NewClient(url, testTenant.token, http.DefaultClient)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	actualProbes, err := c.ListProbes(ctx)
+	require.NoError(t, err)
+	require.NotNil(t, actualProbes)
+	require.ElementsMatch(t, probes, actualProbes)
+}
+
 func TestDeleteProbe(t *testing.T) {
 	orgs := orgs()
 	testTenant := orgs.findTenantByOrg(1000)

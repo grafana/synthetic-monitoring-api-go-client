@@ -260,6 +260,27 @@ func (h *Client) ResetProbeToken(ctx context.Context, probe synthetic_monitoring
 	return &result.Probe, result.Token, nil
 }
 
+// ListProbes returns the list of probes accessible to the authenticated
+// tenant.
+func (h *Client) ListProbes(ctx context.Context) ([]synthetic_monitoring.Probe, error) {
+	if err := h.requireAuthToken(); err != nil {
+		return nil, err
+	}
+
+	resp, err := h.get(ctx, "/probe/list", true, nil)
+	if err != nil {
+		return nil, fmt.Errorf("sending probe list request: %w", err)
+	}
+
+	var result []synthetic_monitoring.Probe
+
+	if err := validateResponse("probe list request", resp, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // AddCheck creates a new Synthetic Monitoring check in the API server.
 //
 // The return value contains the assigned ID.
