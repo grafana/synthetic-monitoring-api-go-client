@@ -1017,6 +1017,76 @@ func TestListChecks(t *testing.T) {
 	require.ElementsMatch(t, checks, actualChecks)
 }
 
+func TestUpdateTenant(t *testing.T) {
+	orgs := orgs()
+	testOrg := orgs.findOrgByID(1000)
+	require.NotNil(t, testOrg)
+	testTenant := orgs.findTenantByOrg(testOrg.id)
+	require.NotNil(t, testTenant)
+	testTenantID := testTenant.id
+
+	url, mux, cleanup := newTestServer(t)
+	defer cleanup()
+	mux.Handle("/api/v1/tenant/update", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req synthetic_monitoring.Tenant
+		_, err := readPostRequest(orgs, w, r, &req, testTenantID)
+		if err != nil {
+			return
+		}
+
+		if req.Id != testTenantID {
+			errorResponse(w, http.StatusBadRequest, fmt.Sprintf("expecting ID %d, got %d ", testTenantID, req.Id))
+
+			return
+		}
+
+		resp := req
+
+		resp.Created = 200
+		resp.Modified = 201
+
+		writeResponse(w, http.StatusOK, &resp)
+	}))
+
+	c := NewClient(url, testTenant.token, http.DefaultClient)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	instances := orgs.findInstancesByOrg(testOrg.id)
+	require.NotEmpty(t, instances)
+
+	tenant := synthetic_monitoring.Tenant{
+		Id:    testTenant.id,
+		OrgId: testOrg.id,
+		MetricsRemote: &synthetic_monitoring.RemoteInfo{
+			Name:     instances[0].Name,
+			Url:      instances[0].URL,
+			Username: "metrics username",
+			Password: "metrics password",
+		},
+		EventsRemote: &synthetic_monitoring.RemoteInfo{
+			Name:     instances[1].Name,
+			Url:      instances[1].URL,
+			Username: "events username",
+			Password: "events password",
+		},
+		Status:   synthetic_monitoring.TenantStatus_ACTIVE,
+		Reason:   "test reason",
+		Created:  100,
+		Modified: 100,
+	}
+	newTenant, err := c.UpdateTenant(ctx, tenant)
+
+	require.NoError(t, err)
+	require.NotNil(t, newTenant)
+	require.Equal(t, testTenant.id, newTenant.Id)
+	require.Greater(t, newTenant.Created, float64(0))
+	require.Greater(t, newTenant.Modified, float64(0))
+	require.Empty(t, cmp.Diff(&tenant, newTenant, ignoreIDField(), ignoreTenantIDField(), ignoreTimeFields()),
+		"UpdateTenant mismatch (-want +got)")
+}
+
 func newTestServer(t *testing.T) (string, *http.ServeMux, func()) {
 	t.Helper()
 
