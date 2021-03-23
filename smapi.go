@@ -368,6 +368,28 @@ func (h *Client) ListChecks(ctx context.Context) ([]synthetic_monitoring.Check, 
 	return result, nil
 }
 
+// UpdateTenant updates the specified tenant in the Synthetic Monitoring
+// API. The updated tenant (possibly with updated timestamps) is
+// returned.
+func (h *Client) UpdateTenant(ctx context.Context, tenant synthetic_monitoring.Tenant) (*synthetic_monitoring.Tenant, error) {
+	if err := h.requireAuthToken(); err != nil {
+		return nil, err
+	}
+
+	resp, err := h.postJSON(ctx, "/tenant/update", true, &tenant)
+	if err != nil {
+		return nil, fmt.Errorf("sending tenant update request: %w", err)
+	}
+
+	var result synthetic_monitoring.Tenant
+
+	if err := validateResponse("tenant update request", resp, &result); err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
 func (h *Client) requireAuthToken() error {
 	if h.accessToken == "" {
 		return ErrAuthorizationTokenRequired
