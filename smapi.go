@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 
 	"github.com/grafana/synthetic-monitoring-api-go-client/model"
 
@@ -56,6 +57,29 @@ func NewClient(baseURL, accessToken string, client *http.Client) *Client {
 	}
 
 	u.Path = path.Clean(u.Path)
+
+	return &Client{
+		client:      client,
+		accessToken: accessToken,
+		baseURL:     u.String(),
+	}
+}
+
+// NewDatasourceClient creates a new client for the Synthetic Monitoring API using a Grafana datasource proxy.
+//
+// The accessToken should be the grafana access token.
+//
+// If no client is provided, http.DefaultClient will be used.
+func NewDatasourceClient(baseURL, accessToken string, client *http.Client) *Client {
+	if client == nil {
+		client = http.DefaultClient
+	}
+
+	u, err := url.Parse(baseURL)
+	if err != nil {
+		return nil
+	}
+	u.Path = strings.TrimSuffix(u.Path, "/")
 
 	return &Client{
 		client:      client,
