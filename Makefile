@@ -34,6 +34,7 @@ SH_FILES ?= $(shell find ./scripts -name *.sh)
 GO_TEST_ARGS ?= $(GO_PKGS)
 
 COMMANDS := $(shell test -d cmd && $(GO) list $(GO_BUILD_MOD_FLAGS) ./cmd/...)
+EXAMPLES := $(shell test -d examples && $(GO) list $(GO_BUILD_MOD_FLAGS) ./examples/...)
 
 VERSION_PKG := $(shell test -d internal/version && $(GO) list $(GO_BUILD_MOD_FLAGS) ./internal/version)
 
@@ -71,7 +72,7 @@ deps: deps-go ## Install all dependencies.
 
 ##@ Building
 
-BUILD_GO_TARGETS := $(addprefix build-go-, $(COMMANDS))
+BUILD_GO_TARGETS := $(addprefix build-go-, $(COMMANDS) $(EXAMPLES))
 
 .PHONY: $(BUILD_GO_TARGETS)
 $(BUILD_GO_TARGETS): build-go-%:
