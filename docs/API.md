@@ -287,6 +287,96 @@ Description:
 This entry point returns the list of tenants for the organization to
 which the provided admin token belongs to.
 
+## Tokens
+
+The access tokens obtained using `/api/v1/register/install` can be
+managed using the entrypoints described in this section.
+
+### /api/v1/token/create
+
+Method: POST
+
+Authorization required: yes
+
+Body: none
+
+Response:
+```
+{
+    "msg": <user facing message>,
+    "accessToken": <new token>
+}
+```
+
+Description:
+
+A new access token is created for the authenticated tenant.
+
+### /api/v1/token/delete
+
+Method: DELETE
+
+Authorization required: yes
+
+Body: none
+
+Response:
+```
+{
+    "msg": <user facing message>,
+}
+```
+
+Description:
+
+The access token used for authentication is deleted.
+
+### /api/v1/token/refresh
+
+Method: POST
+
+Authorization required: yes
+
+Body: none
+
+Response:
+```
+{
+    "msg": <user facing message>,
+    "accessToken": <new token>
+}
+```
+
+Description:
+
+A new access token is created for the authenticated tenant.  The token
+used for authentication is deleted.
+
+### /api/v1/token/validate
+
+Method: POST
+
+Authorization required: yes
+
+Body: none
+
+Response:
+```
+{
+    "msg": <user facing message>,
+    "isValid": true
+}
+```
+
+Description:
+
+This authenticated endpoint can be used to verify the validity of
+existing tokens.
+
+Since the call is authenticated, if the provided token is invalid the
+server will return a 401 error so the "isValid" field will never be set
+to false.
+
 ## Checks
 
 ### /api/v1/check/add

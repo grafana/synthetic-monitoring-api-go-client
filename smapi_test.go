@@ -28,6 +28,8 @@ var (
 	errUnexpectedID               = errors.New("unexpected ID")
 )
 
+const invalidToken = "invalid token"
+
 type stackInfo struct {
 	id               int64
 	metricInstanceID int64
@@ -557,6 +559,215 @@ func TestClientSave(t *testing.T) {
 
 	err := c.Save(ctx, testOrg.adminToken, testOrg.metricInstance.ID, testOrg.logInstance.ID)
 	require.NoError(t, err)
+}
+
+func TestCreateToken(t *testing.T) {
+	orgs := orgs()
+	testTenant := orgs.findTenantByOrg(1000)
+
+	expectedToken := "a token"
+
+	url, mux, cleanup := newTestServer(t)
+	defer cleanup()
+
+	var called bool
+
+	mux.Handle("/api/v1/token/create", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called = true
+
+		if err := requireMethod(w, r, http.MethodPost); err != nil {
+			return
+		}
+
+		if _, err := requireAuth(orgs, w, r, testTenant.id); err != nil {
+			return
+		}
+
+		writeResponse(
+			w,
+			http.StatusOK,
+			&model.TokenCreateResponse{
+				Msg:         "a message",
+				AccessToken: expectedToken,
+			},
+		)
+	}))
+
+	t.Run("valid token", func(t *testing.T) {
+		c := NewClient(url, testTenant.token, http.DefaultClient)
+		ctx := context.Background()
+		called = false
+		actualToken, err := c.CreateToken(ctx)
+		require.True(t, called)
+		require.NoError(t, err)
+		require.NotEmpty(t, actualToken)
+		require.Equal(t, expectedToken, actualToken)
+	})
+
+	t.Run("invalid token", func(t *testing.T) {
+		token := invalidToken
+		c := NewClient(url, token, http.DefaultClient)
+		ctx := context.Background()
+		called = false
+		actualToken, err := c.CreateToken(ctx)
+		require.True(t, called)
+		require.Error(t, err)
+		require.Empty(t, actualToken)
+	})
+}
+
+func TestDeleteToken(t *testing.T) {
+	orgs := orgs()
+	testTenant := orgs.findTenantByOrg(1000)
+
+	url, mux, cleanup := newTestServer(t)
+	defer cleanup()
+
+	var called bool
+
+	mux.Handle("/api/v1/token/delete", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called = true
+
+		if err := requireMethod(w, r, http.MethodDelete); err != nil {
+			return
+		}
+
+		if _, err := requireAuth(orgs, w, r, testTenant.id); err != nil {
+			return
+		}
+
+		writeResponse(
+			w,
+			http.StatusOK,
+			&model.TokenDeleteResponse{
+				Msg: "a message",
+			},
+		)
+	}))
+
+	t.Run("valid token", func(t *testing.T) {
+		c := NewClient(url, testTenant.token, http.DefaultClient)
+		ctx := context.Background()
+		called = false
+		err := c.DeleteToken(ctx)
+		require.True(t, called)
+		require.NoError(t, err)
+		require.Empty(t, c.accessToken)
+	})
+
+	t.Run("invalid token", func(t *testing.T) {
+		token := invalidToken
+		c := NewClient(url, token, http.DefaultClient)
+		ctx := context.Background()
+		called = false
+		err := c.DeleteToken(ctx)
+		require.True(t, called)
+		require.Error(t, err)
+		require.Equal(t, token, c.accessToken)
+	})
+}
+
+func TestRefreshToken(t *testing.T) {
+	orgs := orgs()
+	testTenant := orgs.findTenantByOrg(1000)
+	newToken := "a new token"
+
+	url, mux, cleanup := newTestServer(t)
+	defer cleanup()
+
+	var called bool
+
+	mux.Handle("/api/v1/token/refresh", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called = true
+
+		if err := requireMethod(w, r, http.MethodPost); err != nil {
+			return
+		}
+
+		if _, err := requireAuth(orgs, w, r, testTenant.id); err != nil {
+			return
+		}
+
+		writeResponse(
+			w,
+			http.StatusOK,
+			&model.TokenRefreshResponse{
+				Msg:         "a message",
+				AccessToken: newToken,
+			},
+		)
+	}))
+
+	t.Run("valid token", func(t *testing.T) {
+		c := NewClient(url, testTenant.token, http.DefaultClient)
+		ctx := context.Background()
+		called = false
+		err := c.RefreshToken(ctx)
+		require.True(t, called)
+		require.NoError(t, err)
+		require.Equal(t, newToken, c.accessToken)
+	})
+
+	t.Run("invalid token", func(t *testing.T) {
+		token := invalidToken
+		c := NewClient(url, token, http.DefaultClient)
+		ctx := context.Background()
+		called = false
+		err := c.RefreshToken(ctx)
+		require.True(t, called)
+		require.Error(t, err)
+		require.Equal(t, token, c.accessToken)
+	})
+}
+
+func TestValidateToken(t *testing.T) {
+	orgs := orgs()
+	testTenant := orgs.findTenantByOrg(1000)
+
+	url, mux, cleanup := newTestServer(t)
+	defer cleanup()
+
+	var called bool
+
+	mux.Handle("/api/v1/token/validate", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called = true
+
+		if err := requireMethod(w, r, http.MethodPost); err != nil {
+			return
+		}
+
+		if _, err := requireAuth(orgs, w, r, testTenant.id); err != nil {
+			return
+		}
+
+		writeResponse(
+			w,
+			http.StatusOK,
+			&model.TokenValidateResponse{
+				Msg:     "a message",
+				IsValid: true,
+			},
+		)
+	}))
+
+	t.Run("valid token", func(t *testing.T) {
+		c := NewClient(url, testTenant.token, http.DefaultClient)
+		ctx := context.Background()
+		called = false
+		err := c.ValidateToken(ctx)
+		require.True(t, called)
+		require.NoError(t, err)
+	})
+
+	t.Run("invalid token", func(t *testing.T) {
+		token := invalidToken
+		c := NewClient(url, token, http.DefaultClient)
+		ctx := context.Background()
+		called = false
+		err := c.ValidateToken(ctx)
+		require.True(t, called)
+		require.Error(t, err)
+	})
 }
 
 func TestAddProbe(t *testing.T) {

@@ -29,6 +29,12 @@ var (
 	// possible to encode the request as a JSON object. This error
 	// should never happen.
 	ErrCannotEncodeJSONRequest = errors.New("cannot encode request")
+
+	// ErrUnexpectedResponse is returned by client calls that get
+	// unexpected responses, for example some field that must not be
+	// zero is zero. If possible a more specific error should be
+	// used.
+	ErrUnexpectedResponse = errors.New("unexpected response")
 )
 
 // Client is a Synthetic Monitoring API client.
@@ -191,6 +197,112 @@ func (h *Client) Save(ctx context.Context, adminToken string, metricInstanceID, 
 
 	if err := validateResponse("registration save request", resp, &result); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// CreateToken is used to obtain a new access token for the
+// authenticated tenant.
+//
+// The newly created token _does not_ replace the token currently
+// used by the client.
+func (h *Client) CreateToken(ctx context.Context) (string, error) {
+	if err := h.requireAuthToken(); err != nil {
+		return "", err
+	}
+
+	resp, err := h.postJSON(ctx, "/token/create", true, nil)
+	if err != nil {
+		return "", fmt.Errorf("creating token: %w", err)
+	}
+
+	var result model.TokenCreateResponse
+
+	if err := validateResponse("token create request", resp, &result); err != nil {
+		return "", err
+	}
+
+	return result.AccessToken, nil
+}
+
+// DeleteToken deletes the access token that the client is currently
+// using.
+//
+// After this call, the client won't be able to make furhter calls into
+// the API.
+func (h *Client) DeleteToken(ctx context.Context) error {
+	if err := h.requireAuthToken(); err != nil {
+		return err
+	}
+
+	resp, err := h.delete(ctx, fmt.Sprintf("%s%s", h.baseURL, "/token/delete"), true)
+	if err != nil {
+		return fmt.Errorf("deleting token: %w", err)
+	}
+
+	var result model.TokenDeleteResponse
+
+	if err := validateResponse("token delete request", resp, &result); err != nil {
+		return err
+	}
+
+	// the token is no longer valid, remove it from the client so
+	// that future calls fail.
+	h.accessToken = ""
+
+	return nil
+}
+
+// RefreshToken creates a new access token in the API which replaces the
+// one that the client is currently using.
+func (h *Client) RefreshToken(ctx context.Context) error {
+	if err := h.requireAuthToken(); err != nil {
+		return err
+	}
+
+	resp, err := h.postJSON(ctx, "/token/refresh", true, nil)
+	if err != nil {
+		return fmt.Errorf("refreshing token: %w", err)
+	}
+
+	var result model.TokenRefreshResponse
+
+	if err := validateResponse("token refresh request", resp, &result); err != nil {
+		return err
+	}
+
+	if result.AccessToken == "" {
+		return ErrUnexpectedResponse
+	}
+
+	// replace the existing (now invalid) token with the new one
+	h.accessToken = result.AccessToken
+
+	return nil
+}
+
+// ValidateToken contacts the API server and verifies that the currently
+// installed token is still valid.
+// one that the client is currently using.
+func (h *Client) ValidateToken(ctx context.Context) error {
+	if err := h.requireAuthToken(); err != nil {
+		return err
+	}
+
+	resp, err := h.postJSON(ctx, "/token/validate", true, nil)
+	if err != nil {
+		return fmt.Errorf("validating token: %w", err)
+	}
+
+	var result model.TokenValidateResponse
+
+	if err := validateResponse("token validate request", resp, &result); err != nil {
+		return err
+	}
+
+	if !result.IsValid {
+		return ErrUnexpectedResponse
 	}
 
 	return nil

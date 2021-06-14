@@ -46,6 +46,25 @@ type RegistrationSaveRequest struct {
 
 type RegistrationSaveResponse struct{}
 
+type TokenCreateResponse struct {
+	Msg         string `json:"msg,omitempty"`
+	AccessToken string `json:"accessToken"`
+}
+
+type TokenDeleteResponse struct {
+	Msg string `json:"msg,omitempty"`
+}
+
+type TokenRefreshResponse struct {
+	Msg         string `json:"msg,omitempty"`
+	AccessToken string `json:"accessToken"`
+}
+
+type TokenValidateResponse struct {
+	Msg     string `json:"msg,omitempty"`
+	IsValid bool   `json:"isValid"`
+}
+
 type TenantDescription struct {
 	ID             int64          `json:"id"`
 	MetricInstance HostedInstance `json:"metricInstance"`
