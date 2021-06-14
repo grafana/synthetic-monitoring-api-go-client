@@ -1,13 +1,13 @@
 ## This is a self-documented Makefile. For usage information, run `make help`:
 ##
-## For more information, refer to https://suva.sh/posts/well-documented-makefiles/
+## For more information, refer to https://www.thapaliya.com/en/writings/well-documented-makefiles/
 
 ROOTDIR := $(abspath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 DISTDIR := $(abspath $(ROOTDIR)/dist)
 
 BUILD_VERSION := $(shell $(ROOTDIR)/scripts/version)
 BUILD_COMMIT := $(shell git rev-parse HEAD^{commit})
-BUILD_STAMP := $(shell date --utc --rfc-3339=seconds)
+BUILD_STAMP := $(shell date -u '+%Y-%m-%d %H:%M:%S+00:00')
 
 include config.mk
 
@@ -115,6 +115,7 @@ test-go: $(GOTESTSUM) ## Run Go tests.
 		-coverprofile=$(TEST_OUTPUT).cov \
 		-race \
 		$(GO_TEST_ARGS)
+	$(S) $(ROOTDIR)/scripts/report-test-coverage $(TEST_OUTPUT).cov
 
 .PHONY: test
 test: test-go ## Run all tests.
@@ -123,20 +124,20 @@ test: test-go ## Run all tests.
 
 ifeq ($(LOCAL_GOLANGCI_LINT),yes)
 $(GOLANGCI_LINT): scripts/go/go.mod
-	$(S) cd scripts/go; \
+	$(S) cd scripts/go && \
 		$(GO) build -o $(GOLANGCI_LINT) github.com/golangci/golangci-lint/cmd/golangci-lint
 endif
 
 .PHONY: golangci-lint
 golangci-lint: $(GOLANGCI_LINT)
 	$(S) echo "lint via golangci-lint"
-	$(S) scripts/go/bin/golangci-lint run \
+	$(S) $(GOLANGCI_LINT) run \
 		$(GOLANGCI_LINT_MOD_FLAGS) \
 		--config ./scripts/go/configs/golangci.yml \
 		$(GO_PKGS)
 
 scripts/go/bin/gosec: scripts/go/go.mod
-	$(S) cd scripts/go; \
+	$(S) cd scripts/go && \
 		$(GO) build -o ./bin/gosec github.com/securego/gosec/cmd/gosec
 
 # TODO recheck the rules and leave only necessary exclusions
