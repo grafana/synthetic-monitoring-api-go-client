@@ -1269,6 +1269,86 @@ func TestListChecks(t *testing.T) {
 	require.ElementsMatch(t, checks, actualChecks)
 }
 
+func TestGetTenant(t *testing.T) {
+	orgs := orgs()
+
+	testOrg := orgs.findOrgByID(1000)
+	require.NotNil(t, testOrg)
+
+	testTenant := orgs.findTenantByOrg(testOrg.id)
+	require.NotNil(t, testTenant)
+
+	instances := orgs.findInstancesByOrg(testOrg.id)
+	require.NotEmpty(t, instances)
+
+	tenant := synthetic_monitoring.Tenant{
+		Id:    testTenant.id,
+		OrgId: testOrg.id,
+		MetricsRemote: &synthetic_monitoring.RemoteInfo{
+			Name:     instances[0].Name,
+			Url:      instances[0].URL,
+			Username: "metrics username",
+			Password: "metrics password",
+		},
+		EventsRemote: &synthetic_monitoring.RemoteInfo{
+			Name:     instances[1].Name,
+			Url:      instances[1].URL,
+			Username: "events username",
+			Password: "events password",
+		},
+		Status:   synthetic_monitoring.TenantStatus_ACTIVE,
+		Reason:   "test reason",
+		Created:  100,
+		Modified: 100,
+	}
+
+	url, mux, cleanup := newTestServer(t)
+	defer cleanup()
+
+	var called bool
+
+	mux.Handle("/api/v1/tenant", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called = true
+
+		if err := requireMethod(w, r, http.MethodGet); err != nil {
+			return
+		}
+
+		if _, err := requireAuth(orgs, w, r, testTenant.id); err != nil {
+			return
+		}
+
+		writeResponse(
+			w,
+			http.StatusOK,
+			&tenant,
+		)
+	}))
+
+	c := NewClient(url, testTenant.token, http.DefaultClient)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	actualTenant, err := c.GetTenant(ctx)
+
+	require.NoError(t, err)
+	require.NotNil(t, actualTenant)
+	require.True(t, called)
+	require.Equal(t, testTenant.id, actualTenant.Id)
+	require.Greater(t, actualTenant.Created, float64(0))
+	require.Greater(t, actualTenant.Modified, float64(0))
+	// When talking to the actual API, we don't know the actual
+	// value of the timestamp fields, and the password fields are
+	// redacted.
+	//
+	// It's OK to do it like this here because we are testing that
+	// the returned tenant actually corresponds to whatever the
+	// server is returning, not whether the server is returning
+	// "correct" values.
+	require.Empty(t, cmp.Diff(&tenant, actualTenant), "GetTenant mismatch (-want +got)")
+}
+
 func TestUpdateTenant(t *testing.T) {
 	orgs := orgs()
 	testOrg := orgs.findOrgByID(1000)
