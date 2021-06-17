@@ -923,8 +923,8 @@ Response:
 
 Description:
 
-This entry point is used to obtain the information associated with an
-existing tenant.
+This entry point is used to obtain the information associated with the
+authenticated tenant.
 
 ### /api/v1/tenant/update
 
