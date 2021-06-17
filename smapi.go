@@ -504,6 +504,27 @@ func (h *Client) ListChecks(ctx context.Context) ([]synthetic_monitoring.Check, 
 	return result, nil
 }
 
+// GetTenant retrieves the information associated with the authenticated
+// tenant.
+func (h *Client) GetTenant(ctx context.Context) (*synthetic_monitoring.Tenant, error) {
+	if err := h.requireAuthToken(); err != nil {
+		return nil, err
+	}
+
+	resp, err := h.get(ctx, "/tenant", true, nil)
+	if err != nil {
+		return nil, fmt.Errorf("sending get tenant request: %w", err)
+	}
+
+	var result synthetic_monitoring.Tenant
+
+	if err := validateResponse("get tenant request", resp, &result); err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
 // UpdateTenant updates the specified tenant in the Synthetic Monitoring
 // API. The updated tenant (possibly with updated timestamps) is
 // returned.
