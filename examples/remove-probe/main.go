@@ -42,6 +42,9 @@ func main() {
 		return
 	}
 
+	// delete the token we created by calling c.Install above.
+	defer c.DeleteToken(ctx)
+
 	probe, err := findProbe(ctx, cfg.ProbeName, installResp.TenantInfo.ID, c)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Cannot find probe: %s\n", err.Error())
