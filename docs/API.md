@@ -910,6 +910,22 @@ The probe with the specified ID is deleted.
 
 ## Tenants
 
+### /api/v1/tenant
+
+Method: GET
+
+Authorization required: yes
+
+Response:
+```
+<tenant>
+```
+
+Description:
+
+This entry point is used to obtain the information associated with an
+existing tenant.
+
 ### /api/v1/tenant/update
 
 Method: POST
@@ -933,6 +949,10 @@ Body:
     "url": <string>,
     "username": <string>,
     "password": <string>
+  },
+  "status": {
+    "code": <int>,
+    "reason": <string>
   }
 }
 ```
@@ -950,6 +970,20 @@ Description:
 This entry point is used to update the metrics and events (logs) remote
 information. The specified URLs are passed down to the probes, and they use
 them to publish metrics and events.
+
+If the metrics and events (logs) remote information is present, it's
+updated in the existing tenant. The specified URLs are passed down to
+the probes, and they use them to publish metrics and events.
+
+If the status information is present, it's updated in the existing
+tenant. Both the "code" and "reason" fields must be provided.
+
+If the tenant status or the tenant's remote information changes, the
+change is communicated to the probes. Specifically, if the tenant
+becomes inactive, the associated checks are stopped; if the tenant
+becomes active, the associated checks are started; if the remote
+information changes, this is communicated to the probes so that they
+refetch the authentication tokens as necessary.
 
 ### /api/v1/tenant/delete/:id:
 
