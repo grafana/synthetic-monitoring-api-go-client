@@ -200,6 +200,12 @@ docker-push:  docker
 	$(S) docker tag $(DOCKER_TAG) $(DOCKER_TAG):$(BUILD_VERSION)
 	$(S) docker push $(DOCKER_TAG):$(BUILD_VERSION)
 
+.PHONY: drone
+drone:
+	drone jsonnet --stream --source .drone/drone.jsonnet --target .drone/drone.yml
+	drone lint .drone/drone.yml
+	drone sign --save grafana/synthetic-monitoring-api-go-client .drone/drone.yml
+
 define build_go_command
 	$(S) echo 'Building $(1)'
 	$(S) mkdir -p dist
