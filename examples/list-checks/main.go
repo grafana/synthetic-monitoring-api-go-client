@@ -73,7 +73,10 @@ func listChecks(ctx context.Context, client *smapi.Client, w io.Writer) error {
 		return err
 	}
 
-	tw.Flush()
+	err = tw.Flush()
+	if err != nil {
+		return fmt.Errorf("error writing check list: %w", err)
+	}
 
 	return nil
 }
