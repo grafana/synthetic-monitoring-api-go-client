@@ -1,0 +1,45 @@
+---
+kind: pipeline
+type: docker
+name: build
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: runner identification
+  image: alpine
+  commands:
+  - echo $DRONE_RUNNER_NAME
+
+- name: lint
+  image: golang:1.14
+  commands:
+  - make lint
+
+- name: test
+  image: golang:1.14
+  commands:
+  - make test
+
+- name: build
+  image: golang:1.14
+  commands:
+  - git fetch origin --tags
+  - git status --porcelain --untracked-files=no
+  - git diff --no-ext-diff --quiet
+  - ./scripts/version
+  - make build
+
+trigger:
+  ref:
+  - refs/heads/main
+  - refs/pull/**
+  - refs/tags/v*.*.*
+
+---
+kind: signature
+hmac: 43ab9d90f0fc9a9e54f6b6dfce2d76ce109c7987616eb975c588e19d435a3690
+
+...
