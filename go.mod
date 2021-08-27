@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/google/go-cmp v0.5.6
-	github.com/grafana/synthetic-monitoring-agent v0.0.26
+	github.com/grafana/synthetic-monitoring-agent v0.1.2
 	github.com/stretchr/testify v1.7.0
 )
 
