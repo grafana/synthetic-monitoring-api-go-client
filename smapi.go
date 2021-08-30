@@ -572,7 +572,12 @@ func (h *Client) do(ctx context.Context, url, method string, auth bool, headers 
 		req.Header.Set("Authorization", "Bearer "+h.accessToken)
 	}
 
-	return h.client.Do(req)
+	resp, err := h.client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("sending HTTP request: %w", err)
+	}
+
+	return resp, nil
 }
 
 func (h *Client) get(ctx context.Context, url string, auth bool, headers http.Header) (*http.Response, error) {

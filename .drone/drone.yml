@@ -14,17 +14,17 @@ steps:
   - echo $DRONE_RUNNER_NAME
 
 - name: lint
-  image: golang:1.14
+  image: golang:1.17
   commands:
   - make lint
 
 - name: test
-  image: golang:1.14
+  image: golang:1.17
   commands:
   - make test
 
 - name: build
-  image: golang:1.14
+  image: golang:1.17
   commands:
   - git fetch origin --tags
   - git status --porcelain --untracked-files=no
@@ -40,6 +40,6 @@ trigger:
 
 ---
 kind: signature
-hmac: 43ab9d90f0fc9a9e54f6b6dfce2d76ce109c7987616eb975c588e19d435a3690
+hmac: e634ab72aba3229c8ce2e31eeabf3f64ddb8b6a1b7fc85ceca64a8c58ab172a8
 
 ...
