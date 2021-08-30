@@ -86,8 +86,7 @@ func (db db) findOrgByToken(token string) *orgInfo {
 }
 
 func (db db) findTenantByOrg(id int64) *tenantInfo {
-	org := db.findOrgByID(id)
-	if org != nil {
+	if org := db.findOrgByID(id); org != nil {
 		return &org.tenant
 	}
 

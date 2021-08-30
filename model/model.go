@@ -128,5 +128,11 @@ func (e *ErrorResponse) MarshalJSON() ([]byte, error) {
 		}
 	}
 
-	return json.Marshal(&resp)
+	buf, err := json.Marshal(&resp)
+	if err != nil {
+		// This should never happen.
+		return nil, fmt.Errorf("cannot marshal error: %w", err)
+	}
+
+	return buf, nil
 }
