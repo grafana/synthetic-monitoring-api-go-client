@@ -20,7 +20,7 @@ Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-eu-west.
 If you are unsure about the region of your stack, check **Synthetic Monitoring -> Config** page. 
 API URL for your Grafana Cloud instance will be listed under **Backend address** 
 
-> NOTE: You need to be `Admin` in to access Synthetic Monitoring config page
+> NOTE: You need to be `Admin` in Grafana to access Synthetic Monitoring config page
 
 
 ## Authentication
