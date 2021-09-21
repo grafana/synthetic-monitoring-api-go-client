@@ -4,8 +4,26 @@ Synthetic Monitoring API
 This document describes the Synthetic Monitoring API. All the entry
 points return results formatted as JSON objects.
 
+## API URL
+
+Based on the region of your Grafana Cloud stack, you need to use a different API URL
+
+**United States Region**
+
+Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api.grafana.net](https://synthetic-monitoring-api.grafana.net)
+
+**Europe Region**
+
+Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-eu-west.grafana.net](https://synthetic-monitoring-api-eu-west.grafana.net)
+
+
+If you are unsure about the region of your stack, check **Synthetic Monitoring -> Config** page. 
+API URL for your Grafana Cloud instance will be listed under **Backend address** 
+
+> NOTE: You need to be `Admin` in Grafana to access Synthetic Monitoring config page
+
+
 ## Authentication
-Synthetic Monitoring API is hosted at [synthetic-monitoring-api.grafana.net](https://synthetic-monitoring-api.grafana.net)
 
 All the entry points that indicate that they require authentication must
 provide an access token obtained by calling `/api/v1/register/install`.
