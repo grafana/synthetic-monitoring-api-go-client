@@ -125,7 +125,7 @@ corresponding hosted metric and log instances.
 The authentication is different from all the other authenticated entry
 points in that the token _is not_ the access token returned by this call
 (or `/api/v1/register/init`), but instead it's a `grafana.com` API
-*publisher token*. This token is user to authenticate the request and
+*publisher token*. This token is used to authenticate the request and
 obtain the `grafana.com` organization associated with the new tenant. It
 is also saved by the Synthetic Monitoring backend and passed to the
 probes so that they can publish metrics and logs to the specified hosted
