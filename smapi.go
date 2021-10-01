@@ -616,10 +616,23 @@ type HTTPError struct {
 	Code   int
 	Status string
 	Action string
+	Api    struct {
+		Msg   string
+		Error string
+	}
 }
 
+// Error allows HTTPError to implement the error interface.
+//
+// The formatting of the error is a little opinionated, as it has to
+// communicate an error from the API if it's there, or an error from the
+// HTTP client.
 func (e *HTTPError) Error() string {
-	return fmt.Sprintf("%s: %s", e.Action, e.Status)
+	if e.Api.Msg != "" || e.Api.Error != "" {
+		return fmt.Sprintf("%s: status=\"%s\", msg=\"%s\", err=\"%s\"", e.Action, e.Status, e.Api.Msg, e.Api.Error)
+	}
+
+	return fmt.Sprintf("%s: status=\"%s\"", e.Action, e.Status)
 }
 
 func defaultHeaders() http.Header {
@@ -631,7 +644,31 @@ func defaultHeaders() http.Header {
 
 func validateResponse(action string, resp *http.Response, result interface{}) error {
 	if resp.StatusCode != http.StatusOK {
-		return &HTTPError{Code: resp.StatusCode, Status: resp.Status, Action: action}
+		respError := HTTPError{Code: resp.StatusCode, Status: resp.Status, Action: action}
+
+		if resp.Body != nil {
+			defer resp.Body.Close()
+
+			dec := json.NewDecoder(resp.Body)
+
+			var apiError struct {
+				Error string `json:"err"`
+				Msg   string `json:"msg"`
+			}
+
+			if err := dec.Decode(&apiError); err != nil {
+				// If there's an error decoding this,
+				// it's not something we can deal with,
+				// so don't add additional annotations.
+				respError.Api.Msg = "cannot decode response"
+				respError.Api.Error = err.Error()
+			} else {
+				respError.Api.Msg = apiError.Msg
+				respError.Api.Error = apiError.Error
+			}
+		}
+
+		return &respError
 	}
 
 	if resp.Body != nil {
