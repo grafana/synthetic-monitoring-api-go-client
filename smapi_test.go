@@ -25,6 +25,7 @@ var (
 	errInvalidMethod              = errors.New("invalid method")
 	errInvalidTenantID            = errors.New("invalid tenantId")
 	errNotAuthorized              = errors.New("not authorized")
+	errProbeNotFound              = errors.New("probe not found")
 	errUnexpectedID               = errors.New("unexpected ID")
 )
 
@@ -994,6 +995,93 @@ func TestResetProbeToken(t *testing.T) {
 		"UpdateProbe mismatch (-want +got)")
 }
 
+func TestGetProbe(t *testing.T) {
+	orgs := orgs()
+	testTenant := orgs.findTenantByOrg(1000)
+	testTenantID := testTenant.id
+	probes := []synthetic_monitoring.Probe{
+		{
+			Id:        42,
+			TenantId:  testTenantID,
+			Name:      "probe-42",
+			Latitude:  10,
+			Longitude: -84,
+			Public:    false,
+		},
+		{
+			Id:        43,
+			TenantId:  1,
+			Name:      "probe-43",
+			Latitude:  -33,
+			Longitude: 151,
+			Public:    true,
+		},
+	}
+
+	url, mux, cleanup := newTestServer(t)
+	defer cleanup()
+	mux.Handle("/api/v1/probe/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := requireMethod(w, r, http.MethodGet); err != nil {
+			return
+		}
+
+		if _, err := requireAuth(orgs, w, r, testTenantID); err != nil {
+			return
+		}
+
+		id, err := getID(w, r, "/api/v1/probe/")
+		if err != nil {
+			return
+		}
+
+		for _, probe := range probes {
+			probe := probe
+			if probe.Id == id && probe.TenantId == testTenantID {
+				writeResponse(w, http.StatusOK, &probe)
+
+				return
+			}
+		}
+
+		writeResponse(w, http.StatusNotFound, &model.ErrorResponse{
+			Msg: fmt.Sprintf("probe %d not found", id),
+			Err: errProbeNotFound,
+		})
+	}))
+
+	c := NewClient(url, testTenant.token, http.DefaultClient)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	t.Run("not found", func(t *testing.T) {
+		_, err := c.GetProbe(ctx, 41)
+		require.Error(t, err)
+	})
+
+	t.Run("not yours", func(t *testing.T) {
+		_, err := c.GetProbe(ctx, 43)
+		require.Error(t, err)
+	})
+
+	t.Run("ok", func(t *testing.T) {
+		actualProbe, err := c.GetProbe(ctx, 42)
+		require.NoError(t, err)
+		require.NotNil(t, actualProbe)
+		found := false
+		for _, probe := range probes {
+			probe := probe
+			if probe.Id == actualProbe.Id {
+				require.Equal(t, &probe, actualProbe)
+				found = true
+
+				break
+			}
+		}
+		require.True(t, found)
+	})
+}
+
 func TestListProbes(t *testing.T) {
 	orgs := orgs()
 	testTenant := orgs.findTenantByOrg(1000)
@@ -1442,12 +1530,24 @@ func requireMethod(w http.ResponseWriter, r *http.Request, method string) error 
 	return nil
 }
 
-func requireID(w http.ResponseWriter, r *http.Request, expected int64, prefix string) error {
+func getID(w http.ResponseWriter, r *http.Request, prefix string) (int64, error) {
 	str := strings.TrimPrefix(r.URL.Path, prefix)
-	if actual, err := strconv.ParseInt(str, 10, 64); err != nil {
+	id, err := strconv.ParseInt(str, 10, 64)
+	if err != nil {
 		errorResponse(w, http.StatusBadRequest, fmt.Sprintf("invalid ID: %s", str))
 
-		return fmt.Errorf("cannot parse %q as int: %w", str, err)
+		return 0, fmt.Errorf("cannot parse %q as int: %w", str, err)
+	}
+
+	return id, nil
+}
+
+func requireID(w http.ResponseWriter, r *http.Request, expected int64, prefix string) error {
+	if actual, err := getID(w, r, prefix); err != nil {
+		idStr := strings.TrimPrefix(r.URL.Path, prefix)
+		errorResponse(w, http.StatusBadRequest, fmt.Sprintf("invalid ID: %s", idStr))
+
+		return fmt.Errorf("cannot parse %q as int: %w", idStr, err)
 	} else if actual != expected {
 		errorResponse(w, http.StatusBadRequest, fmt.Sprintf("expecting ID %d, got %d ", expected, actual))
 

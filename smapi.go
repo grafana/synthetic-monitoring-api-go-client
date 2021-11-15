@@ -396,6 +396,27 @@ func (h *Client) ResetProbeToken(ctx context.Context, probe synthetic_monitoring
 	return &result.Probe, result.Token, nil
 }
 
+// GetProbe is used to obtain the details about a single existing
+// Synthetic Monitoring probe.
+func (h *Client) GetProbe(ctx context.Context, id int64) (*synthetic_monitoring.Probe, error) {
+	if err := h.requireAuthToken(); err != nil {
+		return nil, err
+	}
+
+	resp, err := h.get(ctx, fmt.Sprintf("/probe/%d", id), true, nil)
+	if err != nil {
+		return nil, fmt.Errorf("sending probe get request: %w", err)
+	}
+
+	var result synthetic_monitoring.Probe
+
+	if err := validateResponse("probe get request", resp, &result); err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
 // ListProbes returns the list of probes accessible to the authenticated
 // tenant.
 func (h *Client) ListProbes(ctx context.Context) ([]synthetic_monitoring.Probe, error) {
