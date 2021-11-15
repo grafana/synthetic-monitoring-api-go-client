@@ -21,6 +21,7 @@ import (
 var (
 	errBadRequest                 = errors.New("bad request")
 	errCannotDecodeRequest        = errors.New("cannot decode request")
+	errCheckNotFound              = errors.New("check not found")
 	errInvalidAuthorizationHeader = errors.New("no authorization header")
 	errInvalidMethod              = errors.New("invalid method")
 	errInvalidTenantID            = errors.New("invalid tenantId")
@@ -1210,6 +1211,90 @@ func TestAddCheck(t *testing.T) {
 	require.Greater(t, newCheck.Modified, float64(0))
 	require.Empty(t, cmp.Diff(&check, newCheck, ignoreIDField(), ignoreTenantIDField(), ignoreTimeFields()),
 		"AddCheck mismatch (-want +got)")
+}
+
+func TestGetCheck(t *testing.T) {
+	orgs := orgs()
+	testTenant := orgs.findTenantByOrg(1000)
+	testTenantID := testTenant.id
+	testCheckID := int64(42)
+	checks := []synthetic_monitoring.Check{
+		{
+			Id:       testCheckID,
+			TenantId: testTenantID,
+			Job:      "check-1",
+			Target:   "http://example.org/",
+		},
+		{
+			Id:       testCheckID + 1,
+			TenantId: testTenantID + 1,
+			Job:      "check-2",
+			Target:   "http://example.org/",
+		},
+	}
+
+	url, mux, cleanup := newTestServer(t)
+	defer cleanup()
+	mux.Handle("/api/v1/check/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := requireMethod(w, r, http.MethodGet); err != nil {
+			return
+		}
+
+		if _, err := requireAuth(orgs, w, r, testTenantID); err != nil {
+			return
+		}
+
+		id, err := getID(w, r, "/api/v1/check/")
+		if err != nil {
+			return
+		}
+
+		for _, check := range checks {
+			check := check
+			if check.Id == id && check.TenantId == testTenantID {
+				writeResponse(w, http.StatusOK, &check)
+
+				return
+			}
+		}
+
+		writeResponse(w, http.StatusNotFound, &model.ErrorResponse{
+			Msg: "check not found",
+			Err: errCheckNotFound,
+		})
+	}))
+
+	c := NewClient(url, testTenant.token, http.DefaultClient)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	t.Run("not found", func(t *testing.T) {
+		_, err := c.GetCheck(ctx, testCheckID+2)
+		require.Error(t, err)
+	})
+
+	t.Run("not yours", func(t *testing.T) {
+		_, err := c.GetCheck(ctx, testCheckID+1)
+		require.Error(t, err)
+	})
+
+	t.Run("ok", func(t *testing.T) {
+		actualCheck, err := c.GetCheck(ctx, testCheckID)
+		require.NoError(t, err)
+		require.NotNil(t, actualCheck)
+		found := false
+		for _, check := range checks {
+			check := check
+			if check.Id == actualCheck.Id {
+				require.Equal(t, &check, actualCheck)
+				found = true
+
+				break
+			}
+		}
+		require.True(t, found)
+	})
 }
 
 func TestUpdateCheck(t *testing.T) {

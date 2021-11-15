@@ -460,6 +460,27 @@ func (h *Client) AddCheck(ctx context.Context, check synthetic_monitoring.Check)
 	return &result, nil
 }
 
+// GetCheck returns a single Synthetic Monitoring check identified by
+// the provided ID.
+func (h *Client) GetCheck(ctx context.Context, id int64) (*synthetic_monitoring.Check, error) {
+	if err := h.requireAuthToken(); err != nil {
+		return nil, err
+	}
+
+	resp, err := h.get(ctx, fmt.Sprintf("/check/%d", id), true, nil)
+	if err != nil {
+		return nil, fmt.Errorf("sending check get request: %w", err)
+	}
+
+	var result synthetic_monitoring.Check
+
+	if err := validateResponse("check get request", resp, &result); err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
 // UpdateCheck updates an existing check in the API server.
 //
 // The return value contains the updated check (updated timestamps,
