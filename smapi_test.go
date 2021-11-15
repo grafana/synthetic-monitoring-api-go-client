@@ -21,6 +21,7 @@ import (
 var (
 	errBadRequest                 = errors.New("bad request")
 	errCannotDecodeRequest        = errors.New("cannot decode request")
+	errCheckNotFound              = errors.New("check not found")
 	errInvalidAuthorizationHeader = errors.New("no authorization header")
 	errInvalidMethod              = errors.New("invalid method")
 	errInvalidTenantID            = errors.New("invalid tenantId")
@@ -1124,6 +1125,90 @@ func TestAddCheck(t *testing.T) {
 		"AddCheck mismatch (-want +got)")
 }
 
+func TestGetCheck(t *testing.T) {
+	orgs := orgs()
+	testTenant := orgs.findTenantByOrg(1000)
+	testTenantID := testTenant.id
+	testCheckID := int64(42)
+	checks := []synthetic_monitoring.Check{
+		{
+			Id:       testCheckID,
+			TenantId: testTenantID,
+			Job:      "check-1",
+			Target:   "http://example.org/",
+		},
+		{
+			Id:       testCheckID + 1,
+			TenantId: testTenantID + 1,
+			Job:      "check-2",
+			Target:   "http://example.org/",
+		},
+	}
+
+	url, mux, cleanup := newTestServer(t)
+	defer cleanup()
+	mux.Handle("/api/v1/check/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := requireMethod(w, r, http.MethodGet); err != nil {
+			return
+		}
+
+		if _, err := requireAuth(orgs, w, r, testTenantID); err != nil {
+			return
+		}
+
+		id, err := getID(w, r, "/api/v1/check/")
+		if err != nil {
+			return
+		}
+
+		for _, check := range checks {
+			check := check
+			if check.Id == id && check.TenantId == testTenantID {
+				writeResponse(w, http.StatusOK, &check)
+
+				return
+			}
+		}
+
+		writeResponse(w, http.StatusNotFound, &model.ErrorResponse{
+			Msg: "check not found",
+			Err: errCheckNotFound,
+		})
+	}))
+
+	c := NewClient(url, testTenant.token, http.DefaultClient)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	t.Run("not found", func(t *testing.T) {
+		_, err := c.GetCheck(ctx, testCheckID+2)
+		require.Error(t, err)
+	})
+
+	t.Run("not yours", func(t *testing.T) {
+		_, err := c.GetCheck(ctx, testCheckID+1)
+		require.Error(t, err)
+	})
+
+	t.Run("ok", func(t *testing.T) {
+		actualCheck, err := c.GetCheck(ctx, testCheckID)
+		require.NoError(t, err)
+		require.NotNil(t, actualCheck)
+		found := false
+		for _, check := range checks {
+			check := check
+			if check.Id == actualCheck.Id {
+				require.Equal(t, &check, actualCheck)
+				found = true
+
+				break
+			}
+		}
+		require.True(t, found)
+	})
+}
+
 func TestUpdateCheck(t *testing.T) {
 	orgs := orgs()
 	testTenant := orgs.findTenantByOrg(1000)
@@ -1442,12 +1527,24 @@ func requireMethod(w http.ResponseWriter, r *http.Request, method string) error 
 	return nil
 }
 
-func requireID(w http.ResponseWriter, r *http.Request, expected int64, prefix string) error {
+func getID(w http.ResponseWriter, r *http.Request, prefix string) (int64, error) {
 	str := strings.TrimPrefix(r.URL.Path, prefix)
-	if actual, err := strconv.ParseInt(str, 10, 64); err != nil {
+	id, err := strconv.ParseInt(str, 10, 64)
+	if err != nil {
 		errorResponse(w, http.StatusBadRequest, fmt.Sprintf("invalid ID: %s", str))
 
-		return fmt.Errorf("cannot parse %q as int: %w", str, err)
+		return 0, fmt.Errorf("cannot parse %q as int: %w", str, err)
+	}
+
+	return id, nil
+}
+
+func requireID(w http.ResponseWriter, r *http.Request, expected int64, prefix string) error {
+	if actual, err := getID(w, r, prefix); err != nil {
+		idStr := strings.TrimPrefix(r.URL.Path, prefix)
+		errorResponse(w, http.StatusBadRequest, fmt.Sprintf("invalid ID: %s", idStr))
+
+		return fmt.Errorf("cannot parse %q as int: %w", idStr, err)
 	} else if actual != expected {
 		errorResponse(w, http.StatusBadRequest, fmt.Sprintf("expecting ID %d, got %d ", expected, actual))
 
