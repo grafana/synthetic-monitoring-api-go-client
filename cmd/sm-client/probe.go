@@ -92,6 +92,10 @@ func getProbeCommands() cli.Commands {
 					Name:  "labels",
 					Usage: "new labels for the probe",
 				},
+				&cli.BoolFlag{
+					Name:  "reset-token",
+					Usage: "reset the probe's access token",
+				},
 			},
 		},
 	}
