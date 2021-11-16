@@ -396,6 +396,27 @@ func (h *Client) ResetProbeToken(ctx context.Context, probe synthetic_monitoring
 	return &result.Probe, result.Token, nil
 }
 
+// GetProbe is used to obtain the details about a single existing
+// Synthetic Monitoring probe.
+func (h *Client) GetProbe(ctx context.Context, id int64) (*synthetic_monitoring.Probe, error) {
+	if err := h.requireAuthToken(); err != nil {
+		return nil, err
+	}
+
+	resp, err := h.get(ctx, fmt.Sprintf("/probe/%d", id), true, nil)
+	if err != nil {
+		return nil, fmt.Errorf("sending probe get request: %w", err)
+	}
+
+	var result synthetic_monitoring.Probe
+
+	if err := validateResponse("probe get request", resp, &result); err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
 // ListProbes returns the list of probes accessible to the authenticated
 // tenant.
 func (h *Client) ListProbes(ctx context.Context) ([]synthetic_monitoring.Probe, error) {
@@ -433,6 +454,27 @@ func (h *Client) AddCheck(ctx context.Context, check synthetic_monitoring.Check)
 	var result synthetic_monitoring.Check
 
 	if err := validateResponse("check add request", resp, &result); err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+// GetCheck returns a single Synthetic Monitoring check identified by
+// the provided ID.
+func (h *Client) GetCheck(ctx context.Context, id int64) (*synthetic_monitoring.Check, error) {
+	if err := h.requireAuthToken(); err != nil {
+		return nil, err
+	}
+
+	resp, err := h.get(ctx, fmt.Sprintf("/check/%d", id), true, nil)
+	if err != nil {
+		return nil, fmt.Errorf("sending check get request: %w", err)
+	}
+
+	var result synthetic_monitoring.Check
+
+	if err := validateResponse("check get request", resp, &result); err != nil {
 		return nil, err
 	}
 
@@ -616,10 +658,23 @@ type HTTPError struct {
 	Code   int
 	Status string
 	Action string
+	Api    struct {
+		Msg   string
+		Error string
+	}
 }
 
+// Error allows HTTPError to implement the error interface.
+//
+// The formatting of the error is a little opinionated, as it has to
+// communicate an error from the API if it's there, or an error from the
+// HTTP client.
 func (e *HTTPError) Error() string {
-	return fmt.Sprintf("%s: %s", e.Action, e.Status)
+	if e.Api.Msg != "" || e.Api.Error != "" {
+		return fmt.Sprintf("%s: status=\"%s\", msg=\"%s\", err=\"%s\"", e.Action, e.Status, e.Api.Msg, e.Api.Error)
+	}
+
+	return fmt.Sprintf("%s: status=\"%s\"", e.Action, e.Status)
 }
 
 func defaultHeaders() http.Header {
@@ -631,7 +686,31 @@ func defaultHeaders() http.Header {
 
 func validateResponse(action string, resp *http.Response, result interface{}) error {
 	if resp.StatusCode != http.StatusOK {
-		return &HTTPError{Code: resp.StatusCode, Status: resp.Status, Action: action}
+		respError := HTTPError{Code: resp.StatusCode, Status: resp.Status, Action: action}
+
+		if resp.Body != nil {
+			defer resp.Body.Close()
+
+			dec := json.NewDecoder(resp.Body)
+
+			var apiError struct {
+				Error string `json:"err"`
+				Msg   string `json:"msg"`
+			}
+
+			if err := dec.Decode(&apiError); err != nil {
+				// If there's an error decoding this,
+				// it's not something we can deal with,
+				// so don't add additional annotations.
+				respError.Api.Msg = "cannot decode response"
+				respError.Api.Error = err.Error()
+			} else {
+				respError.Api.Msg = apiError.Msg
+				respError.Api.Error = apiError.Error
+			}
+		}
+
+		return &respError
 	}
 
 	if resp.Body != nil {

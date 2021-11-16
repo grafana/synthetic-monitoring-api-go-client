@@ -65,7 +65,7 @@ else
 	$(GO) mod download
 endif
 	$(GO) mod verify
-	$(GO) mod tidy
+	$(GO) mod tidy -compat=1.17
 
 .PHONY: deps
 deps: deps-go ## Install all dependencies.
@@ -87,6 +87,7 @@ build: build-go ## Build everything.
 
 scripts/go/bin/bra: scripts/go/go.mod
 	$(S) cd scripts/go; \
+		$(GO) mod download && \
 		$(GO) build -o ./bin/bra github.com/unknwon/bra
 
 .PHONY: run
@@ -98,6 +99,7 @@ run: scripts/go/bin/bra ## Build and run web server on filesystem changes.
 ifeq ($(LOCAL_GOTESTSUM),yes)
 $(GOTESTSUM): scripts/go/go.mod
 	$(S) cd scripts/go; \
+		$(GO) mod download && \
 		$(GO) build -o $(GOTESTSUM) gotest.tools/gotestsum
 endif
 
@@ -125,6 +127,7 @@ test: test-go ## Run all tests.
 ifeq ($(LOCAL_GOLANGCI_LINT),yes)
 $(GOLANGCI_LINT): scripts/go/go.mod
 	$(S) cd scripts/go && \
+		$(GO) mod download && \
 		$(GO) build -o $(GOLANGCI_LINT) github.com/golangci/golangci-lint/cmd/golangci-lint
 endif
 
@@ -138,6 +141,7 @@ golangci-lint: $(GOLANGCI_LINT)
 
 scripts/go/bin/gosec: scripts/go/go.mod
 	$(S) cd scripts/go && \
+		$(GO) mod download && \
 		$(GO) build -o ./bin/gosec github.com/securego/gosec/cmd/gosec
 
 # TODO recheck the rules and leave only necessary exclusions
@@ -202,7 +206,7 @@ docker-push:  docker
 
 .PHONY: drone
 drone:
-	drone jsonnet --stream --source .drone/drone.jsonnet --target .drone/drone.yml
+	drone jsonnet --stream --source .drone/drone.jsonnet --target .drone/drone.yml --format
 	drone lint .drone/drone.yml
 	drone sign --save grafana/synthetic-monitoring-api-go-client .drone/drone.yml
 
