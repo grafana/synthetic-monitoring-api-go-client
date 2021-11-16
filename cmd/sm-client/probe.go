@@ -49,6 +49,18 @@ func getProbeCommands() cli.Commands {
 			Action: addProbe,
 		},
 		&cli.Command{
+			Name:   "get",
+			Usage:  "get a Synthetic Monitoring probe",
+			Action: getProbe,
+			Flags: []cli.Flag{
+				&cli.Int64Flag{
+					Name:     "id",
+					Usage:    "id of the probe to get",
+					Required: true,
+				},
+			},
+		},
+		&cli.Command{
 			Name:   "update",
 			Usage:  "update a Synthetic Monitoring probe",
 			Action: updateProbe,
@@ -151,6 +163,41 @@ func addProbe(c *cli.Context) error {
 	fmt.Fprintf(w, "%s:\t%s\n", "created", time.Unix(int64(newProbe.Created), 0))
 	fmt.Fprintf(w, "%s:\t%s\n", "modified", time.Unix(int64(newProbe.Modified), 0))
 	fmt.Fprintf(w, "%s:\t%s\n", "token", string(newProbeToken))
+
+	if err := w.Flush(); err != nil {
+		return fmt.Errorf("flushing output: %w", err)
+	}
+
+	return nil
+}
+
+func getProbe(c *cli.Context) error {
+	smClient, cleanup, err := newClient(c)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = cleanup(c.Context) }()
+
+	probe, err := smClient.GetProbe(c.Context, c.Int64("id"))
+	if err != nil {
+		return fmt.Errorf("getting probe: %w", err)
+	}
+
+	if c.Bool("json") {
+		if done, err := outputJson(c, probe, "marshaling probe"); err != nil || done {
+			return err
+		}
+	}
+
+	w := newTabWriter(os.Stdout)
+	fmt.Fprintf(w, "%s:\t%s\n", "name", probe.Name)
+	fmt.Fprintf(w, "%s:\t%s\n", "region", probe.Region)
+	fmt.Fprintf(w, "%s:\t%f\n", "latitude", probe.Latitude)
+	fmt.Fprintf(w, "%s:\t%f\n", "longitude", probe.Longitude)
+	fmt.Fprintf(w, "%s:\t%t\n", "deprecated", probe.Deprecated)
+	fmt.Fprintf(w, "%s:\t%t\n", "public", probe.Public)
+	fmt.Fprintf(w, "%s:\t%s\n", "created", formatSMTime(probe.Created))
+	fmt.Fprintf(w, "%s:\t%s\n", "modified", formatSMTime(probe.Modified))
 
 	if err := w.Flush(); err != nil {
 		return fmt.Errorf("flushing output: %w", err)

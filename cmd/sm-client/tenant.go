@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring"
 	smapi "github.com/grafana/synthetic-monitoring-api-go-client"
@@ -137,8 +136,8 @@ func getTenant(c *cli.Context) error {
 	}
 	fmt.Fprintf(w, "Metrics remote:\t%s, %s, %s\n", tenant.MetricsRemote.Name, tenant.MetricsRemote.Username, tenant.MetricsRemote.Url)
 	fmt.Fprintf(w, "Events remote:\t%s, %s, %s\n", tenant.EventsRemote.Name, tenant.EventsRemote.Username, tenant.EventsRemote.Url)
-	fmt.Fprintf(w, "Created:\t%s\n", time.Unix(int64(tenant.Created), 0).Format(time.RFC3339))
-	fmt.Fprintf(w, "Modified:\t%s\n", time.Unix(int64(tenant.Modified), 0).Format(time.RFC3339))
+	fmt.Fprintf(w, "Created:\t%s\n", formatSMTime(tenant.Created))
+	fmt.Fprintf(w, "Modified:\t%s\n", formatSMTime(tenant.Modified))
 
 	if err := w.Flush(); err != nil {
 		return fmt.Errorf("flushing output: %w", err)
