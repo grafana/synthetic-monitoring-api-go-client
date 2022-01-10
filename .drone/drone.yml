@@ -13,6 +13,12 @@ steps:
   commands:
   - echo $DRONE_RUNNER_NAME
 
+- name: deps
+  image: golang:1.17
+  commands:
+  - make deps
+  - ./scripts/enforce-clean
+
 - name: lint
   image: golang:1.17
   commands:
@@ -40,6 +46,6 @@ trigger:
 
 ---
 kind: signature
-hmac: e634ab72aba3229c8ce2e31eeabf3f64ddb8b6a1b7fc85ceca64a8c58ab172a8
+hmac: 1187b75687934f3349927114c49e727c248b4302e3b18413e2318bf58a1b2445
 
 ...
