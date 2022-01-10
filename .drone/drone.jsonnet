@@ -33,6 +33,11 @@ local prOnly = {
 
 [
   pipeline('build', [
+    step('deps', [
+      'make deps',
+      './scripts/enforce-clean',
+    ]),
+
     step('lint', ['make lint']),
 
     step('test', ['make test']),
