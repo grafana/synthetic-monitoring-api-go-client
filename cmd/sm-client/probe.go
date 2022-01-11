@@ -98,6 +98,18 @@ func getProbeCommands() cli.Commands {
 				},
 			},
 		},
+		&cli.Command{
+			Name:   "delete",
+			Usage:  "delete one or more Synthetic Monitoring probes",
+			Action: deleteProbe,
+			Flags: []cli.Flag{
+				&cli.Int64SliceFlag{
+					Name:     "id",
+					Usage:    "id of the probe to delete",
+					Required: true,
+				},
+			},
+		},
 	}
 }
 
@@ -302,6 +314,27 @@ func updateProbe(c *cli.Context) error {
 
 	if err := w.Flush(); err != nil {
 		return fmt.Errorf("flushing output: %w", err)
+	}
+
+	return nil
+}
+
+func deleteProbe(c *cli.Context) error {
+	smClient, cleanup, err := newClient(c)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = cleanup(c.Context) }()
+
+	for _, id := range c.Int64Slice("id") {
+		err := smClient.DeleteProbe(c.Context, id)
+		if err != nil {
+			return fmt.Errorf("deleting probe %d: %w", id, err)
+		}
+	}
+
+	if done, err := outputJson(c, struct{}{}, "marshaling result"); err != nil || done {
+		return err
 	}
 
 	return nil
