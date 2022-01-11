@@ -249,6 +249,18 @@ func getCheckCommands() cli.Commands {
 				},
 			},
 		},
+		&cli.Command{
+			Name:   "delete",
+			Usage:  "delete one or more Synthetic Monitoring checks",
+			Action: checkDelete,
+			Flags: []cli.Flag{
+				&cli.Int64SliceFlag{
+					Name:     "id",
+					Usage:    "id of the check to delete",
+					Required: true,
+				},
+			},
+		},
 	}
 
 	for _, cmd := range commands {
@@ -618,6 +630,27 @@ func checkAddTcp(c *cli.Context) error {
 	}
 
 	return showCheck(os.Stdout, newCheck)
+}
+
+func checkDelete(c *cli.Context) error {
+	smClient, cleanup, err := newClient(c)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = cleanup(c.Context) }()
+
+	for _, id := range c.Int64Slice("id") {
+		err := smClient.DeleteCheck(c.Context, id)
+		if err != nil {
+			return fmt.Errorf("deleting check %d: %w", id, err)
+		}
+	}
+
+	if done, err := outputJson(c, struct{}{}, "marshaling result"); err != nil || done {
+		return err
+	}
+
+	return nil
 }
 
 func showCheck(output io.Writer, check *sm.Check) error {
