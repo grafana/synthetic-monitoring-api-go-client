@@ -12,6 +12,10 @@ Based on the region of your Grafana Cloud stack, you need to use a different API
 
 Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api.grafana.net](https://synthetic-monitoring-api.grafana.net)
 
+**United States (Azure) Region**
+
+Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-us-central2.grafana.net](https://synthetic-monitoring-api-us-central2.grafana.net)
+
 **Europe Region**
 
 Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-eu-west.grafana.net](https://synthetic-monitoring-api-eu-west.grafana.net)
