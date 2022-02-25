@@ -20,6 +20,10 @@ Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-us-centr
 
 Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-eu-west.grafana.net](https://synthetic-monitoring-api-eu-west.grafana.net)
 
+**United Kingdom Region**
+
+Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-gb-south.grafana.net](https://synthetic-monitoring-api-gb-south.grafana.net)
+
 **Europe (Azure) Region**
 
 Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-eu-west-1.grafana.net](https://synthetic-monitoring-api-eu-west-1.grafana.net)
