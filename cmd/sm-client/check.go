@@ -86,8 +86,9 @@ func getCheckCommands() cli.Commands {
 							Value: newIpVersion(sm.IpVersion_Any),
 						},
 						&cli.BoolFlag{
-							Name:  "dont-fragment",
-							Usage: "set the DF flag for the ICMP packet",
+							Name:   "dont-fragment",
+							Usage:  "set the DF flag for the ICMP packet (deprecated)",
+							Hidden: true,
 						},
 					},
 				},
