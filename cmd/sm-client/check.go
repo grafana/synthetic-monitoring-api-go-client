@@ -90,6 +90,11 @@ func getCheckCommands() cli.Commands {
 							Usage:  "set the DF flag for the ICMP packet (deprecated)",
 							Hidden: true,
 						},
+						&cli.Int64Flag{
+							Name:  "packet-count",
+							Usage: fmt.Sprintf("number of packets to send (1 to %d)", sm.MaxPingPackets),
+							Value: 1,
+						},
 					},
 				},
 				{
@@ -361,6 +366,7 @@ func checkAddPing(c *cli.Context) error {
 			Ping: &sm.PingSettings{
 				IpVersion:    ipVersion,
 				DontFragment: c.Bool("dont-fragment"),
+				PacketCount:  c.Int64("packet-count"),
 			},
 		},
 	}
