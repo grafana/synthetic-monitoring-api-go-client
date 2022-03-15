@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/google/go-cmp v0.5.7
-	github.com/grafana/synthetic-monitoring-agent v0.7.0
+	github.com/grafana/synthetic-monitoring-agent v0.7.1
 	github.com/rs/zerolog v1.26.1
 	github.com/stretchr/testify v1.7.0
 	github.com/urfave/cli/v2 v2.3.0
