@@ -7,7 +7,7 @@ require (
 	github.com/grafana/synthetic-monitoring-agent v0.8.2
 	github.com/rs/zerolog v1.26.1
 	github.com/stretchr/testify v1.7.1
-	github.com/urfave/cli/v2 v2.5.0
+	github.com/urfave/cli/v2 v2.5.1
 )
 
 require (
