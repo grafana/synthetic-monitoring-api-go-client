@@ -761,6 +761,45 @@ Description:
 
 List all the checks for the tenant associated with the authorization token.
 
+### /api/v1/check/:id:
+
+Method: GET
+
+Authorization required: yes
+
+Response:
+```
+{
+    "id": <int>,
+    "tenantId": <int>,
+    "target": <string>,
+    "job": <string>,
+    "frequency": <int>,
+    "timeout": <int>,
+    "enabled": <boolean>,
+    "alertSensitivity": <string>,
+    "basicMetricsOnly": <boolean>,    
+    "probes": [
+      <int>,
+      ...
+    ],
+    "labels": [
+      {
+        "name": <string>,
+        "value": <string>
+      },
+      ...
+    ],
+    "settings": <CheckSettings>,
+    "created": <timestamp>,
+    "modified": <timestamp>
+}
+```
+
+Description:
+
+Get a specific check,  that matches the `id` supplied in the URL parameter.
+
 ## Probes
 
 ### /api/v1/probe/add
