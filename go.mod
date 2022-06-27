@@ -6,7 +6,7 @@ require (
 	github.com/google/go-cmp v0.5.8
 	github.com/grafana/synthetic-monitoring-agent v0.9.3
 	github.com/rs/zerolog v1.27.0
-	github.com/stretchr/testify v1.7.4
+	github.com/stretchr/testify v1.7.5
 	github.com/urfave/cli/v2 v2.10.2
 )
 
