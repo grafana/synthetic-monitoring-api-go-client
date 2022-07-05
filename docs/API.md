@@ -8,6 +8,26 @@ points return results formatted as JSON objects.
 
 Based on the region of your Grafana Cloud stack, you need to use a different API URL
 
+**Australia Region**
+
+Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-au-southeast.grafana.net](https://synthetic-monitoring-api-au-southeast.grafana.net)
+
+**Asia Pacific region**
+
+Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-ap-southeast-0.grafana.net](https://synthetic-monitoring-api-ap-southeast-0.grafana.net)
+
+**Europe Region**
+
+Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-eu-west.grafana.net](https://synthetic-monitoring-api-eu-west.grafana.net)
+
+**Europe (Azure) Region**
+
+Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-eu-west-1.grafana.net](https://synthetic-monitoring-api-eu-west-1.grafana.net)
+
+**United Kingdom Region**
+
+Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-gb-south.grafana.net](https://synthetic-monitoring-api-gb-south.grafana.net)
+
 **United States Region**
 
 Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api.grafana.net](https://synthetic-monitoring-api.grafana.net)
@@ -16,28 +36,10 @@ Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api.grafana.
 
 Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-us-central2.grafana.net](https://synthetic-monitoring-api-us-central2.grafana.net)
 
-**Europe Region**
-
-Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-eu-west.grafana.net](https://synthetic-monitoring-api-eu-west.grafana.net)
-
-**United Kingdom Region**
-
-Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-gb-south.grafana.net](https://synthetic-monitoring-api-gb-south.grafana.net)
-
-**Europe (Azure) Region**
-
-Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-eu-west-1.grafana.net](https://synthetic-monitoring-api-eu-west-1.grafana.net)
-
-**Australia Region**
-
-Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-au-southeast.grafana.net](https://synthetic-monitoring-api-au-southeast.grafana.net)
-
-
-If you are unsure about the region of your stack, check **Synthetic Monitoring -> Config** page. 
-API URL for your Grafana Cloud instance will be listed under **Backend address** 
+If you are unsure about the region of your stack, check **Synthetic Monitoring -> Config** page.
+The API URL for your Grafana Cloud instance will be listed under **Backend address**
 
 > NOTE: You need to be `Admin` in Grafana to access Synthetic Monitoring config page
-
 
 ## Authentication
 
