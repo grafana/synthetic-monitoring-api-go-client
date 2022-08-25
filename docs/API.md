@@ -6,38 +6,9 @@ points return results formatted as JSON objects.
 
 ## API URL
 
-Based on the region of your Grafana Cloud stack, you need to use a different API URL
-
-**United States Region**
-
-Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api.grafana.net](https://synthetic-monitoring-api.grafana.net)
-
-**United States (Azure) Region**
-
-Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-us-central2.grafana.net](https://synthetic-monitoring-api-us-central2.grafana.net)
-
-**Europe Region**
-
-Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-eu-west.grafana.net](https://synthetic-monitoring-api-eu-west.grafana.net)
-
-**United Kingdom Region**
-
-Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-gb-south.grafana.net](https://synthetic-monitoring-api-gb-south.grafana.net)
-
-**Europe (Azure) Region**
-
-Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-eu-west-1.grafana.net](https://synthetic-monitoring-api-eu-west-1.grafana.net)
-
-**Australia Region**
-
-Synthetic Monitoring API is hosted at [https://synthetic-monitoring-api-au-southeast.grafana.net](https://synthetic-monitoring-api-au-southeast.grafana.net)
-
-
-If you are unsure about the region of your stack, check **Synthetic Monitoring -> Config** page. 
-API URL for your Grafana Cloud instance will be listed under **Backend address** 
-
-> NOTE: You need to be `Admin` in Grafana to access Synthetic Monitoring config page
-
+Please see the [online
+documentation](https://grafana.com/docs/grafana-cloud/synthetic-monitoring/private-probes/#probe-api-server-url)
+for the URL of the API server corresponding to the region of your Grafana Cloud stack.
 
 ## Authentication
 
