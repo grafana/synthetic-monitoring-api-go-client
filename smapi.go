@@ -122,14 +122,14 @@ func (h *Client) Install(ctx context.Context, stackID, metricsInstanceID, logsIn
 	headers := defaultHeaders()
 	headers.Set("Authorization", "Bearer "+publisherToken)
 
-	resp, err := h.post(ctx, "/register/install", false, headers, body)
+	resp, err := h.Post(ctx, "/register/install", false, headers, body)
 	if err != nil {
 		return nil, fmt.Errorf("sending install request: %w", err)
 	}
 
 	var result model.RegistrationInstallResponse
 
-	if err := validateResponse("registration install request", resp, &result); err != nil {
+	if err := ValidateResponse("registration install request", resp, &result); err != nil {
 		return nil, err
 	}
 
@@ -154,14 +154,14 @@ func (h *Client) Init(ctx context.Context, adminToken string) (*model.Registrati
 		APIToken: adminToken,
 	}
 
-	resp, err := h.postJSON(ctx, "/register/init", false, &req)
+	resp, err := h.PostJSON(ctx, "/register/init", false, &req)
 	if err != nil {
 		return nil, fmt.Errorf("sending init request: %w", err)
 	}
 
 	var result model.RegistrationInitResponse
 
-	if err := validateResponse("registration init request", resp, &result); err != nil {
+	if err := ValidateResponse("registration init request", resp, &result); err != nil {
 		return nil, err
 	}
 
@@ -188,14 +188,14 @@ func (h *Client) Save(ctx context.Context, adminToken string, metricInstanceID, 
 		LogsInstanceID:    logInstanceID,
 	}
 
-	resp, err := h.postJSON(ctx, "/register/save", true, &saveReq)
+	resp, err := h.PostJSON(ctx, "/register/save", true, &saveReq)
 	if err != nil {
 		return fmt.Errorf("sending save request: %w", err)
 	}
 
 	var result struct{}
 
-	if err := validateResponse("registration save request", resp, &result); err != nil {
+	if err := ValidateResponse("registration save request", resp, &result); err != nil {
 		return err
 	}
 
@@ -212,14 +212,14 @@ func (h *Client) CreateToken(ctx context.Context) (string, error) {
 		return "", err
 	}
 
-	resp, err := h.postJSON(ctx, "/token/create", true, nil)
+	resp, err := h.PostJSON(ctx, "/token/create", true, nil)
 	if err != nil {
 		return "", fmt.Errorf("creating token: %w", err)
 	}
 
 	var result model.TokenCreateResponse
 
-	if err := validateResponse("token create request", resp, &result); err != nil {
+	if err := ValidateResponse("token create request", resp, &result); err != nil {
 		return "", err
 	}
 
@@ -236,14 +236,14 @@ func (h *Client) DeleteToken(ctx context.Context) error {
 		return err
 	}
 
-	resp, err := h.delete(ctx, fmt.Sprintf("%s%s", h.baseURL, "/token/delete"), true)
+	resp, err := h.Delete(ctx, fmt.Sprintf("%s%s", h.baseURL, "/token/delete"), true)
 	if err != nil {
 		return fmt.Errorf("deleting token: %w", err)
 	}
 
 	var result model.TokenDeleteResponse
 
-	if err := validateResponse("token delete request", resp, &result); err != nil {
+	if err := ValidateResponse("token delete request", resp, &result); err != nil {
 		return err
 	}
 
@@ -261,14 +261,14 @@ func (h *Client) RefreshToken(ctx context.Context) error {
 		return err
 	}
 
-	resp, err := h.postJSON(ctx, "/token/refresh", true, nil)
+	resp, err := h.PostJSON(ctx, "/token/refresh", true, nil)
 	if err != nil {
 		return fmt.Errorf("refreshing token: %w", err)
 	}
 
 	var result model.TokenRefreshResponse
 
-	if err := validateResponse("token refresh request", resp, &result); err != nil {
+	if err := ValidateResponse("token refresh request", resp, &result); err != nil {
 		return err
 	}
 
@@ -290,14 +290,14 @@ func (h *Client) ValidateToken(ctx context.Context) error {
 		return err
 	}
 
-	resp, err := h.postJSON(ctx, "/token/validate", true, nil)
+	resp, err := h.PostJSON(ctx, "/token/validate", true, nil)
 	if err != nil {
 		return fmt.Errorf("validating token: %w", err)
 	}
 
 	var result model.TokenValidateResponse
 
-	if err := validateResponse("token validate request", resp, &result); err != nil {
+	if err := ValidateResponse("token validate request", resp, &result); err != nil {
 		return err
 	}
 
@@ -318,14 +318,14 @@ func (h *Client) AddProbe(ctx context.Context, probe synthetic_monitoring.Probe)
 		return nil, nil, err
 	}
 
-	resp, err := h.postJSON(ctx, "/probe/add", true, &probe)
+	resp, err := h.PostJSON(ctx, "/probe/add", true, &probe)
 	if err != nil {
 		return nil, nil, fmt.Errorf("adding probe: %w", err)
 	}
 
 	var result model.ProbeAddResponse
 
-	if err := validateResponse("probe add request", resp, &result); err != nil {
+	if err := ValidateResponse("probe add request", resp, &result); err != nil {
 		return nil, nil, err
 	}
 
@@ -338,14 +338,14 @@ func (h *Client) DeleteProbe(ctx context.Context, id int64) error {
 		return err
 	}
 
-	resp, err := h.delete(ctx, fmt.Sprintf("%s%s/%d", h.baseURL, "/probe/delete", id), true)
+	resp, err := h.Delete(ctx, fmt.Sprintf("%s%s/%d", h.baseURL, "/probe/delete", id), true)
 	if err != nil {
 		return fmt.Errorf("sending probe delete request: %w", err)
 	}
 
 	var result model.ProbeDeleteResponse
 
-	if err := validateResponse("probe delete request", resp, &result); err != nil {
+	if err := ValidateResponse("probe delete request", resp, &result); err != nil {
 		return err
 	}
 
@@ -362,14 +362,14 @@ func (h *Client) UpdateProbe(ctx context.Context, probe synthetic_monitoring.Pro
 		return nil, err
 	}
 
-	resp, err := h.postJSON(ctx, "/probe/update", true, &probe)
+	resp, err := h.PostJSON(ctx, "/probe/update", true, &probe)
 	if err != nil {
 		return nil, fmt.Errorf("sending probe update request: %w", err)
 	}
 
 	var result model.ProbeUpdateResponse
 
-	if err := validateResponse("probe update request", resp, &result); err != nil {
+	if err := ValidateResponse("probe update request", resp, &result); err != nil {
 		return nil, err
 	}
 
@@ -382,14 +382,14 @@ func (h *Client) ResetProbeToken(ctx context.Context, probe synthetic_monitoring
 		return nil, nil, err
 	}
 
-	resp, err := h.postJSON(ctx, "/probe/update?reset-token", true, &probe)
+	resp, err := h.PostJSON(ctx, "/probe/update?reset-token", true, &probe)
 	if err != nil {
 		return nil, nil, fmt.Errorf("sending probe update request: %w", err)
 	}
 
 	var result model.ProbeUpdateResponse
 
-	if err := validateResponse("probe update request", resp, &result); err != nil {
+	if err := ValidateResponse("probe update request", resp, &result); err != nil {
 		return nil, nil, err
 	}
 
@@ -403,14 +403,14 @@ func (h *Client) GetProbe(ctx context.Context, id int64) (*synthetic_monitoring.
 		return nil, err
 	}
 
-	resp, err := h.get(ctx, fmt.Sprintf("/probe/%d", id), true, nil)
+	resp, err := h.Get(ctx, fmt.Sprintf("/probe/%d", id), true, nil)
 	if err != nil {
 		return nil, fmt.Errorf("sending probe get request: %w", err)
 	}
 
 	var result synthetic_monitoring.Probe
 
-	if err := validateResponse("probe get request", resp, &result); err != nil {
+	if err := ValidateResponse("probe get request", resp, &result); err != nil {
 		return nil, err
 	}
 
@@ -424,14 +424,14 @@ func (h *Client) ListProbes(ctx context.Context) ([]synthetic_monitoring.Probe, 
 		return nil, err
 	}
 
-	resp, err := h.get(ctx, "/probe/list", true, nil)
+	resp, err := h.Get(ctx, "/probe/list", true, nil)
 	if err != nil {
 		return nil, fmt.Errorf("sending probe list request: %w", err)
 	}
 
 	var result []synthetic_monitoring.Probe
 
-	if err := validateResponse("probe list request", resp, &result); err != nil {
+	if err := ValidateResponse("probe list request", resp, &result); err != nil {
 		return nil, err
 	}
 
@@ -446,14 +446,14 @@ func (h *Client) AddCheck(ctx context.Context, check synthetic_monitoring.Check)
 		return nil, err
 	}
 
-	resp, err := h.postJSON(ctx, "/check/add", true, &check)
+	resp, err := h.PostJSON(ctx, "/check/add", true, &check)
 	if err != nil {
 		return nil, fmt.Errorf("sending check add request: %w", err)
 	}
 
 	var result synthetic_monitoring.Check
 
-	if err := validateResponse("check add request", resp, &result); err != nil {
+	if err := ValidateResponse("check add request", resp, &result); err != nil {
 		return nil, err
 	}
 
@@ -467,14 +467,14 @@ func (h *Client) GetCheck(ctx context.Context, id int64) (*synthetic_monitoring.
 		return nil, err
 	}
 
-	resp, err := h.get(ctx, fmt.Sprintf("/check/%d", id), true, nil)
+	resp, err := h.Get(ctx, fmt.Sprintf("/check/%d", id), true, nil)
 	if err != nil {
 		return nil, fmt.Errorf("sending check get request: %w", err)
 	}
 
 	var result synthetic_monitoring.Check
 
-	if err := validateResponse("check get request", resp, &result); err != nil {
+	if err := ValidateResponse("check get request", resp, &result); err != nil {
 		return nil, err
 	}
 
@@ -490,14 +490,14 @@ func (h *Client) UpdateCheck(ctx context.Context, check synthetic_monitoring.Che
 		return nil, err
 	}
 
-	resp, err := h.postJSON(ctx, "/check/update", true, &check)
+	resp, err := h.PostJSON(ctx, "/check/update", true, &check)
 	if err != nil {
 		return nil, fmt.Errorf("sending check update request: %w", err)
 	}
 
 	var result synthetic_monitoring.Check
 
-	if err := validateResponse("check update request", resp, &result); err != nil {
+	if err := ValidateResponse("check update request", resp, &result); err != nil {
 		return nil, err
 	}
 
@@ -511,14 +511,14 @@ func (h *Client) DeleteCheck(ctx context.Context, id int64) error {
 		return err
 	}
 
-	resp, err := h.delete(ctx, fmt.Sprintf("%s%s/%d", h.baseURL, "/check/delete", id), true)
+	resp, err := h.Delete(ctx, fmt.Sprintf("%s%s/%d", h.baseURL, "/check/delete", id), true)
 	if err != nil {
 		return fmt.Errorf("sending check delete request: %w", err)
 	}
 
 	var result model.CheckDeleteResponse
 
-	if err := validateResponse("check delete request", resp, &result); err != nil {
+	if err := ValidateResponse("check delete request", resp, &result); err != nil {
 		return err
 	}
 
@@ -532,14 +532,14 @@ func (h *Client) ListChecks(ctx context.Context) ([]synthetic_monitoring.Check, 
 		return nil, err
 	}
 
-	resp, err := h.get(ctx, "/check/list", true, nil)
+	resp, err := h.Get(ctx, "/check/list", true, nil)
 	if err != nil {
 		return nil, fmt.Errorf("sending check list request: %w", err)
 	}
 
 	var result []synthetic_monitoring.Check
 
-	if err := validateResponse("check list request", resp, &result); err != nil {
+	if err := ValidateResponse("check list request", resp, &result); err != nil {
 		return nil, err
 	}
 
@@ -553,14 +553,14 @@ func (h *Client) GetTenant(ctx context.Context) (*synthetic_monitoring.Tenant, e
 		return nil, err
 	}
 
-	resp, err := h.get(ctx, "/tenant", true, nil)
+	resp, err := h.Get(ctx, "/tenant", true, nil)
 	if err != nil {
 		return nil, fmt.Errorf("sending get tenant request: %w", err)
 	}
 
 	var result synthetic_monitoring.Tenant
 
-	if err := validateResponse("get tenant request", resp, &result); err != nil {
+	if err := ValidateResponse("get tenant request", resp, &result); err != nil {
 		return nil, err
 	}
 
@@ -575,14 +575,14 @@ func (h *Client) UpdateTenant(ctx context.Context, tenant synthetic_monitoring.T
 		return nil, err
 	}
 
-	resp, err := h.postJSON(ctx, "/tenant/update", true, &tenant)
+	resp, err := h.PostJSON(ctx, "/tenant/update", true, &tenant)
 	if err != nil {
 		return nil, fmt.Errorf("sending tenant update request: %w", err)
 	}
 
 	var result synthetic_monitoring.Tenant
 
-	if err := validateResponse("tenant update request", resp, &result); err != nil {
+	if err := ValidateResponse("tenant update request", resp, &result); err != nil {
 		return nil, err
 	}
 
@@ -622,15 +622,35 @@ func (h *Client) do(ctx context.Context, url, method string, auth bool, headers 
 	return resp, nil
 }
 
-func (h *Client) get(ctx context.Context, url string, auth bool, headers http.Header) (*http.Response, error) {
+// Get is a utility method to send a GET request to the SM API.
+//
+// The `url` argument specifies the additional URL path of the request (minus
+// the base, which is part of the client). `auth` specifies whether or not to
+// include authorization headers. `headers` specifies any additional headers
+// that need to be included with the request.
+func (h *Client) Get(ctx context.Context, url string, auth bool, headers http.Header) (*http.Response, error) {
 	return h.do(ctx, h.baseURL+url, http.MethodGet, auth, headers, nil)
 }
 
-func (h *Client) post(ctx context.Context, url string, auth bool, headers http.Header, body io.Reader) (*http.Response, error) {
+// Post is a utility method to send a POST request to the SM API.
+//
+// The `url` argument specifies the additional URL path of the request (minus
+// the base, which is part of the client). `auth` specifies whether or not to
+// include authorization headers. `headers` specifies any additional headers
+// that need to be included with the request. `body` is the body sent with the
+// POST request.
+func (h *Client) Post(ctx context.Context, url string, auth bool, headers http.Header, body io.Reader) (*http.Response, error) {
 	return h.do(ctx, h.baseURL+url, http.MethodPost, auth, headers, body)
 }
 
-func (h *Client) postJSON(ctx context.Context, url string, auth bool, req interface{}) (*http.Response, error) {
+// PostJSON is a utility method to send a POST request to the SM API with a
+// body specified by the `req` argument encoded as JSON.
+//
+// The `url` argument specifies the additional URL path of the request (minus
+// the base, which is part of the client). `auth` specifies whether or not to
+// include authorization headers. `headers` specifies any additional headers
+// that need to be included with the request.
+func (h *Client) PostJSON(ctx context.Context, url string, auth bool, req interface{}) (*http.Response, error) {
 	var body bytes.Buffer
 
 	var headers http.Header
@@ -642,10 +662,16 @@ func (h *Client) postJSON(ctx context.Context, url string, auth bool, req interf
 		}
 	}
 
-	return h.post(ctx, url, auth, headers, &body)
+	return h.Post(ctx, url, auth, headers, &body)
 }
 
-func (h *Client) delete(ctx context.Context, url string, auth bool) (*http.Response, error) {
+// Delete is a utility method to send a DELETE request to the SM API.
+//
+// The `url` argument specifies the additional URL path of the request (minus
+// the base, which is part of the client). `auth` specifies whether or not to
+// include authorization headers. `headers` specifies any additional headers
+// that need to be included with the request.
+func (h *Client) Delete(ctx context.Context, url string, auth bool) (*http.Response, error) {
 	return h.do(ctx, url, http.MethodDelete, auth, nil, nil)
 }
 
@@ -684,7 +710,15 @@ func defaultHeaders() http.Header {
 	return headers
 }
 
-func validateResponse(action string, resp *http.Response, result interface{}) error {
+// ValidateResponse handles responses from the SM API.
+//
+// If the status code of the request is not 200, it is expected that there's an
+// error included with the response. This function will decode that response
+// and return in the form of an HTTPError.
+//
+// In the case of success, this function attempts to decode the response as a
+// JSON object and storing it the `result` argument.
+func ValidateResponse(action string, resp *http.Response, result interface{}) error {
 	if resp.StatusCode != http.StatusOK {
 		respError := HTTPError{Code: resp.StatusCode, Status: resp.Status, Action: action}
 
