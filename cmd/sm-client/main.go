@@ -4,16 +4,32 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"text/tabwriter"
 
 	smapi "github.com/grafana/synthetic-monitoring-api-go-client"
+	smCli "github.com/grafana/synthetic-monitoring-api-go-client/cli"
 	"github.com/urfave/cli/v2"
 )
 
 func main() {
+	checksClient := smCli.ChecksClient{
+		ClientBuilder:     newClient,
+		JsonWriterBuilder: newJsonWriter,
+		TabWriterBuilder:  newTabWriter,
+	}
+	probesClient := smCli.ProbesClient{
+		ClientBuilder:     newClient,
+		JsonWriterBuilder: newJsonWriter,
+		TabWriterBuilder:  newTabWriter,
+	}
+	tenantsClient := smCli.TenantsClient{
+		ClientBuilder:     newClient,
+		JsonWriterBuilder: newJsonWriter,
+		TabWriterBuilder:  newTabWriter,
+	}
+
 	app := &cli.App{
 		Name:  "sm-client",
 		Usage: "Make requests to Synthetic Monitoring API",
@@ -23,19 +39,19 @@ func main() {
 				Name:        "tenant",
 				Usage:       "tenant actions",
 				Aliases:     []string{"tenants"},
-				Subcommands: getTenantCommands(),
+				Subcommands: smCli.GetTenantCommands(tenantsClient),
 			},
 			&cli.Command{
 				Name:        "probe",
 				Usage:       "probe actions",
 				Aliases:     []string{"probes"},
-				Subcommands: getProbeCommands(),
+				Subcommands: smCli.GetProbeCommands(probesClient),
 			},
 			&cli.Command{
 				Name:        "check",
 				Usage:       "check actions",
 				Aliases:     []string{"checks"},
-				Subcommands: getCheckCommands(),
+				Subcommands: smCli.GetCheckCommands(checksClient),
 			},
 		},
 	}
@@ -109,47 +125,26 @@ func newClient(c *cli.Context) (*smapi.Client, func(context.Context) error, erro
 	return smClient, smClient.DeleteToken, nil
 }
 
-func readJsonArg(arg string, dst interface{}) error {
-	var buf []byte
-
-	if len(arg) > 0 && arg[0] == '@' {
-		fh, err := os.Open(arg[1:])
-		if err != nil {
-			return fmt.Errorf("opening input: %w", err)
-		}
-		defer func() { _ = fh.Close() }()
-
-		buf, err = io.ReadAll(fh)
-		if err != nil {
-			return fmt.Errorf("reading input: %w", err)
-		}
-	} else {
-		buf = []byte(arg)
-	}
-
-	if err := json.Unmarshal(buf, dst); err != nil {
-		return fmt.Errorf("unmarshaling JSON input: %w", err)
-	}
-
-	return nil
-}
-
-func newTabWriter(w io.Writer) *tabwriter.Writer {
+func newTabWriter(ctx *cli.Context) smCli.WriteFlusher {
 	const padding = 2
 
-	return tabwriter.NewWriter(w, 0, 0, padding, ' ', 0)
+	return tabwriter.NewWriter(ctx.App.Writer, 0, 0, padding, ' ', 0)
 }
 
-func outputJson(c *cli.Context, v interface{}, errMsg string) (bool, error) {
-	if !c.Bool("json") {
-		return false, nil
+func newJsonWriter(ctx *cli.Context) func(interface{}, string) (bool, error) {
+	if !ctx.Bool("json") {
+		return func(interface{}, string) (bool, error) {
+			return false, nil
+		}
 	}
 
-	enc := json.NewEncoder(c.App.Writer)
+	return func(value interface{}, errMsg string) (bool, error) {
+		enc := json.NewEncoder(ctx.App.Writer)
 
-	if err := enc.Encode(v); err != nil {
-		return true, fmt.Errorf("%s: %w", errMsg, err)
+		if err := enc.Encode(value); err != nil {
+			return true, fmt.Errorf("%s: %w", errMsg, err)
+		}
+
+		return true, nil
 	}
-
-	return true, nil
 }
