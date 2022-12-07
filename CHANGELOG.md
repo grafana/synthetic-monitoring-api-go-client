@@ -2,6 +2,9 @@
 ## [Unreleased]
 
 
+<a name="v0.6.4"></a>
+## [v0.6.4] - 2022-12-07
+
 <a name="v0.6.3"></a>
 ## [v0.6.3] - 2022-09-21
 
@@ -68,7 +71,8 @@
 <a name="v0.0.0"></a>
 ## v0.0.0 - 2021-06-22
 
-[Unreleased]: https://github.com/grafana/synthetic-monitoring-agent/compare/v0.6.3...HEAD
+[Unreleased]: https://github.com/grafana/synthetic-monitoring-agent/compare/v0.6.4...HEAD
+[v0.6.4]: https://github.com/grafana/synthetic-monitoring-agent/compare/v0.6.3...v0.6.4
 [v0.6.3]: https://github.com/grafana/synthetic-monitoring-agent/compare/v0.6.2...v0.6.3
 [v0.6.2]: https://github.com/grafana/synthetic-monitoring-agent/compare/v0.6.1...v0.6.2
 [v0.6.1]: https://github.com/grafana/synthetic-monitoring-agent/compare/v0.6.0...v0.6.1
