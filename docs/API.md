@@ -109,12 +109,11 @@ Description:
 This entry point sets up a new tenant for the specified stack, using the
 corresponding hosted metric and log instances.
 
-The authentication is different from all the other authenticated entry
-points in that the token _is not_ the access token returned by this call
-(or `/api/v1/register/init`), but instead it's a `grafana.com` API
-*publisher token*. This token is used to authenticate the request and
-obtain the `grafana.com` organization associated with the new tenant. It
-is also saved by the Synthetic Monitoring backend and passed to the
+The authentication is different from all the other authenticated entry points
+in that the token _is not_ the access token returned by this call, but instead
+it's a `grafana.com` API *publisher token*. This token is used to authenticate
+the request and obtain the `grafana.com` organization associated with the new
+tenant. It is also saved by the Synthetic Monitoring backend and passed to the
 probes so that they can publish metrics and logs to the specified hosted
 instances.
 
@@ -127,170 +126,6 @@ instances for this tenant are returned in the respective fields of
 
 The value of the `accessToken` field MUST be used for authentication as
 explained in the "authentication" section of this document.
-
-### /api/v1/register/init
-
-> NOTE: this endpoint will be deprecated, please use `/api/v1/register/install`
-
-Method: POST
-
-Authorization required: no (see description)
-
-Content-type: application/json; charset=utf-8
-
-Body:
-```
-{
-    "apiToken": "grafana.com admin token"
-}
-```
-
-Response:
-```
-{
-    "accessToken": <string>,
-    "tenantInfo": {
-        "id": <integer>,
-        "metricInstance": <hostedInstance>,
-        "logInstance": <hostedInstance>,
-    "instances": [
-        <hostedInstance>,
-        ...
-    ]
-}
-```
-
-Description:
-
-The `apiToken` field provided in the body of this request MUST be an
-*admin* API token obtained from [https://grafana.com/orgs/bprd/api-keys](grafana.com).
-This is used to identify the organization from which hosted metrics and hosted logs
-instances are obtained. This token is *not* stored, and it's the
-responsibility of the caller of this entry point to remove it once it's
-done.
-
-This entry point searches for a grafana.com organization, retrieves all
-the hosted metrics and hosted logs instances (returned in the
-`instances` field) and creates a synthetic monitoring tenant if there
-isn't one already. In either case the information for the tenant is
-returned in the`tenantInfo` field. If there are hosted metrics and
-hosted logs instances already selected for this tenant, those are
-returned in the respective fields of `tenantInfo`. Usually the first
-time this entry point is used, there is no existing tenant and there are
-no hosted metrics and logs instances selected, so those fields are
-absent.
-
-The value of the `accessToken` field MUST be used for authentication as
-explained in the "authentication" section of this document.
-
-### /api/v1/register/save
-
-> NOTE: this endpoint will be deprecated, please use `/api/v1/register/install`
-
-Method: POST
-
-Authorization required: yes
-
-Content-type: application/json; charset=utf-8
-
-Body:
-```
-{
-    "apiToken": "grafana.com admin token",
-    "metricsInstanceId": <int>,
-    "logsInstanceId": <int>
-}
-```
-
-Response:
-```
-{}
-```
-
-Description:
-
-After calling `init`, this entry point selects the hosted metrics and
-hosted logs instances that should be used by Synthetic Monitoring.
-
-Note that _both_ authorization _and_ an admin token are required.
-
-The instance IDs correspond to those returned by `init`.
-
-### /api/v1/register/viewer-token
-
-> NOTE: this endpoint will be deprecated, please use `/api/v1/register/install`
-
-Method: POST
-
-Authorization required: no (see description)
-
-Content-type: application/json; charset=utf-8
-
-Body:
-```
-{
-    "apiToken": "grafana.com admin token",
-    "id": <int>,
-    "type": <string>
-}
-```
-
-Response:
-```
-{
-    "token": <string>
-}
-```
-
-Description:
-
-This entry point is used to create viewer tokens for the corresponding
-instances. These viewer tokens are used by Grafana to access the
-selected metric and log instances.
-
-* `id` corresponds to the hosted instance ID for which a viewer token is
-  to be created.
-* `type` specifies the type of instance (`prometheus` or `logs`) and
-  it's used to disambiguate the `id`.
-
-The response contains the newly created token.
-
-### /api/v1/register/describe
-
-> NOTE: this endpoint will be deprecated, please use `/api/v1/register/install`
-
-Method: POST
-
-Authorization required: no (see description)
-
-Content-type: application/json; charset=utf-8
-
-Body:
-```
-{
-    "apiToken": "grafana.com admin token"
-}
-```
-
-Response:
-```
-{
-  "orgID": <int>,
-  "tenants": [
-    {
-      "id": <integer>,
-      "metricInstance": <hostedInstance>,
-      "logInstance": <hostedInstance>
-    },
-    ...
-  ]
-}
-```
-
-Description:
-
-This entry point returns the list of tenants for the organization to
-which the provided admin token belongs to.
 
 ## Tokens
 
