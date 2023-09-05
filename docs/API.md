@@ -361,6 +361,16 @@ For TCP, the structure is as follows:
 }
 ```
 
+For Traceroute, the structure is as follows:
+
+```
+<TracerouteSettings>: {
+  "maxHops": <int>,
+  "maxUnknownHops": <int>,
+  "ptrLookup": boolean,
+}
+```
+
 The following structures are used in multiple fields:
 
 ```
