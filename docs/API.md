@@ -361,6 +361,63 @@ For TCP, the structure is as follows:
 }
 ```
 
+For MultiHTTP, the structure is as follows:
+
+```
+<MultiHttpSettings>: {
+  "entries": [
+    {
+      "variables": [
+        {
+          type: <int>,
+          name: <string>,
+          expression: <string>,
+          attribute: <string>,
+        },
+        ...
+      ],
+      "checks": [
+        {
+          type: <int>,
+          subject: <int>,
+          expression: <string>,
+          condition: <int>,
+          value: <string>
+        },
+        ...
+      ],
+      "request": {
+        method:("GET"|"POST"|"PUT"|"PATCH"|"DELETE"|"OPTIONS"|"HEAD"),
+        url: <string>,
+        body: {
+          contentType: <string>,
+          contentEncoding: <string>,
+          payload: <string>,
+        }
+        headers: [
+          {
+            name: <string>,
+            value: <string>,
+          },
+          ...
+        ]
+        queryFields: [
+          {
+            name: <string>,
+            value: <string>,
+          },
+        ]
+        postData: {
+          mimeType: <string>,
+          text: <string>,
+        },
+      },
+    },
+    ...
+  ]
+}
+```
+
 The following structures are used in multiple fields:
 
 ```
