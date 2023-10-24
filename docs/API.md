@@ -1,5 +1,4 @@
-Synthetic Monitoring API
-========================
+# Synthetic Monitoring API
 
 This document describes the Synthetic Monitoring API. All the entry
 points return results formatted as JSON objects.
@@ -79,6 +78,7 @@ Authorization required: yes (see description)
 Content-type: application/json; charset=utf-8
 
 Body:
+
 ```
 {
 	"stackId": 123,
@@ -88,11 +88,13 @@ Body:
 ```
 
 Header:
+
 ```
 Authorization: Bearer <grafana publisher token>
 ```
 
 Response:
+
 ```
 {
     "accessToken": <string>,
@@ -111,7 +113,7 @@ corresponding hosted metric and log instances.
 
 The authentication is different from all the other authenticated entry points
 in that the token _is not_ the access token returned by this call, but instead
-it's a `grafana.com` API *publisher token*. This token is used to authenticate
+it's a `grafana.com` API _publisher token_. This token is used to authenticate
 the request and obtain the `grafana.com` organization associated with the new
 tenant. It is also saved by the Synthetic Monitoring backend and passed to the
 probes so that they can publish metrics and logs to the specified hosted
@@ -141,6 +143,7 @@ Authorization required: yes
 Body: none
 
 Response:
+
 ```
 {
     "msg": <user facing message>,
@@ -161,6 +164,7 @@ Authorization required: yes
 Body: none
 
 Response:
+
 ```
 {
     "msg": <user facing message>,
@@ -180,6 +184,7 @@ Authorization required: yes
 Body: none
 
 Response:
+
 ```
 {
     "msg": <user facing message>,
@@ -189,7 +194,7 @@ Response:
 
 Description:
 
-A new access token is created for the authenticated tenant.  The token
+A new access token is created for the authenticated tenant. The token
 used for authentication is deleted.
 
 ### /api/v1/token/validate
@@ -201,6 +206,7 @@ Authorization required: yes
 Body: none
 
 Response:
+
 ```
 {
     "msg": <user facing message>,
@@ -228,6 +234,7 @@ Authorization required: yes
 Content-type: application/json; charset=utf-8
 
 Body:
+
 ```
 {
     "target": <string>,
@@ -361,6 +368,59 @@ For TCP, the structure is as follows:
 }
 ```
 
+For MultiHTTP, the structure is as follows:
+
+```
+<MultiHttpSettings>: {
+  "entries": [
+    {
+      "variables": [
+        {
+          type: <int>,
+          name: <string>,
+          expression: <string>,
+          attribute: <string>,
+        },
+        ...
+      ],
+      "checks": [
+        {
+          type: <int>,
+          subject: <int>,
+          expression: <string>,
+          condition: <int>,
+          value: <string>
+        },
+        ...
+      ],
+      "request": {
+        method:("GET"|"POST"|"PUT"|"PATCH"|"DELETE"|"OPTIONS"|"HEAD"),
+        url: <string>,
+        body: {
+          contentType: <string>,
+          contentEncoding: <string>,
+          payload: <string>,
+        }
+        headers: [
+          {
+            name: <string>,
+            value: <string>,
+          },
+          ...
+        ]
+        queryFields: [
+          {
+            name: <string>,
+            value: <string>,
+          },
+        ]
+      },
+    },
+    ...
+  ]
+}
+```
+
 The following structures are used in multiple fields:
 
 ```
@@ -387,6 +447,7 @@ The following structures are used in multiple fields:
 ```
 
 Response:
+
 ```
 {
     "id": <int>,
@@ -433,9 +494,9 @@ The `ipVersion` value specifies whether the corresponding check will be
 performed using IPv4 or IPv6. The "Any" value indicates that IPv6 should
 be used, falling back to IPv4 if that's not available.
 
-The `basicMetricsOnly` value specifies which set of metrics probes will collect. This is set to `true` by default in the UI which results in less active series or can be set to `false` for the advanced set. We maintain a [full list of metrics](https://github.com/grafana/synthetic-monitoring-agent/tree/main/internal/scraper/testdata) collected for each. 
+The `basicMetricsOnly` value specifies which set of metrics probes will collect. This is set to `true` by default in the UI which results in less active series or can be set to `false` for the advanced set. We maintain a [full list of metrics](https://github.com/grafana/synthetic-monitoring-agent/tree/main/internal/scraper/testdata) collected for each.
 
-The `alertSensitivity` value defaults to `none` if there are no alerts or can be set to `low`, `medium`, or `high` to correspond to the check [alert levels](https://grafana.com/docs/grafana-cloud/synthetic-monitoring/synthetic-monitoring-alerting/). 
+The `alertSensitivity` value defaults to `none` if there are no alerts or can be set to `low`, `medium`, or `high` to correspond to the check [alert levels](https://grafana.com/docs/grafana-cloud/synthetic-monitoring/synthetic-monitoring-alerting/).
 
 The maximum number of labels that can be specified per check is 5. These
 are applied, along with the probe-specific labels, to the outgoing
@@ -470,6 +531,7 @@ Authorization required: yes
 Content-type: application/json; charset=utf-8
 
 Body:
+
 ```
 {
     "id": <int>,
@@ -480,7 +542,7 @@ Body:
     "timeout": <int>,
     "enabled": <boolean>,
     "alertSensitivity": <string>,
-    "basicMetricsOnly": <boolean>,    
+    "basicMetricsOnly": <boolean>,
     "probes": [
       <int>,
       ...
@@ -497,6 +559,7 @@ Body:
 ```
 
 Response:
+
 ```
 {
     "id": <int>,
@@ -507,7 +570,7 @@ Response:
     "timeout": <int>,
     "enabled": <boolean>,
     "alertSensitivity": <string>,
-    "basicMetricsOnly": <boolean>,    
+    "basicMetricsOnly": <boolean>,
     "probes": [
       <int>,
       ...
@@ -538,6 +601,7 @@ Method: DELETE
 Authorization required: yes
 
 Response:
+
 ```
 {
   "msg": "check deleted",
@@ -556,6 +620,7 @@ Method: GET
 Authorization required: yes
 
 Response:
+
 ```
 [
   <check>,
@@ -574,6 +639,7 @@ Method: GET
 Authorization required: yes
 
 Response:
+
 ```
 {
     "id": <int>,
@@ -584,7 +650,7 @@ Response:
     "timeout": <int>,
     "enabled": <boolean>,
     "alertSensitivity": <string>,
-    "basicMetricsOnly": <boolean>,    
+    "basicMetricsOnly": <boolean>,
     "probes": [
       <int>,
       ...
@@ -604,7 +670,7 @@ Response:
 
 Description:
 
-Get a specific check,  that matches the `id` supplied in the URL parameter.
+Get a specific check, that matches the `id` supplied in the URL parameter.
 
 ### /api/v1/check/query?job=:job:&target=:target:
 
@@ -613,6 +679,7 @@ Method: GET
 Authorization required: yes
 
 Response:
+
 ```
 {
     "id": <int>,
@@ -623,7 +690,7 @@ Response:
     "timeout": <int>,
     "enabled": <boolean>,
     "alertSensitivity": <string>,
-    "basicMetricsOnly": <boolean>,    
+    "basicMetricsOnly": <boolean>,
     "probes": [
       <int>,
       ...
@@ -643,7 +710,7 @@ Response:
 
 Description:
 
-Get a specific check,  that matches the `job` and `target` supplied in the query parameters.
+Get a specific check, that matches the `job` and `target` supplied in the query parameters.
 
 ## Probes
 
@@ -656,6 +723,7 @@ Authorization required: yes
 Content-type: application/json; charset=utf-8
 
 Body:
+
 ```
 {
   "name": <string>,
@@ -673,6 +741,7 @@ Body:
 ```
 
 Response:
+
 ```
 {
   "probe": {
@@ -720,6 +789,7 @@ Authorization required: yes
 Content-type: application/json; charset=utf-8
 
 Body:
+
 ```
 {
   "id": <int>,
@@ -739,6 +809,7 @@ Body:
 ```
 
 Response:
+
 ```
 {
   "probe": {
@@ -780,6 +851,7 @@ Method: GET
 Authorization required: yes
 
 Response:
+
 ```
 [
   {
@@ -815,6 +887,7 @@ Method: DELETE
 Authorization required: yes
 
 Response:
+
 ```
 {
   "msg": "probe deleted",
@@ -835,6 +908,7 @@ Method: GET
 Authorization required: yes
 
 Response:
+
 ```
 <tenant>
 ```
@@ -853,6 +927,7 @@ Authorization required: yes
 Content-type: application/json; charset=utf-8
 
 Body:
+
 ```
 {
   "id": <int>,
@@ -876,6 +951,7 @@ Body:
 ```
 
 Response:
+
 ```
 {
 	"msg": "tenant updated",
@@ -910,6 +986,7 @@ Method: DELETE
 Authorization required: yes
 
 Response:
+
 ```
 {
 	"msg": "tenant deleted",
