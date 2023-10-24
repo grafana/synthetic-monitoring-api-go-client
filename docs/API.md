@@ -1,5 +1,4 @@
-Synthetic Monitoring API
-========================
+# Synthetic Monitoring API
 
 This document describes the Synthetic Monitoring API. All the entry
 points return results formatted as JSON objects.
@@ -79,6 +78,7 @@ Authorization required: yes (see description)
 Content-type: application/json; charset=utf-8
 
 Body:
+
 ```
 {
 	"stackId": 123,
@@ -88,11 +88,13 @@ Body:
 ```
 
 Header:
+
 ```
 Authorization: Bearer <grafana publisher token>
 ```
 
 Response:
+
 ```
 {
     "accessToken": <string>,
@@ -111,7 +113,7 @@ corresponding hosted metric and log instances.
 
 The authentication is different from all the other authenticated entry points
 in that the token _is not_ the access token returned by this call, but instead
-it's a `grafana.com` API *publisher token*. This token is used to authenticate
+it's a `grafana.com` API _publisher token_. This token is used to authenticate
 the request and obtain the `grafana.com` organization associated with the new
 tenant. It is also saved by the Synthetic Monitoring backend and passed to the
 probes so that they can publish metrics and logs to the specified hosted
@@ -141,6 +143,7 @@ Authorization required: yes
 Body: none
 
 Response:
+
 ```
 {
     "msg": <user facing message>,
@@ -161,6 +164,7 @@ Authorization required: yes
 Body: none
 
 Response:
+
 ```
 {
     "msg": <user facing message>,
@@ -180,6 +184,7 @@ Authorization required: yes
 Body: none
 
 Response:
+
 ```
 {
     "msg": <user facing message>,
@@ -189,7 +194,7 @@ Response:
 
 Description:
 
-A new access token is created for the authenticated tenant.  The token
+A new access token is created for the authenticated tenant. The token
 used for authentication is deleted.
 
 ### /api/v1/token/validate
@@ -201,6 +206,7 @@ Authorization required: yes
 Body: none
 
 Response:
+
 ```
 {
     "msg": <user facing message>,
@@ -228,6 +234,7 @@ Authorization required: yes
 Content-type: application/json; charset=utf-8
 
 Body:
+
 ```
 {
     "target": <string>,
@@ -371,58 +378,117 @@ For Traceroute, the structure is as follows:
 }
 ```
 
+For MultiHTTP, the structure is as follows:
+
+```
+<MultiHttpSettings>: {
+  "entries": [
+    {
+      "variables": [
+        {
+          type: <int>,
+          name: <string>,
+          expression: <string>,
+          attribute: <string>,
+        },
+        ...
+      ],
+      "checks": [
+        {
+          type: <int>,
+          subject: <int>,
+          expression: <string>,
+          condition: <int>,
+          value: <string>
+        },
+        ...
+      ],
+      "request": {
+          method:("GET"|"POST"|"PUT"|"PATCH"|"DELETE"|"OPTIONS"|"HEAD"),
+          url: <string>,
+          body: {
+          contentType: <string>,
+          contentEncoding: <string>,
+          payload: <string>,
+        }
+        headers: [
+          {
+            name: <string>,
+            value: <string>,
+          },
+          ...
+        ]
+        queryFields: [
+          {
+            name: <string>,
+            value: <string>,
+          },
+        ]
+      },
+    },
+    ...
+  ]
+}
+
+```
+
 The following structures are used in multiple fields:
 
 ```
+
 <IpVersion>: ("V4"|"V6"|"Any")
 
 <DnsRRValidator>: {
-  "failIfMatchesRegexp": [<regexp>, ...],
-  "failIfNotMatchesRegexp": [<regexp>, ...]
+"failIfMatchesRegexp": [<regexp>, ...],
+"failIfNotMatchesRegexp": [<regexp>, ...]
 }
 
 <TLSConfig>: {
-  "insecureSkipVerify": <boolean>,
-  "caCert": <base64-encoded data>,
-  "clientCert": <base64-encoded data>,
-  "clientKey": <base64-encoded data>,
-  "serverName": <string>
+"insecureSkipVerify": <boolean>,
+"caCert": <base64-encoded data>,
+"clientCert": <base64-encoded data>,
+"clientKey": <base64-encoded data>,
+"serverName": <string>
 }
 
 <HeaderMatch>: {
-  "header": <string>,
-  "regexp": <regexp>,
-  "allowMissing": <boolean>
+"header": <string>,
+"regexp": <regexp>,
+"allowMissing": <boolean>
 }
+
 ```
 
 Response:
+
 ```
+
 {
-    "id": <int>,
-    "tenantId": <int>,
-    "target": <string>,
-    "job": <string>,
-    "frequency": <int>,
-    "timeout": <int>,
-    "enabled": <boolean>,
-    "alertSensitivity": <string>,
-    "basicMetricsOnly": <boolean>,
-    "probes": [
-      <int>,
-      ...
-    ],
-    "labels": [
-      {
-        "name": <string>,
-        "value": <string>
-      },
-      ...
-    ],
-    "settings": <CheckSettings>,
-    "created": <timestamp>,
-    "modified": <timestamp>
+"id": <int>,
+"tenantId": <int>,
+"target": <string>,
+"job": <string>,
+"frequency": <int>,
+"timeout": <int>,
+"enabled": <boolean>,
+"alertSensitivity": <string>,
+"basicMetricsOnly": <boolean>,
+"probes": [
+<int>,
+...
+],
+"labels": [
+{
+"name": <string>,
+"value": <string>
+},
+...
+],
+"settings": <CheckSettings>,
+"created": <timestamp>,
+"modified": <timestamp>
 }
+
 ```
 
 Description:
@@ -443,9 +509,9 @@ The `ipVersion` value specifies whether the corresponding check will be
 performed using IPv4 or IPv6. The "Any" value indicates that IPv6 should
 be used, falling back to IPv4 if that's not available.
 
-The `basicMetricsOnly` value specifies which set of metrics probes will collect. This is set to `true` by default in the UI which results in less active series or can be set to `false` for the advanced set. We maintain a [full list of metrics](https://github.com/grafana/synthetic-monitoring-agent/tree/main/internal/scraper/testdata) collected for each. 
+The `basicMetricsOnly` value specifies which set of metrics probes will collect. This is set to `true` by default in the UI which results in less active series or can be set to `false` for the advanced set. We maintain a [full list of metrics](https://github.com/grafana/synthetic-monitoring-agent/tree/main/internal/scraper/testdata) collected for each.
 
-The `alertSensitivity` value defaults to `none` if there are no alerts or can be set to `low`, `medium`, or `high` to correspond to the check [alert levels](https://grafana.com/docs/grafana-cloud/synthetic-monitoring/synthetic-monitoring-alerting/). 
+The `alertSensitivity` value defaults to `none` if there are no alerts or can be set to `low`, `medium`, or `high` to correspond to the check [alert levels](https://grafana.com/docs/grafana-cloud/synthetic-monitoring/synthetic-monitoring-alerting/).
 
 The maximum number of labels that can be specified per check is 5. These
 are applied, along with the probe-specific labels, to the outgoing
@@ -480,59 +546,65 @@ Authorization required: yes
 Content-type: application/json; charset=utf-8
 
 Body:
+
 ```
+
 {
-    "id": <int>,
-    "tenantId": <int>,
-    "target": <string>,
-    "job": <string>,
-    "frequency": <int>,
-    "timeout": <int>,
-    "enabled": <boolean>,
-    "alertSensitivity": <string>,
-    "basicMetricsOnly": <boolean>,    
-    "probes": [
-      <int>,
-      ...
-    ],
-    "labels": [
-      {
-        "name": <string>,
-        "value": <string>
-      },
-      ...
-    ],
-    "settings": <CheckSettings>
+"id": <int>,
+"tenantId": <int>,
+"target": <string>,
+"job": <string>,
+"frequency": <int>,
+"timeout": <int>,
+"enabled": <boolean>,
+"alertSensitivity": <string>,
+"basicMetricsOnly": <boolean>,
+"probes": [
+<int>,
+...
+],
+"labels": [
+{
+"name": <string>,
+"value": <string>
+},
+...
+],
+"settings": <CheckSettings>
 }
+
 ```
 
 Response:
+
 ```
+
 {
-    "id": <int>,
-    "tenantId": <int>,
-    "target": <string>,
-    "job": <string>,
-    "frequency": <int>,
-    "timeout": <int>,
-    "enabled": <boolean>,
-    "alertSensitivity": <string>,
-    "basicMetricsOnly": <boolean>,    
-    "probes": [
-      <int>,
-      ...
-    ],
-    "labels": [
-      {
-        "name": <string>,
-        "value": <string>
-      },
-      ...
-    ],
-    "settings": <CheckSettings>,
-    "created": <timestamp>,
-    "modified": <timestamp>
+"id": <int>,
+"tenantId": <int>,
+"target": <string>,
+"job": <string>,
+"frequency": <int>,
+"timeout": <int>,
+"enabled": <boolean>,
+"alertSensitivity": <string>,
+"basicMetricsOnly": <boolean>,
+"probes": [
+<int>,
+...
+],
+"labels": [
+{
+"name": <string>,
+"value": <string>
+},
+...
+],
+"settings": <CheckSettings>,
+"created": <timestamp>,
+"modified": <timestamp>
 }
+
 ```
 
 Description:
@@ -548,11 +620,14 @@ Method: DELETE
 Authorization required: yes
 
 Response:
+
 ```
+
 {
-  "msg": "check deleted",
-  "checkId": <int>
+"msg": "check deleted",
+"checkId": <int>
 }
+
 ```
 
 Description:
@@ -566,11 +641,14 @@ Method: GET
 Authorization required: yes
 
 Response:
+
 ```
+
 [
-  <check>,
-  ...
+<check>,
+...
 ]
+
 ```
 
 Description:
@@ -584,37 +662,40 @@ Method: GET
 Authorization required: yes
 
 Response:
+
 ```
+
 {
-    "id": <int>,
-    "tenantId": <int>,
-    "target": <string>,
-    "job": <string>,
-    "frequency": <int>,
-    "timeout": <int>,
-    "enabled": <boolean>,
-    "alertSensitivity": <string>,
-    "basicMetricsOnly": <boolean>,    
-    "probes": [
-      <int>,
-      ...
-    ],
-    "labels": [
-      {
-        "name": <string>,
-        "value": <string>
-      },
-      ...
-    ],
-    "settings": <CheckSettings>,
-    "created": <timestamp>,
-    "modified": <timestamp>
+"id": <int>,
+"tenantId": <int>,
+"target": <string>,
+"job": <string>,
+"frequency": <int>,
+"timeout": <int>,
+"enabled": <boolean>,
+"alertSensitivity": <string>,
+"basicMetricsOnly": <boolean>,
+"probes": [
+<int>,
+...
+],
+"labels": [
+{
+"name": <string>,
+"value": <string>
+},
+...
+],
+"settings": <CheckSettings>,
+"created": <timestamp>,
+"modified": <timestamp>
 }
+
 ```
 
 Description:
 
-Get a specific check,  that matches the `id` supplied in the URL parameter.
+Get a specific check, that matches the `id` supplied in the URL parameter.
 
 ### /api/v1/check/query?job=:job:&target=:target:
 
@@ -623,37 +704,40 @@ Method: GET
 Authorization required: yes
 
 Response:
+
 ```
+
 {
-    "id": <int>,
-    "tenantId": <int>,
-    "target": <string>,
-    "job": <string>,
-    "frequency": <int>,
-    "timeout": <int>,
-    "enabled": <boolean>,
-    "alertSensitivity": <string>,
-    "basicMetricsOnly": <boolean>,    
-    "probes": [
-      <int>,
-      ...
-    ],
-    "labels": [
-      {
-        "name": <string>,
-        "value": <string>
-      },
-      ...
-    ],
-    "settings": <CheckSettings>,
-    "created": <timestamp>,
-    "modified": <timestamp>
+"id": <int>,
+"tenantId": <int>,
+"target": <string>,
+"job": <string>,
+"frequency": <int>,
+"timeout": <int>,
+"enabled": <boolean>,
+"alertSensitivity": <string>,
+"basicMetricsOnly": <boolean>,
+"probes": [
+<int>,
+...
+],
+"labels": [
+{
+"name": <string>,
+"value": <string>
+},
+...
+],
+"settings": <CheckSettings>,
+"created": <timestamp>,
+"modified": <timestamp>
 }
+
 ```
 
 Description:
 
-Get a specific check,  that matches the `job` and `target` supplied in the query parameters.
+Get a specific check, that matches the `job` and `target` supplied in the query parameters.
 
 ## Probes
 
@@ -666,47 +750,53 @@ Authorization required: yes
 Content-type: application/json; charset=utf-8
 
 Body:
+
 ```
+
 {
-  "name": <string>,
-  "latitude": <float>,
-  "longitude": <float>,
-  "region": <string>,
-  "labels": [
-    {
-      "name": <string>,
-      "value": <string>
-    },
-    ...
-  ]
+"name": <string>,
+"latitude": <float>,
+"longitude": <float>,
+"region": <string>,
+"labels": [
+{
+"name": <string>,
+"value": <string>
+},
+...
+]
 }
+
 ```
 
 Response:
+
 ```
+
 {
-  "probe": {
-    "id": <int>,
-      "tenantId": <int>,
-      "name": <string>,
-      "latitude": <float>,
-      "longitude": <float>,
-      "labels": [
-      {
-        "name": <string>,
-        "value": <string>
-      },
-      ...
-      ],
-      "region": <string>,
-      "public": <bool>,
-      "online": <bool>,
-      "onlineChange": <float>,
-      "created": <float>,
-      "modified": <float>
-  },
-  "token": <string>
+"probe": {
+"id": <int>,
+"tenantId": <int>,
+"name": <string>,
+"latitude": <float>,
+"longitude": <float>,
+"labels": [
+{
+"name": <string>,
+"value": <string>
+},
+...
+],
+"region": <string>,
+"public": <bool>,
+"online": <bool>,
+"onlineChange": <float>,
+"created": <float>,
+"modified": <float>
+},
+"token": <string>
 }
+
 ```
 
 Description:
@@ -730,49 +820,55 @@ Authorization required: yes
 Content-type: application/json; charset=utf-8
 
 Body:
+
 ```
+
 {
-  "id": <int>,
-  "tenantId": <int>,
-  "name": <string>,
-  "latitude": <float>,
-  "longitude": <float>,
-  "labels": [
-  {
-    "name": <string>,
-    "value": <string>
-  },
-  ...
-  ],
-  "region": <string>,
+"id": <int>,
+"tenantId": <int>,
+"name": <string>,
+"latitude": <float>,
+"longitude": <float>,
+"labels": [
+{
+"name": <string>,
+"value": <string>
+},
+...
+],
+"region": <string>,
 }
+
 ```
 
 Response:
+
 ```
+
 {
-  "probe": {
-    "id": <int>,
-      "tenantId": <int>,
-      "name": <string>,
-      "latitude": <float>,
-      "longitude": <float>,
-      "labels": [
-      {
-        "name": <string>,
-        "value": <string>
-      },
-      ...
-      ],
-      "region": <string>,
-      "public": <bool>,
-      "online": <bool>,
-      "onlineChange": <float>,
-      "created": <float>,
-      "modified": <float>
-  },
-  "token": <string>
+"probe": {
+"id": <int>,
+"tenantId": <int>,
+"name": <string>,
+"latitude": <float>,
+"longitude": <float>,
+"labels": [
+{
+"name": <string>,
+"value": <string>
+},
+...
+],
+"region": <string>,
+"public": <bool>,
+"online": <bool>,
+"onlineChange": <float>,
+"created": <float>,
+"modified": <float>
+},
+"token": <string>
 }
+
 ```
 
 Description:
@@ -790,30 +886,33 @@ Method: GET
 Authorization required: yes
 
 Response:
+
 ```
+
 [
-  {
-    "id": <int>,
-    "tenantId": <int>,
-    "name": <string>,
-    "latitude": <float>,
-    "longitude": <float>,
-    "labels": [
-      {
-        "name": <string>,
-        "value": <string>
-      },
-      ...
-    ],
-    "region": <string>,
-    "public": <bool>,
-    "online": <bool>,
-    "onlineChange": <float>,
-    "created": <float>,
-    "modified": <float>
-  },
-  ...
+{
+"id": <int>,
+"tenantId": <int>,
+"name": <string>,
+"latitude": <float>,
+"longitude": <float>,
+"labels": [
+{
+"name": <string>,
+"value": <string>
+},
+...
+],
+"region": <string>,
+"public": <bool>,
+"online": <bool>,
+"onlineChange": <float>,
+"created": <float>,
+"modified": <float>
+},
+...
 ]
+
 ```
 
 Description:
@@ -825,11 +924,14 @@ Method: DELETE
 Authorization required: yes
 
 Response:
+
 ```
+
 {
-  "msg": "probe deleted",
-  "probeID": <int>
+"msg": "probe deleted",
+"probeID": <int>
 }
+
 ```
 
 Description:
@@ -845,7 +947,9 @@ Method: GET
 Authorization required: yes
 
 Response:
+
 ```
+
 <tenant>
 ```
 
@@ -863,6 +967,7 @@ Authorization required: yes
 Content-type: application/json; charset=utf-8
 
 Body:
+
 ```
 {
   "id": <int>,
@@ -886,6 +991,7 @@ Body:
 ```
 
 Response:
+
 ```
 {
 	"msg": "tenant updated",
@@ -920,6 +1026,7 @@ Method: DELETE
 Authorization required: yes
 
 Response:
+
 ```
 {
 	"msg": "tenant deleted",
