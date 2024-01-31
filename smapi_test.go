@@ -896,7 +896,7 @@ func TestGetProbe(t *testing.T) {
 			}
 		}
 
-		writeResponse(w, http.StatusNotFound, &model.ErrorResponse{
+		writeResponse(w, http.StatusNotFound, &model.ResponseError{
 			Msg: fmt.Sprintf("probe %d not found", id),
 			Err: errProbeNotFound,
 		})
@@ -1110,7 +1110,7 @@ func TestGetCheck(t *testing.T) {
 			}
 		}
 
-		writeResponse(w, http.StatusNotFound, &model.ErrorResponse{
+		writeResponse(w, http.StatusNotFound, &model.ResponseError{
 			Msg: "check not found",
 			Err: errCheckNotFound,
 		})
@@ -1553,9 +1553,9 @@ func requireAuth(orgs db, w http.ResponseWriter, r *http.Request, tenantID int64
 func writeResponse(w http.ResponseWriter, code int, resp interface{}) {
 	enc := json.NewEncoder(w)
 	w.WriteHeader(code)
-	_ = enc.Encode(resp)
+	_ = enc.Encode(resp) //nolint:errchkjson // we are calling this function with structs.
 }
 
 func errorResponse(w http.ResponseWriter, code int, msg string) {
-	writeResponse(w, code, &model.ErrorResponse{Msg: msg})
+	writeResponse(w, code, &model.ResponseError{Msg: msg})
 }

@@ -8,68 +8,138 @@ linters:
   enable:
     - asciicheck
     - bodyclose
-    - deadcode
-    - depguard
+    # TODO(mem): - containedctx
+    # TODO(mem):- contextcheck
+    # TODO(mem): - cyclop
+    - decorder
+    # - depguard
     - dogsled
-    - dupl
+    # TODO(mem): - dupl
+    - dupword
+    - durationcheck
+    - errchkjson
     - errcheck
-    - errorlint
-    - exhaustive
+    - errname
+    # TODO(mem): - errorlint
+    - execinquery
+    # TODO(mem): - exhaustive
     - exportloopref
-    # - funlen
-    - gochecknoglobals
+    - gocheckcompilerdirectives
+    # - TODO(mem): gochecknoglobals
     - gochecknoinits
-    - godot
-    - goerr113
-    - gomnd
-    - gocognit
-    - ifshort
-    - interfacer
-    - nestif
-    - nlreturn
-    - noctx
     - goconst
-    - prealloc
-    - predeclared
-    - scopelint
-    - thelper
-    - wrapcheck
     - gocritic
+    # - gocognit
     - gocyclo
     - gofmt
     - gofumpt
     - goimports
-    - golint
+    # - golint
+    # TODO(mem): - gomnd
     - goprintffuncname
-    - gosec
+    # - gosec
+    - gosmopolitan
+    - grouper
     - gosimple
     - govet
+    # TODO(mem): fails because we are runnig in a container?: - importas
     - ineffassign
+    - interfacebloat
+    # TODO(mem): - ireturn
     # - lll
+    - loggercheck
+    # TODO(mem): - maintidx
+    - mirror
     - misspell
+    # TODO(mem): fails because it's trying to run `go list all`?: - musttag
     - nakedret
+    - nestif
+    # TODO(mem): - noctx
+    - nolintlint
+    - nosprintfhostport
+    # TODO(mem): - paralleltest
+    # TODO(mem): - prealloc
+    # TODO(mem): - promlinter
+    - reassign
+    # TODO(mem): - revive
     - rowserrcheck
+    - sqlclosecheck
     - staticcheck
-    - structcheck
+    # TODO(mem): - tagalign
+    - tenv
+    - testableexamples
+    # TODO(mem): - thelper
     - typecheck
     - unconvert
+    # TODO(mem): - unparam
+    # TODO(mem): - varnamelen
+    - wastedassign
     - unused
-    - varcheck
     - whitespace
+    # TODO(mem): - wsl
+    - zerologlint
 
-linter-settings:
+linters-settings:
   goconst:
-    ignore-tests: true
+    ignore-tests: false
     min-len: 5
     min-occurrences: 5
   gocyclo:
-    min-complexity: 10
+    min-complexity: 18
   golint:
-    ignore-tests: true
+    ignore-tests: false
     min-confidence: 3
   rowserrcheck:
     packages:
       - github.com/jmoiron/sqlx
+  gocritic:
+    enabled-checks:
+      - appendAssign
+      - argOrder
+      - assignOp
+      - badCall
+      - badCond
+      - captLocal
+      - caseOrder
+      - codegenComment
+      - commentFormatting
+      - defaultCaseOrder
+      - deprecatedComment
+      - dupArg
+      - dupBranchBody
+      - dupCase
+      - dupSubExpr
+      - elseif
+      - exitAfterDefer
+      - flagDeref
+      - flagName
+      - ifElseChain
+      - mapKey
+      - newDeref
+      - offBy1
+      - regexpMust
+      # - ruleguard
+      - singleCaseSwitch
+      - sloppyLen
+      - stringXbytes
+      - switchTrue
+      - typeSwitchVar
+      - underef
+      - unlambda
+      - unslice
+      - valSwap
+      - wrapperFunc
+    settings:
+      ruleguard:
+        rules: "internal/rules/rules.go"
+  importas:
+    no-unaliased: true
+    no-extra-aliases: true
+    alias:
+      - pkg: github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring
+        alias: sm
+      - pkg: github.com/prometheus/client_model/go
+        alias: dto
 
 issues:
   exclude:

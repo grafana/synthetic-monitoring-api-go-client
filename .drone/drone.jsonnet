@@ -1,4 +1,4 @@
-local step(name, commands, image='golang:1.17') = {
+local step(name, commands, image='ghcr.io/grafana/grafana-build-tools:v0.4.1') = {
   name: name,
   commands: commands,
   image: image,
@@ -28,7 +28,7 @@ local releaseOnly = {
 };
 
 local prOnly = {
-  when: {event: ['pull_request']},
+  when: { event: ['pull_request'] },
 };
 
 [
@@ -45,7 +45,7 @@ local prOnly = {
     step('build', [
       'git fetch origin --tags',
       'git status --porcelain --untracked-files=no',
-      'git diff --no-ext-diff --quiet', // fail if the workspace has modified files
+      'git diff --no-ext-diff --quiet',  // fail if the workspace has modified files
       './scripts/version',
       'make build',
     ]),
