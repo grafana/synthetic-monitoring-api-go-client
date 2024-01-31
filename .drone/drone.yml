@@ -1,51 +1,40 @@
 ---
 kind: pipeline
-type: docker
 name: build
-
-platform:
-  os: linux
-  arch: amd64
-
 steps:
-- name: runner identification
-  image: alpine
-  commands:
+- commands:
   - echo $DRONE_RUNNER_NAME
-
-- name: deps
-  image: golang:1.17
-  commands:
+  image: alpine
+  name: runner identification
+- commands:
   - make deps
   - ./scripts/enforce-clean
-
-- name: lint
-  image: golang:1.17
-  commands:
+  image: ghcr.io/grafana/grafana-build-tools:v0.4.1
+  name: deps
+- commands:
   - make lint
-
-- name: test
-  image: golang:1.17
-  commands:
+  image: ghcr.io/grafana/grafana-build-tools:v0.4.1
+  name: lint
+- commands:
   - make test
-
-- name: build
-  image: golang:1.17
-  commands:
+  image: ghcr.io/grafana/grafana-build-tools:v0.4.1
+  name: test
+- commands:
   - git fetch origin --tags
   - git status --porcelain --untracked-files=no
   - git diff --no-ext-diff --quiet
   - ./scripts/version
   - make build
-
+  image: ghcr.io/grafana/grafana-build-tools:v0.4.1
+  name: build
 trigger:
   ref:
   - refs/heads/main
   - refs/pull/**
   - refs/tags/v*.*.*
-
+type: docker
 ---
 kind: signature
-hmac: 1187b75687934f3349927114c49e727c248b4302e3b18413e2318bf58a1b2445
+hmac: 867051d28a15bc3dcfd3b7acb5af7db26afb724985d4fa3818bd8a1fc2a0d152
 
 ...

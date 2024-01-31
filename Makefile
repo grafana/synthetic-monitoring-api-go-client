@@ -9,6 +9,19 @@ BUILD_VERSION := $(shell $(ROOTDIR)/scripts/version)
 BUILD_COMMIT := $(shell git rev-parse HEAD^{commit})
 BUILD_STAMP := $(shell date -u '+%Y-%m-%d %H:%M:%S+00:00')
 
+ifneq (,)
+$(foreach v, \
+	$(sort $(.VARIABLES)), \
+	$(info ===== $(origin $(v)) $(v) = $($(v))) \
+)
+endif
+
+ifeq ($(strip $(CI)),true)
+RUN_TOOL :=
+else
+RUN_TOOL := $(ROOTDIR)/scripts/docker-run
+endif
+
 include config.mk
 
 -include local/Makefile
@@ -37,16 +50,6 @@ COMMANDS := $(shell test -d cmd && $(GO) list $(GO_BUILD_MOD_FLAGS) ./cmd/...)
 EXAMPLES := $(shell test -d examples && $(GO) list $(GO_BUILD_MOD_FLAGS) ./examples/...)
 
 VERSION_PKG := $(shell test -d internal/version && $(GO) list $(GO_BUILD_MOD_FLAGS) ./internal/version)
-
-ifeq ($(origin GOLANGCI_LINT),undefined)
-GOLANGCI_LINT ?= $(ROOTDIR)/scripts/go/bin/golangci-lint
-LOCAL_GOLANGCI_LINT = yes
-endif
-
-ifeq ($(origin GOTESTSUM),undefined)
-GOTESTSUM ?= $(ROOTDIR)/scripts/go/bin/gotestsum
-LOCAL_GOTESTSUM = yes
-endif
 
 TEST_OUTPUT := $(DISTDIR)/test
 
@@ -96,18 +99,13 @@ run: scripts/go/bin/bra ## Build and run web server on filesystem changes.
 
 ##@ Testing
 
-ifeq ($(LOCAL_GOTESTSUM),yes)
-$(GOTESTSUM): scripts/go/go.mod
-	$(S) cd scripts/go; \
-		$(GO) mod download && \
-		$(GO) build -o $(GOTESTSUM) gotest.tools/gotestsum
-endif
-
 .PHONY: test-go
-test-go: $(GOTESTSUM) ## Run Go tests.
+test-go: ## Run Go tests.
+test-go: export CGO_ENABLED=1 # -race needs CGO_ENABLED
+test-go:
 	$(S) echo "test backend"
 	$(V) mkdir -p $(TEST_OUTPUT)
-	$(V) $(GOTESTSUM) \
+	$(V) $(RUN_TOOL) gotestsum \
 		--format standard-verbose \
 		--jsonfile $(TEST_OUTPUT).json \
 		--junitfile $(TEST_OUTPUT).xml \
@@ -124,17 +122,10 @@ test: test-go ## Run all tests.
 
 ##@ Linting
 
-ifeq ($(LOCAL_GOLANGCI_LINT),yes)
-$(GOLANGCI_LINT): scripts/go/go.mod
-	$(S) cd scripts/go && \
-		$(GO) mod download && \
-		$(GO) build -o $(GOLANGCI_LINT) github.com/golangci/golangci-lint/cmd/golangci-lint
-endif
-
 .PHONY: golangci-lint
-golangci-lint: $(GOLANGCI_LINT)
+golangci-lint:
 	$(S) echo "lint via golangci-lint"
-	$(S) $(GOLANGCI_LINT) run \
+	$(S) $(RUN_TOOL) golangci-lint run \
 		$(GOLANGCI_LINT_MOD_FLAGS) \
 		--config ./scripts/go/configs/golangci.yml \
 		$(GO_PKGS)

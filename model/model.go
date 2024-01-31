@@ -12,10 +12,13 @@ const (
 	InstanceTypeLogs       = "logs"
 )
 
-type ErrorResponse struct {
+type ResponseError struct {
 	Msg string `json:"msg,omitempty"`
 	Err error  `json:"err,omitempty"`
 }
+
+// ErrorResponse was the old name for ResponseError. We want to keep backwards compatibility.
+type ErrorResponse = ResponseError
 
 type RegistrationInstallRequest struct {
 	StackID           int64 `json:"stackId"`
@@ -80,7 +83,7 @@ type CheckDeleteResponse struct {
 	CheckID int64  `json:"checkId"`
 }
 
-func (e *ErrorResponse) Error() string {
+func (e *ResponseError) Error() string {
 	switch {
 	case e == nil:
 		return ""
@@ -96,7 +99,7 @@ func (e *ErrorResponse) Error() string {
 	}
 }
 
-func (e *ErrorResponse) MarshalJSON() ([]byte, error) {
+func (e *ResponseError) MarshalJSON() ([]byte, error) {
 	var resp struct {
 		Msg string `json:"msg,omitempty"`
 		Err string `json:"err,omitempty"`
