@@ -9,15 +9,15 @@ steps:
 - commands:
   - make deps
   - ./scripts/enforce-clean
-  image: ghcr.io/grafana/grafana-build-tools:v0.4.1
+  image: ghcr.io/grafana/grafana-build-tools:v0.6.1
   name: deps
 - commands:
   - make lint
-  image: ghcr.io/grafana/grafana-build-tools:v0.4.1
+  image: ghcr.io/grafana/grafana-build-tools:v0.6.1
   name: lint
 - commands:
   - make test
-  image: ghcr.io/grafana/grafana-build-tools:v0.4.1
+  image: ghcr.io/grafana/grafana-build-tools:v0.6.1
   name: test
 - commands:
   - git fetch origin --tags
@@ -25,7 +25,7 @@ steps:
   - git diff --no-ext-diff --quiet
   - ./scripts/version
   - make build
-  image: ghcr.io/grafana/grafana-build-tools:v0.4.1
+  image: ghcr.io/grafana/grafana-build-tools:v0.6.1
   name: build
 trigger:
   ref:
@@ -35,6 +35,6 @@ trigger:
 type: docker
 ---
 kind: signature
-hmac: 867051d28a15bc3dcfd3b7acb5af7db26afb724985d4fa3818bd8a1fc2a0d152
+hmac: bf11d658fbe774788abde4dabacba5154644b7bf82e53d97b797a047a5863f8c
 
 ...

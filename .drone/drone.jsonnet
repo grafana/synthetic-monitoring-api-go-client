@@ -1,4 +1,4 @@
-local step(name, commands, image='ghcr.io/grafana/grafana-build-tools:v0.4.1') = {
+local step(name, commands, image='ghcr.io/grafana/grafana-build-tools:v0.6.1') = {
   name: name,
   commands: commands,
   image: image,
