@@ -483,12 +483,12 @@ well as at least one probe ID.
 
 The `frequency` value specifies how often the check runs in milliseconds
 (the value is not truly a "frequency" but a "period"). The minimum
-acceptable value is 1 second (1000 ms), and the maximum is 120 seconds
-(120000 ms).
+acceptable value is 1 second (1000 ms), and the maximum is 1 hour
+(3600000 ms).
 
 The `timeout` value specifies the maximum running time for the check in
 milliseconds. The minimum acceptable value is 1 second (1000 ms), and the
-maximum 10 seconds (10000 ms).
+maximum 60 seconds (60000 ms).
 
 The `ipVersion` value specifies whether the corresponding check will be
 performed using IPv4 or IPv6. The "Any" value indicates that IPv6 should
