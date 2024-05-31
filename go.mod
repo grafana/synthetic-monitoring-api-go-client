@@ -1,12 +1,11 @@
 module github.com/grafana/synthetic-monitoring-api-go-client
 
 go 1.21
-
-toolchain go1.21.6
+toolchain go1.22.2
 
 require (
 	github.com/google/go-cmp v0.6.0
-	github.com/grafana/synthetic-monitoring-agent v0.23.4
+	github.com/grafana/synthetic-monitoring-agent v0.24.1
 	github.com/quasilyte/go-ruleguard/dsl v0.3.22
 	github.com/rs/zerolog v1.33.0
 	github.com/stretchr/testify v1.9.0
