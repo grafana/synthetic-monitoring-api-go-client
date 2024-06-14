@@ -16,11 +16,7 @@ $(foreach v, \
 )
 endif
 
-ifeq ($(strip $(CI)),true)
-RUN_TOOL :=
-else
 RUN_TOOL := $(ROOTDIR)/scripts/docker-run
-endif
 
 include config.mk
 
@@ -194,12 +190,6 @@ docker-push:  docker
 	$(S) docker push $(DOCKER_TAG)
 	$(S) docker tag $(DOCKER_TAG) $(DOCKER_TAG):$(BUILD_VERSION)
 	$(S) docker push $(DOCKER_TAG):$(BUILD_VERSION)
-
-.PHONY: drone
-drone:
-	drone jsonnet --stream --source .drone/drone.jsonnet --target .drone/drone.yml --format
-	drone lint .drone/drone.yml
-	drone sign --save grafana/synthetic-monitoring-api-go-client .drone/drone.yml
 
 define build_go_command
 	$(S) echo 'Building $(1)'
