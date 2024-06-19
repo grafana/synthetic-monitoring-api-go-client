@@ -1,6 +1,7 @@
 module github.com/grafana/synthetic-monitoring-api-go-client
 
-go 1.21
+go 1.22
+
 toolchain go1.22.4
 
 require (
