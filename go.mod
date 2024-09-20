@@ -6,7 +6,7 @@ toolchain go1.23.0
 
 require (
 	github.com/google/go-cmp v0.6.0
-	github.com/grafana/synthetic-monitoring-agent v0.27.0
+	github.com/grafana/synthetic-monitoring-agent v0.28.0
 	github.com/quasilyte/go-ruleguard/dsl v0.3.22
 	github.com/rs/zerolog v1.33.0
 	github.com/stretchr/testify v1.9.0
