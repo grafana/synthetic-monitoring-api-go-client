@@ -21,9 +21,7 @@ linters:
     - errcheck
     - errname
     # TODO(mem): - errorlint
-    - execinquery
     # TODO(mem): - exhaustive
-    - exportloopref
     - gocheckcompilerdirectives
     # - TODO(mem): gochecknoglobals
     - gochecknoinits
