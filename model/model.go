@@ -18,6 +18,8 @@ type ResponseError struct {
 }
 
 // ErrorResponse was the old name for ResponseError. We want to keep backwards compatibility.
+//
+//nolint:errname
 type ErrorResponse = ResponseError
 
 type RegistrationInstallRequest struct {
