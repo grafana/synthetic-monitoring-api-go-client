@@ -1,12 +1,16 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+<a name="v0.9.2"></a>
+## [v0.9.2] - 2024-12-10
+
+<a name="v0.9.1"></a>
+## [v0.9.1] - 2024-12-02
 
 <a name="v0.9.0"></a>
 ## [v0.9.0] - 2024-11-11
 ### Fix
 - update grafana-build-tools to v0.32.0
-
 
 <a name="v0.8.0"></a>
 ## [v0.8.0] - 2024-01-31
