@@ -1,16 +1,24 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="v0.10.0"></a>
+## [v0.10.0] - 2025-01-06
+
 <a name="v0.9.2"></a>
 ## [v0.9.2] - 2024-12-10
+### Release
+- update changelog for 0.9.2 ([#226](https://github.com/grafana/synthetic-monitoring-agent/issues/226))
+
 
 <a name="v0.9.1"></a>
-## [v0.9.1] - 2024-12-02
+## [v0.9.1] - 2024-11-26
 
 <a name="v0.9.0"></a>
-## [v0.9.0] - 2024-11-11
+## [v0.9.0] - 2024-11-13
 ### Fix
 - update grafana-build-tools to v0.32.0
+
 
 <a name="v0.8.0"></a>
 ## [v0.8.0] - 2024-01-31
@@ -90,7 +98,10 @@
 <a name="v0.0.0"></a>
 ## v0.0.0 - 2021-06-22
 
-[Unreleased]: https://github.com/grafana/synthetic-monitoring-agent/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/grafana/synthetic-monitoring-agent/compare/v0.10.0...HEAD
+[v0.10.0]: https://github.com/grafana/synthetic-monitoring-agent/compare/v0.9.2...v0.10.0
+[v0.9.2]: https://github.com/grafana/synthetic-monitoring-agent/compare/v0.9.1...v0.9.2
+[v0.9.1]: https://github.com/grafana/synthetic-monitoring-agent/compare/v0.9.0...v0.9.1
 [v0.9.0]: https://github.com/grafana/synthetic-monitoring-agent/compare/v0.8.0...v0.9.0
 [v0.8.0]: https://github.com/grafana/synthetic-monitoring-agent/compare/v0.7.0...v0.8.0
 [v0.7.0]: https://github.com/grafana/synthetic-monitoring-agent/compare/v0.6.5...v0.7.0
