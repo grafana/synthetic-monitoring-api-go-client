@@ -1,4 +1,12 @@
 <a name="unreleased"></a>
+## [0.11.0](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.10.0...v0.11.0) (2025-01-23)
+
+
+### Features
+
+* add policy bot configuration ([ce8521a](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/ce8521aa1a279cf858ffecb28c48a99a8540a782))
+* Add release-please ([bc5ed71](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/bc5ed714c6a4468a843457899f1b43de95fef397))
+
 ## [Unreleased]
 
 
