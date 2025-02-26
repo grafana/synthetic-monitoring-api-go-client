@@ -1,4 +1,34 @@
 <a name="unreleased"></a>
+## [0.13.0](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.12.0...v0.13.0) (2025-02-26)
+
+
+### Features
+
+* add policy bot configuration ([ce8521a](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/ce8521aa1a279cf858ffecb28c48a99a8540a782))
+* Add release-please ([bc5ed71](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/bc5ed714c6a4468a843457899f1b43de95fef397))
+
+
+### Fixes
+
+* Move to Go 1.17 ([903632a](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/903632a2f9129106685a2fc980f9d7b5c9d94618))
+* Point CODEOWNERS to synthetic-monitoring-be ([5ff4ef0](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/5ff4ef0108e048f48679caf9a29449ac4b9fac72))
+* update grafana-build-tools to v0.32.0 ([b85710c](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/b85710ce1ecf93542ec00f93d243822f593c5928))
+
+
+### Documentation
+
+* Add API url for gb-south region ([a46b9f3](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/a46b9f34ebeff9b482b460a96a3a27522673aba1))
+* Add endpoint for Azure US Region ([57719e5](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/57719e5ae18689f0f037ea45fa46ced0cd25fdab))
+* Add endpoint for Europe Azure Region ([4e2439d](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/4e2439dcc0dfddade0475ede9f8bb79293601afa))
+
+
+### Miscellaneous Chores
+
+* Bump github.com/google/go-cmp from 0.6.0 to 0.7.0 ([#241](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/241)) ([c8b00d7](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/c8b00d75e956577ca3010fc3206c3e9c7a8bb1eb))
+* Bump github.com/grafana/synthetic-monitoring-agent from 0.34.1 to 0.34.2 ([#242](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/242)) ([799d636](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/799d636aef5e14e5b43758ed37e7cccedea572b5))
+* release 0.11.0 ([#234](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/234)) ([2b6804b](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/2b6804b0be1f6d02ad1d01f37d02f0a5ac00676e))
+* release 0.12.0 ([#235](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/235)) ([1a95a89](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/1a95a89de6dda7d1bac110e41994bf82db0e8be8))
+
 ## [0.12.0](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.11.0...v0.12.0) (2025-01-28)
 
 
