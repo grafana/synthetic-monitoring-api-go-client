@@ -1,4 +1,11 @@
 <a name="unreleased"></a>
+## [0.13.1](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.13.0...v0.13.1) (2025-03-06)
+
+
+### Miscellaneous Chores
+
+* Bump github.com/grafana/synthetic-monitoring-agent ([#243](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/243)) ([69644cf](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/69644cf46c73c1dbdee5bf06ac4943607e7950f7))
+
 ## [0.13.0](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.12.0...v0.13.0) (2025-02-26)
 
 
