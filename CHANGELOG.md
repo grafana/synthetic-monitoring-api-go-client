@@ -1,4 +1,11 @@
 <a name="unreleased"></a>
+## [0.13.3](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.13.2...v0.13.3) (2025-03-25)
+
+
+### Miscellaneous Chores
+
+* Bump github.com/urfave/cli/v2 from 2.27.5 to 2.27.6 ([#244](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/244)) ([1bdd761](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/1bdd76129df0300c3729dd7391cbf87df19b745a))
+
 ## [0.13.2](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.13.1...v0.13.2) (2025-03-17)
 
 
