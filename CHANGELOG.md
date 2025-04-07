@@ -1,4 +1,11 @@
 <a name="unreleased"></a>
+## [0.13.4](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.13.3...v0.13.4) (2025-03-27)
+
+
+### Miscellaneous Chores
+
+* Bump github.com/rs/zerolog from 1.33.0 to 1.34.0 ([e157baf](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/e157baf85fe9b3f76a18e3446d447b0dd1df667a))
+
 ## [0.13.3](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.13.2...v0.13.3) (2025-03-25)
 
 
