@@ -1,0 +1,9 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "github>grafana/sm-renovate//presets/grafana.json5",
+    "github>grafana/sm-renovate//presets/synthetic-monitoring.json5",
+    "github>grafana/sm-renovate//presets/go.json5",
+    "github>grafana/sm-renovate//presets/grafana-build-tools.json5"
+  ]
+}
