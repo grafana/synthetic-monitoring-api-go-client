@@ -1,4 +1,16 @@
 <a name="unreleased"></a>
+## [0.13.5](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.13.4...v0.13.5) (2025-04-09)
+
+
+### Miscellaneous Chores
+
+* setup renovate ([#256](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/256)) ([ffaf55a](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/ffaf55a03b5a45cd185cb5d1966142226f93099b))
+* Update actions/checkout action to v4.2.2 ([#261](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/261)) ([14b3972](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/14b39729b31f0ba3dac0a10860e7efdc75a23e73))
+* Update actions/create-github-app-token digest to d72941d ([#259](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/259)) ([36ee461](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/36ee4617866f40fbb0ca1c6781dcc1c8e5b3a936))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1 ([#268](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/268)) ([f794690](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/f7946904b0bc6411d8f0f5922dea3cf0735fb329))
+* Update googleapis/release-please-action digest to a02a34c ([#260](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/260)) ([200c1e4](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/200c1e4fbfbfcbbeb56496982cdca8f39e75bf0e))
+* Update module gotest.tools/gotestsum to v1.12.1 ([#266](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/266)) ([2c4c069](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/2c4c0699f3d5a0f2deab52b4485413e12d93e210))
+
 ## [0.13.4](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.13.3...v0.13.4) (2025-03-27)
 
 
