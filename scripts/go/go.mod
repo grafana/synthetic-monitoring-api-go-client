@@ -2,7 +2,7 @@ module github.com/grafana/synthetic-monitoring-api-go-client/scripts/go
 
 go 1.21
 
-toolchain go1.21.6
+toolchain go1.24.2
 
 require (
 	github.com/golangci/golangci-lint v1.55.2
