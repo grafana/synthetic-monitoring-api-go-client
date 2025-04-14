@@ -1471,7 +1471,6 @@ func TestUpdateCheckAlerts(t *testing.T) {
 		writeResponse(w, http.StatusAccepted, struct {
 			Alerts []model.CheckAlert `json:"alerts"`
 		}{Alerts: req.Alerts})
-
 	}))
 
 	c := NewClient(url, testTenant.token, http.DefaultClient)
