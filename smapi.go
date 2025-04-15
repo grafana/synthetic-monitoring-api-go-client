@@ -611,6 +611,83 @@ func (h *Client) Delete(ctx context.Context, url string, auth bool) (*http.Respo
 	return h.do(ctx, url, http.MethodDelete, auth, nil, nil)
 }
 
+// Put is a utility method to send a PUT request to the SM API.
+//
+// The `url` argument specifies the additional URL path of the request (minus
+// the base, which is part of the client). `auth` specifies whether or not to
+// include authorization headers. `body` specifies the request body, and
+// `headers` specifies the request headers.
+func (h *Client) Put(ctx context.Context, url string, auth bool, body io.Reader, headers http.Header) (*http.Response, error) {
+	return h.do(ctx, h.baseURL+url, http.MethodPut, auth, headers, body)
+}
+
+// PutJSON is a utility method to send a PUT request to the SM API with a
+// body specified by the `req` argument encoded as JSON.
+//
+// The `url` argument specifies the additional URL path of the request (minus
+// the base, which is part of the client). `auth` specifies whether or not to
+// include authorization headers.
+func (h *Client) PutJSON(ctx context.Context, url string, auth bool, req interface{}) (*http.Response, error) {
+	var body bytes.Buffer
+
+	var headers http.Header
+	if req != nil {
+		headers = defaultHeaders()
+
+		if err := json.NewEncoder(&body).Encode(&req); err != nil {
+			return nil, ErrCannotEncodeJSONRequest
+		}
+	}
+
+	return h.Put(ctx, url, auth, &body, headers)
+}
+
+func (h *Client) UpdateCheckAlerts(ctx context.Context, checkID int64, alerts []model.CheckAlert) ([]model.CheckAlert, error) {
+	if err := h.requireAuthToken(); err != nil {
+		return nil, err
+	}
+
+	request := struct {
+		Alerts []model.CheckAlert `json:"alerts"`
+	}{
+		Alerts: alerts,
+	}
+
+	resp, err := h.PutJSON(ctx, fmt.Sprintf("/check/%d/alerts", checkID), true, &request)
+	if err != nil {
+		return nil, fmt.Errorf("sending check alerts update request: %w", err)
+	}
+
+	var result struct {
+		Alerts []model.CheckAlert `json:"alerts"`
+	}
+	if err := ValidateResponse("check alerts update request", resp, &result); err != nil {
+		return nil, err
+	}
+
+	return result.Alerts, nil
+}
+
+func (h *Client) GetCheckAlerts(ctx context.Context, checkID int64) ([]model.CheckAlert, error) {
+	if err := h.requireAuthToken(); err != nil {
+		return nil, err
+	}
+
+	resp, err := h.Get(ctx, fmt.Sprintf("/check/%d/alerts", checkID), true, nil)
+	if err != nil {
+		return nil, fmt.Errorf("sending check alerts get request: %w", err)
+	}
+
+	var result struct {
+		Alerts []model.CheckAlert `json:"alerts"`
+	}
+	if err := ValidateResponse("check alerts get request", resp, &result); err != nil {
+		return nil, err
+	}
+
+	return result.Alerts, nil
+}
+
 // HTTPError represents errors returned from the Synthetic Monitoring API
 // server.
 //
@@ -655,7 +732,7 @@ func defaultHeaders() http.Header {
 // In the case of success, this function attempts to decode the response as a
 // JSON object and storing it the `result` argument.
 func ValidateResponse(action string, resp *http.Response, result interface{}) error {
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusAccepted {
 		respError := HTTPError{Code: resp.StatusCode, Status: resp.Status, Action: action}
 
 		if resp.Body != nil {

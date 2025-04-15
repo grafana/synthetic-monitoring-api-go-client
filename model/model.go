@@ -85,6 +85,14 @@ type CheckDeleteResponse struct {
 	CheckID int64  `json:"checkId"`
 }
 
+type CheckAlert struct {
+	Name      string  `json:"name"`
+	Threshold float64 `json:"threshold"`
+	Period    string  `json:"period,omitempty"`
+	Created   int64   `json:"created"`
+	Modified  int64   `json:"modified"`
+}
+
 func (e *ResponseError) Error() string {
 	switch {
 	case e == nil:
