@@ -617,7 +617,7 @@ func (h *Client) Delete(ctx context.Context, url string, auth bool) (*http.Respo
 // the base, which is part of the client). `auth` specifies whether or not to
 // include authorization headers. `body` specifies the request body, and
 // `headers` specifies the request headers.
-func (h *Client) Put(ctx context.Context, url string, auth bool, body io.Reader, headers http.Header) (*http.Response, error) {
+func (h *Client) Put(ctx context.Context, url string, auth bool, headers http.Header, body io.Reader) (*http.Response, error) {
 	return h.do(ctx, h.baseURL+url, http.MethodPut, auth, headers, body)
 }
 
@@ -639,7 +639,7 @@ func (h *Client) PutJSON(ctx context.Context, url string, auth bool, req interfa
 		}
 	}
 
-	return h.Put(ctx, url, auth, &body, headers)
+	return h.Put(ctx, url, auth, headers, &body)
 }
 
 func (h *Client) UpdateCheckAlerts(ctx context.Context, checkID int64, alerts []model.CheckAlert) ([]model.CheckAlert, error) {
@@ -668,7 +668,7 @@ func (h *Client) UpdateCheckAlerts(ctx context.Context, checkID int64, alerts []
 	return result.Alerts, nil
 }
 
-func (h *Client) GetCheckAlerts(ctx context.Context, checkID int64) ([]model.CheckAlert, error) {
+func (h *Client) GetCheckAlerts(ctx context.Context, checkID int64) ([]model.CheckAlertWithStatus, error) {
 	if err := h.requireAuthToken(); err != nil {
 		return nil, err
 	}
@@ -679,7 +679,7 @@ func (h *Client) GetCheckAlerts(ctx context.Context, checkID int64) ([]model.Che
 	}
 
 	var result struct {
-		Alerts []model.CheckAlert `json:"alerts"`
+		Alerts []model.CheckAlertWithStatus `json:"alerts"`
 	}
 	if err := ValidateResponse("check alerts get request", resp, &result); err != nil {
 		return nil, err
@@ -725,7 +725,7 @@ func defaultHeaders() http.Header {
 
 // ValidateResponse handles responses from the SM API.
 //
-// If the status code of the request is not 200, it is expected that there's an
+// If the status code of the request is not 200 or 202, it is expected that there's an
 // error included with the response. This function will decode that response
 // and return in the form of an HTTPError.
 //

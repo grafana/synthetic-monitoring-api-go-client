@@ -93,6 +93,12 @@ type CheckAlert struct {
 	Modified  int64   `json:"modified"`
 }
 
+type CheckAlertWithStatus struct {
+	CheckAlert
+	Status string `json:"status"`
+	Error  string `json:"error,omitempty"`
+}
+
 func (e *ResponseError) Error() string {
 	switch {
 	case e == nil:

@@ -1499,13 +1499,6 @@ func TestUpdateCheckAlerts(t *testing.T) {
 	require.NotNil(t, result)
 	require.Len(t, result, 2)
 
-	req, _ := http.NewRequestWithContext(ctx, http.MethodPut, url+"/api/v1/check/42/alerts", nil)
-	req.Header.Set("X-Test-Response", "202")
-	result, err = c.UpdateCheckAlerts(ctx, testCheckID, alerts)
-	require.NoError(t, err)
-	require.NotNil(t, result)
-	require.Len(t, result, 2)
-
 	// Check first alert
 	require.Equal(t, "ProbeFailedExecutionsTooHigh", result[0].Name)
 	require.Equal(t, 95.0, result[0].Threshold)
@@ -1538,24 +1531,30 @@ func TestGetCheckAlerts(t *testing.T) {
 			return
 		}
 
-		alerts := []model.CheckAlert{
+		alerts := []model.CheckAlertWithStatus{
 			{
-				Name:      "ProbeFailedExecutionsTooHigh",
-				Threshold: 95.0,
-				Period:    "5m",
-				Created:   1234567890,
-				Modified:  1234567890,
+				CheckAlert: model.CheckAlert{
+					Name:      "ProbeFailedExecutionsTooHigh",
+					Threshold: 95.0,
+					Period:    "5m",
+					Created:   1234567890,
+					Modified:  1234567890,
+				},
+				Status: "OK",
 			},
 			{
-				Name:      "TLSTargetCertificateCloseToExpiring",
-				Threshold: 7.0, // days until expiration
-				Created:   1234567890,
-				Modified:  1234567890,
+				CheckAlert: model.CheckAlert{
+					Name:      "TLSTargetCertificateCloseToExpiring",
+					Threshold: 7.0,
+					Created:   1234567890,
+					Modified:  1234567890,
+				},
+				Status: "OK",
 			},
 		}
 
 		writeResponse(w, http.StatusOK, struct {
-			Alerts []model.CheckAlert `json:"alerts"`
+			Alerts []model.CheckAlertWithStatus `json:"alerts"`
 		}{Alerts: alerts})
 	}))
 
