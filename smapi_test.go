@@ -1443,6 +1443,146 @@ func TestUpdateTenant(t *testing.T) {
 		"UpdateTenant mismatch (-want +got)")
 }
 
+func TestUpdateCheckAlerts(t *testing.T) {
+	orgs := orgs()
+	testTenant := orgs.findTenantByOrg(1000)
+	testTenantID := testTenant.id
+	testCheckID := int64(42)
+
+	url, mux, cleanup := newTestServer(t)
+	defer cleanup()
+	mux.Handle("/api/v1/check/42/alerts", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := requireMethod(w, r, http.MethodPut); err != nil {
+			return
+		}
+
+		if _, err := requireAuth(orgs, w, r, testTenantID); err != nil {
+			return
+		}
+
+		var req struct {
+			Alerts []model.CheckAlert `json:"alerts"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			errorResponse(w, http.StatusBadRequest, "cannot decode request")
+			return
+		}
+
+		writeResponse(w, http.StatusAccepted, struct {
+			Alerts []model.CheckAlert `json:"alerts"`
+		}{Alerts: req.Alerts})
+	}))
+
+	c := NewClient(url, testTenant.token, http.DefaultClient)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	alerts := []model.CheckAlert{
+		{
+			Name:      "ProbeFailedExecutionsTooHigh",
+			Threshold: 95.0,
+			Period:    "5m",
+			Created:   1234567890,
+			Modified:  1234567890,
+		},
+		{
+			Name:      "TLSTargetCertificateCloseToExpiring",
+			Threshold: 7.0, // days until expiration
+			Created:   1234567890,
+			Modified:  1234567890,
+		},
+	}
+
+	result, err := c.UpdateCheckAlerts(ctx, testCheckID, alerts)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	require.Len(t, result, 2)
+
+	// Check first alert
+	require.Equal(t, "ProbeFailedExecutionsTooHigh", result[0].Name)
+	require.Equal(t, 95.0, result[0].Threshold)
+	require.Equal(t, "5m", result[0].Period)
+	require.Equal(t, int64(1234567890), result[0].Created)
+	require.Equal(t, int64(1234567890), result[0].Modified)
+
+	// Check second alert
+	require.Equal(t, "TLSTargetCertificateCloseToExpiring", result[1].Name)
+	require.Equal(t, 7.0, result[1].Threshold)
+	require.Empty(t, result[1].Period)
+	require.Equal(t, int64(1234567890), result[1].Created)
+	require.Equal(t, int64(1234567890), result[1].Modified)
+}
+
+func TestGetCheckAlerts(t *testing.T) {
+	orgs := orgs()
+	testTenant := orgs.findTenantByOrg(1000)
+	testTenantID := testTenant.id
+	testCheckID := int64(42)
+
+	url, mux, cleanup := newTestServer(t)
+	defer cleanup()
+	mux.Handle("/api/v1/check/42/alerts", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := requireMethod(w, r, http.MethodGet); err != nil {
+			return
+		}
+
+		if _, err := requireAuth(orgs, w, r, testTenantID); err != nil {
+			return
+		}
+
+		alerts := []model.CheckAlertWithStatus{
+			{
+				CheckAlert: model.CheckAlert{
+					Name:      "ProbeFailedExecutionsTooHigh",
+					Threshold: 95.0,
+					Period:    "5m",
+					Created:   1234567890,
+					Modified:  1234567890,
+				},
+				Status: "OK",
+			},
+			{
+				CheckAlert: model.CheckAlert{
+					Name:      "TLSTargetCertificateCloseToExpiring",
+					Threshold: 7.0,
+					Created:   1234567890,
+					Modified:  1234567890,
+				},
+				Status: "OK",
+			},
+		}
+
+		writeResponse(w, http.StatusOK, struct {
+			Alerts []model.CheckAlertWithStatus `json:"alerts"`
+		}{Alerts: alerts})
+	}))
+
+	c := NewClient(url, testTenant.token, http.DefaultClient)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	result, err := c.GetCheckAlerts(ctx, testCheckID)
+	require.NoError(t, err)
+	require.NotNil(t, result)
+	require.Len(t, result, 2)
+
+	// Check first alert
+	require.Equal(t, "ProbeFailedExecutionsTooHigh", result[0].Name)
+	require.Equal(t, 95.0, result[0].Threshold)
+	require.Equal(t, "5m", result[0].Period)
+	require.Equal(t, int64(1234567890), result[0].Created)
+	require.Equal(t, int64(1234567890), result[0].Modified)
+
+	// Check second alert
+	require.Equal(t, "TLSTargetCertificateCloseToExpiring", result[1].Name)
+	require.Equal(t, 7.0, result[1].Threshold)
+	require.Empty(t, result[1].Period)
+	require.Equal(t, int64(1234567890), result[1].Created)
+	require.Equal(t, int64(1234567890), result[1].Modified)
+}
+
 func newTestServer(t *testing.T) (string, *http.ServeMux, func()) {
 	t.Helper()
 
