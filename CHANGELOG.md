@@ -1,4 +1,5 @@
-<a name="unreleased"></a>
+# Changelog
+
 ## [0.13.5](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.13.4...v0.13.5) (2025-04-09)
 
 
