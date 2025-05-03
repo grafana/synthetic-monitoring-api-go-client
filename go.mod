@@ -2,7 +2,7 @@ module github.com/grafana/synthetic-monitoring-api-go-client
 
 go 1.23
 
-toolchain go1.23.3
+toolchain go1.24.2
 
 require (
 	github.com/google/go-cmp v0.7.0
