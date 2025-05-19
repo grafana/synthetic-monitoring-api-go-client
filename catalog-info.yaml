@@ -1,0 +1,14 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: synthetic-monitoring-api-go-client
+  title: synthetic-monitoring-api-go-client
+  description: |
+    This is a Go client for the API used by Grafana's Synthetic Monitoring application.
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    github.com/project-slug: grafana/synthetic-monitoring-api-go-client
+spec:
+  type: library
+  owner: group:default/synthetic-monitoring-be
+  lifecycle: production
