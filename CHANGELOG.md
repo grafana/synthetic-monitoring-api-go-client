@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.14.1](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.14.0...v0.14.1) (2025-06-06)
+
+
+### Miscellaneous Chores
+
+* Bump golang.org/x/net from 0.35.0 to 0.38.0 ([9e1a040](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/9e1a040d489f97e1efa6b7420645a63cf973b6d2))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.5.2 ([#283](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/283)) ([da9faa8](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/da9faa89e9ac13760cdc6c5190881d59de7db53f))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.6.0 ([#285](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/285)) ([f1f79f8](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/f1f79f8f9e5af2b83af2f337e3da88230a90924d))
+* Update module github.com/golangci/golangci-lint to v1.64.8 ([16257cd](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/16257cd6477ca93ebd4645a8002dc504f238d847))
+* Update module gotest.tools/gotestsum to v1.12.2 ([c2059d0](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/c2059d080f3d0ebf71d1d5063a991e1fae906396))
+
 ## [0.14.0](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.13.5...v0.14.0) (2025-04-30)
 
 
