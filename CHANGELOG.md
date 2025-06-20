@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.14.2](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.14.1...v0.14.2) (2025-06-20)
+
+
+### Documentation
+
+* Register Component into Software Catalog and set up TechDocs publishing ([#286](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/286)) ([fe22674](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/fe226743f8e36c547ca6d4107abae690a2410b42))
+
+
+### Miscellaneous Chores
+
+* Bump github.com/grafana/synthetic-monitoring-agent ([43ef924](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/43ef924aded9d9b312a2320ac397b3662231b099))
+* Bump github.com/grafana/synthetic-monitoring-agent ([ed173cb](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/ed173cbe1fe8b5ceebd9a389208e853aa6c7ecc9))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.7.3 ([0bb1562](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/0bb15623afb786639d365d6b4cc6e4b7ae2a0ab0))
+* Update module github.com/urfave/cli/v2 to v2.27.7 ([11b6d3c](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/11b6d3cf7d5df8ddd7b03086ceef5c9a1d21ce2b))
+* Update module gotest.tools/gotestsum to v1.12.3 ([447037a](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/447037af310c42ea6501fd8978a7e14569bdf57d))
+
 ## [0.14.1](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.14.0...v0.14.1) (2025-06-06)
 
 
