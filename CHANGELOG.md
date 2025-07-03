@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.14.3](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.14.2...v0.14.3) (2025-07-03)
+
+
+### Miscellaneous Chores
+
+* Bump github.com/go-viper/mapstructure/v2 in /scripts/go ([10ac58f](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/10ac58fa60938a018922aaed84f30a142c326239))
+* Bump github.com/grafana/synthetic-monitoring-agent ([17cc599](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/17cc599b47a35e762f2afa3547edc09e2436d841))
+
 ## [0.14.2](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.14.1...v0.14.2) (2025-06-20)
 
 
