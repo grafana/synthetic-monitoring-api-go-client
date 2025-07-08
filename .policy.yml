@@ -9,6 +9,7 @@ policy:
     - or:
         - and:
             - Workflow .github/workflows/build.yml succeeded or skipped
+            - Workflow .github/workflows/renovate-validate.yaml succeeded or skipped
             - Workflow .github/workflows/validate-policy-bot-config.yml succeeded or skipped
             - default to approval
         - override policies
@@ -26,6 +27,22 @@ approval_rules:
             - success
           workflows:
             - .github/workflows/build.yml
+  - name: Workflow .github/workflows/renovate-validate.yaml succeeded or skipped
+    if:
+      changed_files:
+        paths:
+          - ^renovate\.(?:[^/]*)$
+          - ^\.renovate\.(?:[^/]*)$
+          - ^\.github\/renovate\.(?:[^/]*)$
+          - ^\.github\/workflows\/renovate(?:[^/]*)$
+    requires:
+      conditions:
+        has_workflow_result:
+          conclusions:
+            - skipped
+            - success
+          workflows:
+            - .github/workflows/renovate-validate.yaml
   - name: Workflow .github/workflows/validate-policy-bot-config.yml succeeded or skipped
     if:
       changed_files:
