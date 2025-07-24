@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.14.4](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.14.3...v0.14.4) (2025-07-24)
+
+
+### Fixes
+
+* Update CODEOWNERS file to enable release-please workflow ([61eb458](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/61eb45857c60691697f4546ffe7dcd1fca06d12b))
+* Update policybot configuration ([1932648](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/1932648834ca9f8a39860c3b9eac8b61ad146704))
+* Upgrade agent to v0.39.0 and fix stale tests ([#311](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/311)) ([a3ab868](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/a3ab868826dcc91b7210f666e8d66558d00db3ed))
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.10.0 ([60e2e0d](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/60e2e0d655e27eb8419f354e5474449cc03aa084))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.9.0 ([9b94e63](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/9b94e630edf7671fb2a3c947342645a298a6c576))
+
 ## [0.14.3](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.14.2...v0.14.3) (2025-07-07)
 
 
