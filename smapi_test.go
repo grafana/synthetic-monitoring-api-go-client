@@ -1625,26 +1625,27 @@ func TestCustomHeadersInRequests(t *testing.T) {
 	mux.Handle("/api/v1/test", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		capturedHeaders = r.Header
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status": "ok"}`))
 	}))
 
 	client := NewClient(url, "", nil)
 	require.NotNil(t, client)
 
 	// test with default headers
-	_, err := client.Get(context.Background(), "/test", false, nil)
+	resp, err := client.Get(context.Background(), "/test", false, nil)
 	require.NoError(t, err)
 	require.Equal(t, "sm-go-client", capturedHeaders.Get("X-Client-ID"))
 	require.Equal(t, version.Version, capturedHeaders.Get("X-Client-Version"))
+	resp.Body.Close()
 
 	// test with custom headers
 	client.SetCustomClientID("my-custom-client")
 	client.SetCustomClientVersion("2.0.0")
 
-	_, err = client.Get(context.Background(), "/test", false, nil)
+	resp, err = client.Get(context.Background(), "/test", false, nil)
 	require.NoError(t, err)
 	require.Equal(t, "my-custom-client", capturedHeaders.Get("X-Client-ID"))
 	require.Equal(t, "2.0.0", capturedHeaders.Get("X-Client-Version"))
+	resp.Body.Close()
 }
 
 func newTestServer(t *testing.T) (string, *http.ServeMux, func()) {
