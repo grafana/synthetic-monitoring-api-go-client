@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/grafana/synthetic-monitoring-api-go-client/model"
+	"github.com/grafana/synthetic-monitoring-api-go-client/version"
 
 	"github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring"
 )
@@ -37,7 +38,11 @@ var (
 	ErrUnexpectedResponse = errors.New("unexpected response")
 )
 
-const clientID = "sm-go-client"
+const (
+	clientIDHeader      = "X-Client-ID"
+	clientVersionHeader = "X-Client-Version"
+	clientID            = "sm-go-client"
+)
 
 // Client is a Synthetic Monitoring API client.
 //
@@ -570,8 +575,8 @@ func (h *Client) Get(ctx context.Context, url string, auth bool, headers http.He
 	if headers == nil {
 		headers = make(http.Header)
 	}
-	headers.Set("X-Client-ID", clientID)
-
+	headers.Set(clientIDHeader, clientID)
+	headers.Set(clientVersionHeader, version.Version)
 	return h.do(ctx, h.baseURL+url, http.MethodGet, auth, headers, nil)
 }
 
@@ -616,7 +621,8 @@ func (h *Client) PostJSON(ctx context.Context, url string, auth bool, req interf
 // that need to be included with the request.
 func (h *Client) Delete(ctx context.Context, url string, auth bool) (*http.Response, error) {
 	headers := make(http.Header)
-	headers.Set("X-Client-ID", clientID)
+	headers.Set(clientIDHeader, clientID)
+	headers.Set(clientVersionHeader, version.Version)
 
 	return h.do(ctx, url, http.MethodDelete, auth, headers, nil)
 }
@@ -631,7 +637,8 @@ func (h *Client) Put(ctx context.Context, url string, auth bool, headers http.He
 	if headers == nil {
 		headers = make(http.Header)
 	}
-	headers.Set("X-Client-ID", clientID)
+	headers.Set(clientIDHeader, clientID)
+	headers.Set(clientVersionHeader, version.Version)
 
 	return h.do(ctx, h.baseURL+url, http.MethodPut, auth, headers, body)
 }
@@ -734,7 +741,8 @@ func (e *HTTPError) Error() string {
 func defaultHeaders() http.Header {
 	headers := make(http.Header)
 	headers.Set("Content-type", "application/json; charset=utf-8")
-	headers.Set("X-Client-ID", clientID)
+	headers.Set(clientIDHeader, clientID)
+	headers.Set(clientVersionHeader, version.Version)
 
 	return headers
 }

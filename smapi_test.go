@@ -15,6 +15,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring"
 	"github.com/grafana/synthetic-monitoring-api-go-client/model"
+	"github.com/grafana/synthetic-monitoring-api-go-client/version"
 	"github.com/stretchr/testify/require"
 )
 
@@ -1581,6 +1582,23 @@ func TestGetCheckAlerts(t *testing.T) {
 	require.Empty(t, result[1].Period)
 	require.Equal(t, int64(1234567890), result[1].Created)
 	require.Equal(t, int64(1234567890), result[1].Modified)
+}
+
+func TestDefaultHeaders(t *testing.T) {
+	headers := defaultHeaders()
+
+	// Check that X-Client-ID is set
+	clientID := headers.Get("X-Client-ID")
+	require.Equal(t, "sm-go-client", clientID, "X-Client-ID header should be set to 'sm-go-client'")
+
+	// Check that X-Client-Version is set
+	clientVersion := headers.Get("X-Client-Version")
+	require.NotEmpty(t, clientVersion, "X-Client-Version header should not be empty")
+	require.Equal(t, version.Version, clientVersion, "X-Client-Version header should match version.Version")
+
+	// Check that Content-Type is set
+	contentType := headers.Get("Content-Type")
+	require.Equal(t, "application/json; charset=utf-8", contentType, "Content-Type header should be set correctly")
 }
 
 func newTestServer(t *testing.T) (string, *http.ServeMux, func()) {
