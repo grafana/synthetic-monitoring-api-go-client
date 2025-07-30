@@ -51,6 +51,10 @@ type Client struct {
 	client      *http.Client
 	accessToken string
 	baseURL     string
+
+	// custom headers that override defaults
+	customClientID      string
+	customClientVersion string
 }
 
 // NewClient creates a new client for the Synthetic Monitoring API.
@@ -101,6 +105,18 @@ func NewDatasourceClient(baseURL, accessToken string, client *http.Client) *Clie
 	}
 }
 
+// SetCustomClientID sets a custom X-Client-ID header value that will
+// override the go-client's default.
+func (h *Client) SetCustomClientID(clientID string) {
+	h.customClientID = clientID
+}
+
+// SetCustomClientVersion sets a custom X-Client-Version header value
+// that will override the go-client's default.
+func (h *Client) SetCustomClientVersion(version string) {
+	h.customClientVersion = version
+}
+
 // Install takes a stack ID, a hosted metrics instance ID, a hosted logs
 // instance ID and a publisher token that can be used to publish data to those
 // instances and sets up a new Synthetic Monitoring tenant using those
@@ -126,7 +142,7 @@ func (h *Client) Install(ctx context.Context, stackID, metricsInstanceID, logsIn
 
 	body := bytes.NewReader(buf)
 
-	headers := defaultHeaders()
+	headers := h.getDefaultHeaders()
 	headers.Set("Authorization", "Bearer "+publisherToken)
 
 	resp, err := h.Post(ctx, "/register/install", false, headers, body)
@@ -575,8 +591,10 @@ func (h *Client) Get(ctx context.Context, url string, auth bool, headers http.He
 	if headers == nil {
 		headers = make(http.Header)
 	}
-	headers.Set(clientIDHeader, clientID)
-	headers.Set(clientVersionHeader, version.Version)
+	clientIDValue, clientVersionValue := h.getClientHeaders()
+	headers.Set(clientIDHeader, clientIDValue)
+	headers.Set(clientVersionHeader, clientVersionValue)
+
 	return h.do(ctx, h.baseURL+url, http.MethodGet, auth, headers, nil)
 }
 
@@ -603,7 +621,7 @@ func (h *Client) PostJSON(ctx context.Context, url string, auth bool, req interf
 
 	var headers http.Header
 	if req != nil {
-		headers = defaultHeaders()
+		headers = h.getDefaultHeaders()
 
 		if err := json.NewEncoder(&body).Encode(&req); err != nil {
 			return nil, ErrCannotEncodeJSONRequest
@@ -621,8 +639,9 @@ func (h *Client) PostJSON(ctx context.Context, url string, auth bool, req interf
 // that need to be included with the request.
 func (h *Client) Delete(ctx context.Context, url string, auth bool) (*http.Response, error) {
 	headers := make(http.Header)
-	headers.Set(clientIDHeader, clientID)
-	headers.Set(clientVersionHeader, version.Version)
+	clientIDValue, clientVersionValue := h.getClientHeaders()
+	headers.Set(clientIDHeader, clientIDValue)
+	headers.Set(clientVersionHeader, clientVersionValue)
 
 	return h.do(ctx, url, http.MethodDelete, auth, headers, nil)
 }
@@ -637,8 +656,9 @@ func (h *Client) Put(ctx context.Context, url string, auth bool, headers http.He
 	if headers == nil {
 		headers = make(http.Header)
 	}
-	headers.Set(clientIDHeader, clientID)
-	headers.Set(clientVersionHeader, version.Version)
+	clientIDValue, clientVersionValue := h.getClientHeaders()
+	headers.Set(clientIDHeader, clientIDValue)
+	headers.Set(clientVersionHeader, clientVersionValue)
 
 	return h.do(ctx, h.baseURL+url, http.MethodPut, auth, headers, body)
 }
@@ -654,7 +674,7 @@ func (h *Client) PutJSON(ctx context.Context, url string, auth bool, req interfa
 
 	var headers http.Header
 	if req != nil {
-		headers = defaultHeaders()
+		headers = h.getDefaultHeaders()
 
 		if err := json.NewEncoder(&body).Encode(&req); err != nil {
 			return nil, ErrCannotEncodeJSONRequest
@@ -738,13 +758,31 @@ func (e *HTTPError) Error() string {
 	return fmt.Sprintf("%s: status=\"%s\"", e.Action, e.Status)
 }
 
-func defaultHeaders() http.Header {
+// getDefaultHeaders returns the default headers with custom values if set.
+func (h *Client) getDefaultHeaders() http.Header {
 	headers := make(http.Header)
 	headers.Set("Content-type", "application/json; charset=utf-8")
-	headers.Set(clientIDHeader, clientID)
-	headers.Set(clientVersionHeader, version.Version)
+
+	clientIDValue, clientVersionValue := h.getClientHeaders()
+	headers.Set(clientIDHeader, clientIDValue)
+	headers.Set(clientVersionHeader, clientVersionValue)
 
 	return headers
+}
+
+// getClientHeaders returns the client headers, using custom values if set, otherwise defaults.
+func (h *Client) getClientHeaders() (string, string) {
+	clientIDValue := clientID
+	if h.customClientID != "" {
+		clientIDValue = h.customClientID
+	}
+
+	clientVersionValue := version.Version
+	if h.customClientVersion != "" {
+		clientVersionValue = h.customClientVersion
+	}
+
+	return clientIDValue, clientVersionValue
 }
 
 // ValidateResponse handles responses from the SM API.

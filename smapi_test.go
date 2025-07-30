@@ -1584,21 +1584,67 @@ func TestGetCheckAlerts(t *testing.T) {
 	require.Equal(t, int64(1234567890), result[1].Modified)
 }
 
-func TestDefaultHeaders(t *testing.T) {
-	headers := defaultHeaders()
+func TestHeaders(t *testing.T) {
+	url, _, cleanup := newTestServer(t)
+	defer cleanup()
 
-	// Check that X-Client-ID is set
-	clientID := headers.Get("X-Client-ID")
-	require.Equal(t, "sm-go-client", clientID, "X-Client-ID header should be set to 'sm-go-client'")
+	client := NewClient(url, "", nil)
+	require.NotNil(t, client)
 
-	// Check that X-Client-Version is set
-	clientVersion := headers.Get("X-Client-Version")
-	require.NotEmpty(t, clientVersion, "X-Client-Version header should not be empty")
-	require.Equal(t, version.Version, clientVersion, "X-Client-Version header should match version.Version")
+	// test default headers
+	clientIDValue, clientVersionValue := client.getClientHeaders()
+	require.Equal(t, "sm-go-client", clientIDValue)
+	require.Equal(t, version.Version, clientVersionValue)
 
-	// Check that Content-Type is set
-	contentType := headers.Get("Content-Type")
-	require.Equal(t, "application/json; charset=utf-8", contentType, "Content-Type header should be set correctly")
+	// test custom client ID
+	client.SetCustomClientID("custom-client")
+	clientIDValue, clientVersionValue = client.getClientHeaders()
+	require.Equal(t, "custom-client", clientIDValue)
+	require.Equal(t, version.Version, clientVersionValue)
+
+	// test custom client version
+	client.SetCustomClientVersion("1.2.3")
+	clientIDValue, clientVersionValue = client.getClientHeaders()
+	require.Equal(t, "custom-client", clientIDValue)
+	require.Equal(t, "1.2.3", clientVersionValue)
+
+	// test clearing custom values
+	client.SetCustomClientID("")
+	client.SetCustomClientVersion("")
+	clientIDValue, clientVersionValue = client.getClientHeaders()
+	require.Equal(t, "sm-go-client", clientIDValue)
+	require.Equal(t, version.Version, clientVersionValue)
+}
+
+func TestCustomHeadersInRequests(t *testing.T) {
+	url, mux, cleanup := newTestServer(t)
+	defer cleanup()
+
+	// set up a test endpoint that captures headers
+	var capturedHeaders http.Header
+	mux.Handle("/api/v1/test", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedHeaders = r.Header
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status": "ok"}`))
+	}))
+
+	client := NewClient(url, "", nil)
+	require.NotNil(t, client)
+
+	// test with default headers
+	_, err := client.Get(context.Background(), "/test", false, nil)
+	require.NoError(t, err)
+	require.Equal(t, "sm-go-client", capturedHeaders.Get("X-Client-ID"))
+	require.Equal(t, version.Version, capturedHeaders.Get("X-Client-Version"))
+
+	// test with custom headers
+	client.SetCustomClientID("my-custom-client")
+	client.SetCustomClientVersion("2.0.0")
+
+	_, err = client.Get(context.Background(), "/test", false, nil)
+	require.NoError(t, err)
+	require.Equal(t, "my-custom-client", capturedHeaders.Get("X-Client-ID"))
+	require.Equal(t, "2.0.0", capturedHeaders.Get("X-Client-Version"))
 }
 
 func newTestServer(t *testing.T) (string, *http.ServeMux, func()) {
