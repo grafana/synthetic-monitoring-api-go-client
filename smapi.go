@@ -37,6 +37,8 @@ var (
 	ErrUnexpectedResponse = errors.New("unexpected response")
 )
 
+const clientID = "sm-go-client"
+
 // Client is a Synthetic Monitoring API client.
 //
 // It should be initialized using the NewClient function in this package.
@@ -565,6 +567,11 @@ func (h *Client) do(ctx context.Context, url, method string, auth bool, headers 
 // include authorization headers. `headers` specifies any additional headers
 // that need to be included with the request.
 func (h *Client) Get(ctx context.Context, url string, auth bool, headers http.Header) (*http.Response, error) {
+	if headers == nil {
+		headers = make(http.Header)
+	}
+	headers.Set("X-Client-ID", clientID)
+
 	return h.do(ctx, h.baseURL+url, http.MethodGet, auth, headers, nil)
 }
 
@@ -608,7 +615,10 @@ func (h *Client) PostJSON(ctx context.Context, url string, auth bool, req interf
 // include authorization headers. `headers` specifies any additional headers
 // that need to be included with the request.
 func (h *Client) Delete(ctx context.Context, url string, auth bool) (*http.Response, error) {
-	return h.do(ctx, url, http.MethodDelete, auth, nil, nil)
+	headers := make(http.Header)
+	headers.Set("X-Client-ID", clientID)
+
+	return h.do(ctx, url, http.MethodDelete, auth, headers, nil)
 }
 
 // Put is a utility method to send a PUT request to the SM API.
@@ -618,6 +628,11 @@ func (h *Client) Delete(ctx context.Context, url string, auth bool) (*http.Respo
 // include authorization headers. `body` specifies the request body, and
 // `headers` specifies the request headers.
 func (h *Client) Put(ctx context.Context, url string, auth bool, headers http.Header, body io.Reader) (*http.Response, error) {
+	if headers == nil {
+		headers = make(http.Header)
+	}
+	headers.Set("X-Client-ID", clientID)
+
 	return h.do(ctx, h.baseURL+url, http.MethodPut, auth, headers, body)
 }
 
@@ -719,6 +734,7 @@ func (e *HTTPError) Error() string {
 func defaultHeaders() http.Header {
 	headers := make(http.Header)
 	headers.Set("Content-type", "application/json; charset=utf-8")
+	headers.Set("X-Client-ID", clientID)
 
 	return headers
 }
