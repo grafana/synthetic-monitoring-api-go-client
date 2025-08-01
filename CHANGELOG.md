@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.15.0](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.14.4...v0.15.0) (2025-08-01)
+
+
+### Features
+
+* Include X-Client-ID header on API requests ([#315](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/315)) ([e8da58e](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/e8da58e18ebb8d163b2a6c29b28535022e1dafc4))
+
+
+### Miscellaneous Chores
+
+* Update module github.com/grafana/synthetic-monitoring-agent to v0.39.1 ([ff4088c](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/ff4088ccb2132a2b63de1db55fc5c13c4933f89b))
+
 ## [0.14.4](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.14.3...v0.14.4) (2025-07-24)
 
 
