@@ -11,10 +11,6 @@
         { "type": "docs", "section": "Documentation" },
         { "type": "chore", "section": "Miscellaneous Chores" }
       ]
-    },
-    "version": {
-      "release-type": "go",
-      "path": "version.go"
     }
   },
   "draft-pull-request": true,
