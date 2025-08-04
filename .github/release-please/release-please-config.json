@@ -10,7 +10,8 @@
         { "type": "fix", "section": "Fixes" },
         { "type": "docs", "section": "Documentation" },
         { "type": "chore", "section": "Miscellaneous Chores" }
-      ]
+      ],
+      "extra-files": ["version/version.go"]
     }
   },
   "draft-pull-request": true,
