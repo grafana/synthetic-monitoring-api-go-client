@@ -169,6 +169,10 @@ func GetCheckCommands(cc ChecksClient) cli.Commands {
 							Name:  "cache-busting-parameter-name",
 							Usage: "name of the query parameter to add to the request to bust the cache",
 						},
+						&cli.BoolFlag{
+							Name:  "secret-manager-enabled",
+							Usage: "enable secret manager for bearer token and basic auth password resolution",
+						},
 					},
 				},
 				{
@@ -454,6 +458,7 @@ func (c ChecksClient) checkAddHttp(ctx *cli.Context) error {
 				Body:                       ctx.String("body"),
 				NoFollowRedirects:          ctx.Bool("no-follow-redirects"),
 				BearerToken:                ctx.String("bearer-token"),
+				SecretManagerEnabled:       ctx.Bool("secret-manager-enabled"),
 				FailIfSSL:                  ctx.Bool("fail-if-ssl"),
 				FailIfNotSSL:               ctx.Bool("fail-if-not-ssl"),
 				ValidStatusCodes:           validHttpStatusCodes,
