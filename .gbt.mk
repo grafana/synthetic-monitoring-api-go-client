@@ -1,1 +1,1 @@
-GBT_IMAGE=ghcr.io/grafana/grafana-build-tools:v1.12.1
+GBT_IMAGE=ghcr.io/grafana/grafana-build-tools:v1.13.0
