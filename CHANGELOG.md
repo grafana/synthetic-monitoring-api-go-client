@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.15.3](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.15.2...v0.15.3) (2025-08-25)
+
+
+### Miscellaneous Chores
+
+* Bump github.com/go-viper/mapstructure/v2 in /scripts/go ([8214bb8](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/8214bb8b077343357fb897c7b70ce446044023ae))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.14.0 ([#339](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/339)) ([74b4d0f](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/74b4d0fad012c679662448c8851e746a5a164aa9))
+* Update googleapis/release-please-action action to v4.3.0 ([0fb0a85](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/0fb0a854fe65ef63403146c2e65bf1197220d834))
+* Update module github.com/grafana/synthetic-monitoring-agent to v0.40.1 ([54c75a2](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/54c75a2e6b854474312f7d8239f028323f3625ea))
+* Update module github.com/stretchr/testify to v1.11.0 ([0df51f7](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/0df51f7164019663d90f02c482db0985d06a6028))
+
 ## [0.15.2](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.15.1...v0.15.2) (2025-08-15)
 
 
