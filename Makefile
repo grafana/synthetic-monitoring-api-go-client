@@ -123,7 +123,7 @@ golangci-lint:
 	$(S) echo "lint via golangci-lint"
 	$(S) $(RUN_TOOL) golangci-lint run \
 		$(GOLANGCI_LINT_MOD_FLAGS) \
-		--config ./scripts/go/configs/golangci.yml \
+		--config '$(ROOTDIR)/.golangci.yaml' \
 		$(GO_PKGS)
 
 scripts/go/bin/gosec: scripts/go/go.mod
