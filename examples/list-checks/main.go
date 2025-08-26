@@ -44,7 +44,9 @@ func main() {
 	}
 
 	// Delete the access token when we are done.
-	defer c.DeleteToken(ctx)
+	defer func() {
+		_ = c.DeleteToken(ctx)
+	}()
 
 	err = listChecks(ctx, c, os.Stdout)
 	if err != nil {
