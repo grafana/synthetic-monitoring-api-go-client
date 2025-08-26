@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring"
+	sm "github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring"
 	smapi "github.com/grafana/synthetic-monitoring-api-go-client"
 )
 
@@ -43,7 +43,9 @@ func main() {
 	}
 
 	// delete the token we created by calling c.Install above.
-	defer c.DeleteToken(ctx)
+	defer func() {
+		_ = c.DeleteToken(ctx)
+	}()
 
 	probe, err := findProbe(ctx, cfg.ProbeName, installResp.TenantInfo.ID, c)
 	if err != nil {
@@ -104,10 +106,10 @@ func processFlags(args []string) (config, error) {
 	return cfg, nil
 }
 
-func findProbe(ctx context.Context, name string, tenantID int64, client *smapi.Client) (synthetic_monitoring.Probe, error) {
+func findProbe(ctx context.Context, name string, tenantID int64, client *smapi.Client) (sm.Probe, error) {
 	existingProbes, err := client.ListProbes(ctx)
 	if err != nil {
-		return synthetic_monitoring.Probe{}, fmt.Errorf("listing probes: %w", err)
+		return sm.Probe{}, fmt.Errorf("listing probes: %w", err)
 	}
 
 	for _, p := range existingProbes {
@@ -116,10 +118,10 @@ func findProbe(ctx context.Context, name string, tenantID int64, client *smapi.C
 		}
 	}
 
-	return synthetic_monitoring.Probe{}, fmt.Errorf(`Probe "%s" not found.`, name)
+	return sm.Probe{}, fmt.Errorf(`probe "%s" not found`, name)
 }
 
-func removeProbeFromChecks(ctx context.Context, probe synthetic_monitoring.Probe, client *smapi.Client) error {
+func removeProbeFromChecks(ctx context.Context, probe sm.Probe, client *smapi.Client) error {
 	checks, err := client.ListChecks(ctx)
 	if err != nil {
 		return fmt.Errorf("cannot list checks: %w", err)

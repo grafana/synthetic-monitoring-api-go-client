@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring"
 	sm "github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring"
 	"github.com/urfave/cli/v2"
 )
@@ -231,12 +230,12 @@ func (c ProbesClient) updateProbe(ctx *cli.Context) error {
 	}
 	defer func() { _ = cleanup(ctx.Context) }()
 
-	var probeUpdateFunc func(ctx context.Context, probe synthetic_monitoring.Probe) (*synthetic_monitoring.Probe, []byte, error)
+	var probeUpdateFunc func(ctx context.Context, probe sm.Probe) (*sm.Probe, []byte, error)
 
 	if ctx.Bool("reset-token") {
 		probeUpdateFunc = smClient.ResetProbeToken
 	} else {
-		probeUpdateFunc = func(ctx context.Context, probe synthetic_monitoring.Probe) (*synthetic_monitoring.Probe, []byte, error) {
+		probeUpdateFunc = func(ctx context.Context, probe sm.Probe) (*sm.Probe, []byte, error) {
 			newProbe, err := smClient.UpdateProbe(ctx, probe)
 
 			return newProbe, nil, err //nolint:wrapcheck // this function is an adapter
