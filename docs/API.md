@@ -307,6 +307,7 @@ For HTTP, the structure is as follows:
     "password": <string>
   },
   "bearerToken": <string>,
+  "secretManagerEnabled": <boolean>,
   "proxyURL": <string>,
   "failIfSSL": <boolean>,
   "failIfNotSSL": <boolean>,
