@@ -5,7 +5,7 @@ go 1.24.0
 toolchain go1.24.6
 
 require (
-	github.com/golangci/golangci-lint v1.64.8
+	github.com/golangci/golangci-lint/v2 v2.4.0
 	github.com/golangci/golangci-lint/v2 v2.4.0
 	github.com/quasilyte/go-ruleguard/dsl v0.3.22
 	github.com/securego/gosec v0.0.0-20200401082031-e946c8c39989
