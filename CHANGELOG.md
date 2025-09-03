@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.16.0](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.15.4...v0.16.0) (2025-09-03)
+
+
+### Features
+
+* add support for the secret manager in http checks ([#326](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/326)) ([6612d0d](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/6612d0d611c3c9bff1233f0ac9834661bad4c68f))
+
+
+### Miscellaneous Chores
+
+* Update module github.com/grafana/synthetic-monitoring-agent to v0.41.3 ([97ae94e](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/97ae94eca88fa95caf18b4f4ca55ce4e7ab68078))
+
 ## [0.15.4](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.15.3...v0.15.4) (2025-09-01)
 
 
