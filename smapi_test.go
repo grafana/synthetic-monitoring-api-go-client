@@ -1481,11 +1481,12 @@ func TestUpdateCheckAlerts(t *testing.T) {
 
 	alerts := []model.CheckAlert{
 		{
-			Name:      "ProbeFailedExecutionsTooHigh",
-			Threshold: 95.0,
-			Period:    "5m",
-			Created:   1234567890,
-			Modified:  1234567890,
+			Name:       "ProbeFailedExecutionsTooHigh",
+			Threshold:  95.0,
+			Period:     "5m",
+			RunbookUrl: "https://example.com/runbook/probe-failures",
+			Created:    1234567890,
+			Modified:   1234567890,
 		},
 		{
 			Name:      "TLSTargetCertificateCloseToExpiring",
@@ -1504,6 +1505,7 @@ func TestUpdateCheckAlerts(t *testing.T) {
 	require.Equal(t, "ProbeFailedExecutionsTooHigh", result[0].Name)
 	require.Equal(t, 95.0, result[0].Threshold)
 	require.Equal(t, "5m", result[0].Period)
+	require.Equal(t, "https://example.com/runbook/probe-failures", result[0].RunbookUrl)
 	require.Equal(t, int64(1234567890), result[0].Created)
 	require.Equal(t, int64(1234567890), result[0].Modified)
 
@@ -1511,6 +1513,7 @@ func TestUpdateCheckAlerts(t *testing.T) {
 	require.Equal(t, "TLSTargetCertificateCloseToExpiring", result[1].Name)
 	require.Equal(t, 7.0, result[1].Threshold)
 	require.Empty(t, result[1].Period)
+	require.Empty(t, result[1].RunbookUrl)
 	require.Equal(t, int64(1234567890), result[1].Created)
 	require.Equal(t, int64(1234567890), result[1].Modified)
 }
@@ -1535,11 +1538,12 @@ func TestGetCheckAlerts(t *testing.T) {
 		alerts := []model.CheckAlertWithStatus{
 			{
 				CheckAlert: model.CheckAlert{
-					Name:      "ProbeFailedExecutionsTooHigh",
-					Threshold: 95.0,
-					Period:    "5m",
-					Created:   1234567890,
-					Modified:  1234567890,
+					Name:       "ProbeFailedExecutionsTooHigh",
+					Threshold:  95.0,
+					Period:     "5m",
+					RunbookUrl: "https://example.com/runbook/probe-failures",
+					Created:    1234567890,
+					Modified:   1234567890,
 				},
 				Status: "OK",
 			},
@@ -1573,6 +1577,7 @@ func TestGetCheckAlerts(t *testing.T) {
 	require.Equal(t, "ProbeFailedExecutionsTooHigh", result[0].Name)
 	require.Equal(t, 95.0, result[0].Threshold)
 	require.Equal(t, "5m", result[0].Period)
+	require.Equal(t, "https://example.com/runbook/probe-failures", result[0].RunbookUrl)
 	require.Equal(t, int64(1234567890), result[0].Created)
 	require.Equal(t, int64(1234567890), result[0].Modified)
 
@@ -1580,6 +1585,7 @@ func TestGetCheckAlerts(t *testing.T) {
 	require.Equal(t, "TLSTargetCertificateCloseToExpiring", result[1].Name)
 	require.Equal(t, 7.0, result[1].Threshold)
 	require.Empty(t, result[1].Period)
+	require.Empty(t, result[1].RunbookUrl)
 	require.Equal(t, int64(1234567890), result[1].Created)
 	require.Equal(t, int64(1234567890), result[1].Modified)
 }
