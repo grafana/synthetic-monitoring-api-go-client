@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.17.0](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.16.2...v0.17.0) (2025-09-23)
+
+
+### Features
+
+* add support for alert runbook urls ([#375](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/375)) ([0de3511](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/0de351173d1b279f747c6aacf04f12430157377d))
+
+
+### Miscellaneous Chores
+
+* Bump github.com/grafana/synthetic-monitoring-agent ([f0ece18](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/f0ece1875c4cf5392d556807fa1b36a33e018411))
+* Bump github.com/grafana/synthetic-monitoring-agent ([#378](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/378)) ([2343ca3](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/2343ca3d1296391b064d89a750378bf2b0545054))
+* Update actions/create-github-app-token action to v2.1.4 ([7254e4d](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/7254e4deef2926bc0fa8c478caa8403e76d4b11d))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.20.0 ([1771127](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/1771127a2d2c86ad280d33ae0be952a298c1bf90))
+
 ## [0.16.2](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.16.1...v0.16.2) (2025-09-12)
 
 
