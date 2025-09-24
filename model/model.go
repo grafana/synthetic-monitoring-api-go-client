@@ -89,7 +89,7 @@ type CheckAlert struct {
 	Name       string  `json:"name"`
 	Threshold  float64 `json:"threshold"`
 	Period     string  `json:"period,omitempty"`
-	RunbookUrl string  `json:"runbook_url,omitempty"`
+	RunbookUrl string  `json:"runbookUrl,omitempty"`
 	Created    int64   `json:"created"`
 	Modified   int64   `json:"modified"`
 }
