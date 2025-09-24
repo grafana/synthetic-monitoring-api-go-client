@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.17.1](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.17.0...v0.17.1) (2025-09-24)
+
+
+### Fixes
+
+* change runbookUrl casing to what the API expects ([#379](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/379)) ([3bfdc63](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/3bfdc63b379d70fbb805269299d468ee0383c1e1))
+
 ## [0.17.0](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.16.2...v0.17.0) (2025-09-23)
 
 
