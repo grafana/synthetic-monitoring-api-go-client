@@ -1294,6 +1294,60 @@ func TestListChecks(t *testing.T) {
 	require.ElementsMatch(t, checks, actualChecks)
 }
 
+func TestQueryChecks(t *testing.T) {
+	orgs := orgs()
+	testTenant := orgs.findTenantByOrg(1000)
+	testTenantId := testTenant.id
+	checks := []synthetic_monitoring.Check{
+		{
+			Id:       42,
+			TenantId: testTenantId,
+			Job:      "testing",
+			Target:   "icanhazip.com",
+		},
+		{
+			Id:       84,
+			TenantId: testTenantId,
+			Job:      "not-testing",
+			Target:   "nocanhazip.com",
+		},
+	}
+	url, mux, cleanup := newTestServer(t)
+	defer cleanup()
+	mux.Handle("/api/v1/check/query", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var resp *synthetic_monitoring.Check
+		fmt.Println(r.URL.RawQuery)
+		job := r.URL.Query().Get("job")
+		target := r.URL.Query().Get("target")
+		// Emulate searching for a check
+		for _, check := range checks {
+			if check.Job == job && check.Target == target {
+				resp = &check
+				break
+			}
+		}
+
+		writeResponse(w, http.StatusOK, &resp)
+	}))
+
+	c := NewClient(url, testTenant.token, http.DefaultClient)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	filteredChecks, err := c.QueryCheck(ctx, "testing", "icanhazip.com")
+	require.NoError(t, err)
+	require.NotNil(t, filteredChecks)
+	require.Equal(t, filteredChecks.Target, "icanhazip.com")
+
+	filteredChecks, err = c.QueryCheck(ctx, "not-testing", "nocanhazip.com")
+	require.NoError(t, err)
+	require.NotNil(t, filteredChecks)
+	require.Equal(t, filteredChecks.Target, "nocanhazip.com")
+
+	filteredChecks, err = c.QueryCheck(ctx, "not-found", "nocanhazip.com")
+	require.NoError(t, err)
+	require.Nil(t, filteredChecks)
+}
+
 func TestGetTenant(t *testing.T) {
 	orgs := orgs()
 
