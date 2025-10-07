@@ -1341,7 +1341,6 @@ func TestQueryChecks(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, filteredChecks)
 		require.Equal(t, filteredChecks.Target, "icanhazip.com")
-
 	})
 	t.Run("Validate another check can be found", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -1350,7 +1349,6 @@ func TestQueryChecks(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, filteredChecks)
 		require.Equal(t, filteredChecks.Target, "nocanhazip.com")
-
 	})
 	t.Run("Validate a not found check returns a 404", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
