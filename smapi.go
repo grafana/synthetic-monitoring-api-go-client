@@ -505,6 +505,30 @@ func (h *Client) ListChecks(ctx context.Context) ([]synthetic_monitoring.Check, 
 	return result, nil
 }
 
+// QueryCheck returns a Synthetic Monitoring check for the
+// authenticated tenant that matches the job and target passed in.
+// Job and Target must be set to non empty strings.
+func (h *Client) QueryCheck(ctx context.Context, job string, target string) (*synthetic_monitoring.Check, error) {
+	if job == "" || target == "" {
+		return nil, fmt.Errorf("check query request: target and job must be set")
+	}
+	if err := h.requireAuthToken(); err != nil {
+		return nil, err
+	}
+
+	resp, err := h.Get(ctx, fmt.Sprintf("/check/query?job=%s&target=%s", job, target), true, nil)
+	if err != nil {
+		return nil, fmt.Errorf("check query err: %w", err)
+	}
+
+	var result *synthetic_monitoring.Check
+
+	if err := ValidateResponse("check query request", resp, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 // GetTenant retrieves the information associated with the authenticated
 // tenant.
 func (h *Client) GetTenant(ctx context.Context) (*synthetic_monitoring.Tenant, error) {
