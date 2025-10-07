@@ -1326,26 +1326,47 @@ func TestQueryChecks(t *testing.T) {
 				break
 			}
 		}
-
-		writeResponse(w, http.StatusOK, &resp)
+		if resp != nil {
+			writeResponse(w, http.StatusOK, &resp)
+			return
+		}
+		errorResponse(w, http.StatusNotFound, fmt.Sprintf("check with target %s and job %s", target, job))
 	}))
 
 	c := NewClient(url, testTenant.token, http.DefaultClient)
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	filteredChecks, err := c.QueryCheck(ctx, "testing", "icanhazip.com")
-	require.NoError(t, err)
-	require.NotNil(t, filteredChecks)
-	require.Equal(t, filteredChecks.Target, "icanhazip.com")
+	t.Run("Validate checks can be found", func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		filteredChecks, err := c.QueryCheck(ctx, "testing", "icanhazip.com")
+		require.NoError(t, err)
+		require.NotNil(t, filteredChecks)
+		require.Equal(t, filteredChecks.Target, "icanhazip.com")
 
-	filteredChecks, err = c.QueryCheck(ctx, "not-testing", "nocanhazip.com")
-	require.NoError(t, err)
-	require.NotNil(t, filteredChecks)
-	require.Equal(t, filteredChecks.Target, "nocanhazip.com")
+	})
+	t.Run("Validate another check can be found", func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		filteredChecks, err := c.QueryCheck(ctx, "not-testing", "nocanhazip.com")
+		require.NoError(t, err)
+		require.NotNil(t, filteredChecks)
+		require.Equal(t, filteredChecks.Target, "nocanhazip.com")
 
-	filteredChecks, err = c.QueryCheck(ctx, "not-found", "nocanhazip.com")
-	require.NoError(t, err)
-	require.Nil(t, filteredChecks)
+	})
+	t.Run("Validate a not found check returns a 404", func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		filteredChecks, err := c.QueryCheck(ctx, "not-found", "nocanhazip.com")
+		require.Error(t, err)
+		require.Nil(t, filteredChecks)
+	})
+
+	t.Run("Ensure the client checks for missing jobs and checks", func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		filteredChecks, err := c.QueryCheck(ctx, "", "")
+		require.EqualError(t, err, "check query request: target and job must be set")
+		require.Nil(t, filteredChecks)
+	})
 }
 
 func TestGetTenant(t *testing.T) {

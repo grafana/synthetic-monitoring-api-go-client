@@ -508,6 +508,10 @@ func (h *Client) ListChecks(ctx context.Context) ([]synthetic_monitoring.Check, 
 // QueryCheck returns a Synthetic Monitoring check for the
 // authenticated tenant that matches the job and target passed in.
 func (h *Client) QueryCheck(ctx context.Context, job string, target string) (*synthetic_monitoring.Check, error) {
+	if job == "" || target == "" {
+		return nil, fmt.Errorf("check query request: target and job must be set")
+
+	}
 	if err := h.requireAuthToken(); err != nil {
 		return nil, err
 	}
