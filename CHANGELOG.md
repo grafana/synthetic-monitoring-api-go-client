@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.18.0](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.17.2...v0.18.0) (2025-10-15)
+
+
+### Features
+
+* Implement /check/query endpoint as QueryCheck ([#388](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/388)) ([05364aa](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/05364aa5d8a0b708d54a7158d4be2ecf670094a8))
+
+
+### Miscellaneous Chores
+
+* Bump github.com/grafana/synthetic-monitoring-agent ([935f92f](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/935f92f7d76f443cdbd78c2d23db43b42aea06f0))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.21.1 ([b52fd6e](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/b52fd6ea101273ee197ae63c814e23cf0ca98bd1))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.21.2 ([6c779b5](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/6c779b5d43ec557195c6de3a665d0927f2b3a1ee))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.21.3 ([07539f9](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/07539f9e769bce42b57b6b2c71b478f94b5fb363))
+* Update module github.com/grafana/synthetic-monitoring-agent to v0.43.3 ([41150a6](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/41150a63a25ee6625f207bb74d508f9d7477aea5))
+
 ## [0.17.2](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.17.1...v0.17.2) (2025-10-03)
 
 
