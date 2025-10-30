@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.18.1](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.18.0...v0.18.1) (2025-10-29)
+
+
+### Miscellaneous Chores
+
+* Bump github.com/grafana/synthetic-monitoring-agent ([bd8d1e8](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/bd8d1e8b7dff4ca64f1270499f844087bc2da6b5))
+* Bump github.com/grafana/synthetic-monitoring-agent ([#402](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/402)) ([e7f59d5](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/e7f59d581808eaf8adc5de914887d74a868d73b5))
+
 ## [0.18.0](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.17.2...v0.18.0) (2025-10-15)
 
 
