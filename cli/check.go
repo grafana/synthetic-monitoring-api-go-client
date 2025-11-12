@@ -10,6 +10,7 @@ import (
 	"time"
 
 	sm "github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring"
+	smapi "github.com/grafana/synthetic-monitoring-api-go-client"
 	"github.com/urfave/cli/v2"
 )
 
@@ -298,6 +299,10 @@ func (c ChecksClient) checkList(ctx *cli.Context) error {
 	}
 	defer func() { _ = cleanup(ctx.Context) }()
 
+	return c.listAndPrintChecks(ctx, smClient)
+}
+
+func (c ChecksClient) listAndPrintChecks(ctx *cli.Context, smClient *smapi.Client) error {
 	checks, err := smClient.ListChecks(ctx.Context)
 	if err != nil {
 		return fmt.Errorf("listing checks: %w", err)
