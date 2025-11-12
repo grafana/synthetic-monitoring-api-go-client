@@ -1294,6 +1294,62 @@ func TestListChecks(t *testing.T) {
 	require.ElementsMatch(t, checks, actualChecks)
 }
 
+func TestListChecksWithAlerts(t *testing.T) {
+	orgs := orgs()
+	testTenant := orgs.findTenantByOrg(1000)
+	testTenantID := testTenant.id
+	checksWithAlerts := []model.CheckWithAlerts{
+		{
+			Check: synthetic_monitoring.Check{
+				Id:       42,
+				TenantId: testTenantID,
+			},
+			Alerts: []model.CheckAlertWithStatus{
+				{
+					CheckAlert: model.CheckAlert{
+						Name:       "Alert1",
+						Threshold:  100,
+						Period:     "1m",
+						RunbookUrl: "https://example.com/runbook/alert1",
+					},
+					Status: "OK",
+				},
+			},
+		},
+	}
+
+	url, mux, cleanup := newTestServer(t)
+	defer cleanup()
+	mux.Handle("/api/v1/check/list", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := requireMethod(w, r, http.MethodGet); err != nil {
+			return
+		}
+
+		if r.URL.Query().Get("includeAlerts") != "true" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		if _, err := requireAuth(orgs, w, r, testTenantID); err != nil {
+			return
+		}
+
+		resp := checksWithAlerts
+
+		writeResponse(w, http.StatusOK, &resp)
+	}))
+
+	c := NewClient(url, testTenant.token, http.DefaultClient)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	actualChecks, err := c.ListChecksWithAlerts(ctx)
+	require.NoError(t, err)
+	require.NotNil(t, actualChecks)
+	require.ElementsMatch(t, checksWithAlerts, actualChecks)
+}
+
 func TestQueryChecks(t *testing.T) {
 	orgs := orgs()
 	testTenant := orgs.findTenantByOrg(1000)
