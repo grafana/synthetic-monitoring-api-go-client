@@ -505,6 +505,27 @@ func (h *Client) ListChecks(ctx context.Context) ([]synthetic_monitoring.Check, 
 	return result, nil
 }
 
+// ListChecksWithAlerts returns the list of Synthetic Monitoring checks for the
+// authenticated tenant including check alerts.
+func (h *Client) ListChecksWithAlerts(ctx context.Context) ([]model.CheckWithAlerts, error) {
+	if err := h.requireAuthToken(); err != nil {
+		return nil, err
+	}
+
+	resp, err := h.Get(ctx, "/check/list?includeAlerts=true", true, nil)
+	if err != nil {
+		return nil, fmt.Errorf("sending check list request: %w", err)
+	}
+
+	var result []model.CheckWithAlerts
+
+	if err := ValidateResponse("check list request", resp, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // QueryCheck returns a Synthetic Monitoring check for the
 // authenticated tenant that matches the job and target passed in.
 // Job and Target must be set to non empty strings.

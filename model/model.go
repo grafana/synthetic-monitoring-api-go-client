@@ -100,6 +100,11 @@ type CheckAlertWithStatus struct {
 	Error  string `json:"error,omitempty"`
 }
 
+type CheckWithAlerts struct {
+	synthetic_monitoring.Check
+	Alerts []CheckAlertWithStatus `json:"alerts"`
+}
+
 func (e *ResponseError) Error() string {
 	switch {
 	case e == nil:

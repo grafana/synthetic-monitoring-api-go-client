@@ -10,6 +10,7 @@ import (
 	"time"
 
 	sm "github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring"
+	smapi "github.com/grafana/synthetic-monitoring-api-go-client"
 	"github.com/urfave/cli/v2"
 )
 
@@ -59,6 +60,14 @@ func GetCheckCommands(cc ChecksClient) cli.Commands {
 			Name:   "list",
 			Usage:  "list Synthetic Monitoring checks",
 			Action: cc.checkList,
+			Flags: []cli.Flag{
+				&cli.BoolFlag{
+					Name:     "include-alerts",
+					Usage:    "include alerts in the output",
+					Required: false,
+					Value:    false,
+				},
+			},
 		},
 		&cli.Command{
 			Name:   "get",
@@ -298,6 +307,14 @@ func (c ChecksClient) checkList(ctx *cli.Context) error {
 	}
 	defer func() { _ = cleanup(ctx.Context) }()
 
+	if includeAlerts := ctx.Bool("include-alerts"); includeAlerts {
+		return c.listAndPrintChecksWithAlerts(ctx, smClient)
+	}
+
+	return c.listAndPrintChecks(ctx, smClient)
+}
+
+func (c ChecksClient) listAndPrintChecks(ctx *cli.Context, smClient *smapi.Client) error {
 	checks, err := smClient.ListChecks(ctx.Context)
 	if err != nil {
 		return fmt.Errorf("listing checks: %w", err)
@@ -323,6 +340,46 @@ func (c ChecksClient) checkList(ctx *cli.Context) error {
 			time.Duration(check.Frequency)*time.Millisecond,
 			time.Duration(check.Timeout)*time.Millisecond,
 		)
+	}
+	if err := w.Flush(); err != nil {
+		return fmt.Errorf("flushing output: %w", err)
+	}
+
+	return nil
+}
+
+func (c ChecksClient) listAndPrintChecksWithAlerts(ctx *cli.Context, smClient *smapi.Client) error {
+	checks, err := smClient.ListChecksWithAlerts(ctx.Context)
+	if err != nil {
+		return fmt.Errorf("listing checks: %w", err)
+	}
+
+	jsonWriter := c.JsonWriterBuilder(ctx)
+
+	if done, err := jsonWriter(checks, "marshaling checks"); err != nil || done {
+		return err
+	}
+
+	w := c.TabWriterBuilder(ctx)
+	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", "id", "type", "job", "target", "enabled", "frequency", "timeout")
+	for _, check := range checks {
+		fmt.Fprintf(
+			w,
+			"%d\t%s\t%s\t%s\t%t\t%s\t%s\n",
+			check.Id,
+			check.Type(),
+			check.Job,
+			check.Target,
+			check.Enabled,
+			time.Duration(check.Frequency)*time.Millisecond,
+			time.Duration(check.Timeout)*time.Millisecond,
+		)
+		for i, alert := range check.Alerts {
+			if i == 0 {
+				fmt.Fprintf(w, "\t%s\t%s\t%s\t%s\t%s\t%s\n", "alert name", "alert threshold", "alert period", "alert runbook", "alert status", "alert error")
+			}
+			fmt.Fprintf(w, "\t%s\t%.2f\t%s\t%s\t%s\t%s\n", alert.Name, alert.Threshold, alert.Period, alert.RunbookUrl, alert.Status, alert.Error)
+		}
 	}
 	if err := w.Flush(); err != nil {
 		return fmt.Errorf("flushing output: %w", err)
