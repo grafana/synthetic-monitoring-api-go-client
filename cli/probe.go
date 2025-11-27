@@ -9,19 +9,19 @@ import (
 	"time"
 
 	sm "github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 var errInvalidLabel = errors.New("invalid label")
 
-func GetProbeCommands(c ProbesClient) cli.Commands {
-	return cli.Commands{
-		&cli.Command{
+func GetProbeCommands(c ProbesClient) []*cli.Command {
+	return []*cli.Command{
+		{
 			Name:   "list",
 			Usage:  "list Synthetic Monitoring probes",
 			Action: c.listProbes,
 		},
-		&cli.Command{
+		{
 			Name: "add",
 			Flags: []cli.Flag{
 				&cli.StringFlag{
@@ -46,7 +46,7 @@ func GetProbeCommands(c ProbesClient) cli.Commands {
 			Usage:  "add a Synthetic Monitoring probe",
 			Action: c.addProbe,
 		},
-		&cli.Command{
+		{
 			Name:   "get",
 			Usage:  "get a Synthetic Monitoring probe",
 			Action: c.getProbe,
@@ -58,7 +58,7 @@ func GetProbeCommands(c ProbesClient) cli.Commands {
 				},
 			},
 		},
-		&cli.Command{
+		{
 			Name:   "update",
 			Usage:  "update a Synthetic Monitoring probe",
 			Action: c.updateProbe,
@@ -96,7 +96,7 @@ func GetProbeCommands(c ProbesClient) cli.Commands {
 				},
 			},
 		},
-		&cli.Command{
+		{
 			Name:   "delete",
 			Usage:  "delete one or more Synthetic Monitoring probes",
 			Action: c.deleteProbe,
@@ -113,24 +113,24 @@ func GetProbeCommands(c ProbesClient) cli.Commands {
 
 type ProbesClient ServiceClient
 
-func (c ProbesClient) listProbes(ctx *cli.Context) error {
-	smClient, cleanup, err := c.ClientBuilder(ctx)
+func (c ProbesClient) listProbes(ctx context.Context, cmd *cli.Command) error {
+	smClient, cleanup, err := c.ClientBuilder(cmd)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = cleanup(ctx.Context) }()
+	defer func() { _ = cleanup(ctx) }()
 
-	probes, err := smClient.ListProbes(ctx.Context)
+	probes, err := smClient.ListProbes(ctx)
 	if err != nil {
 		return fmt.Errorf("listing probes: %w", err)
 	}
 
-	jsonWriter := c.JsonWriterBuilder(ctx)
+	jsonWriter := c.JsonWriterBuilder(cmd)
 	if done, err := jsonWriter(probes, "marshaling probes"); err != nil || done {
 		return err
 	}
 
-	w := c.TabWriterBuilder(ctx)
+	w := c.TabWriterBuilder(cmd)
 	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", "id", "name", "region", "latitude", "longitude", "public", "deprecated", "online")
 	for _, p := range probes {
 		fmt.Fprintf(w, "%d\t%s\t%s\t%.3f\t%.3f\t%t\t%t\t%t\n", p.Id, p.Name, p.Region, p.Latitude, p.Longitude, p.Public, p.Deprecated, p.Online)
@@ -143,35 +143,35 @@ func (c ProbesClient) listProbes(ctx *cli.Context) error {
 	return nil
 }
 
-func (c ProbesClient) addProbe(ctx *cli.Context) error {
-	smClient, cleanup, err := c.ClientBuilder(ctx)
+func (c ProbesClient) addProbe(ctx context.Context, cmd *cli.Command) error {
+	smClient, cleanup, err := c.ClientBuilder(cmd)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = cleanup(ctx.Context) }()
+	defer func() { _ = cleanup(ctx) }()
 
-	newProbe, newProbeToken, err := smClient.AddProbe(ctx.Context, sm.Probe{
-		Name:      ctx.String("name"),
-		Latitude:  float32(ctx.Float64("latitude")),
-		Longitude: float32(ctx.Float64("longitude")),
-		Region:    ctx.String("region"),
+	newProbe, newProbeToken, err := smClient.AddProbe(ctx, sm.Probe{
+		Name:      cmd.String("name"),
+		Latitude:  float32(cmd.Float64("latitude")),
+		Longitude: float32(cmd.Float64("longitude")),
+		Region:    cmd.String("region"),
 	})
 	if err != nil {
 		return fmt.Errorf("adding probe: %w", err)
 	}
 
-	if ctx.Bool("json") {
+	if cmd.Bool("json") {
 		out := map[string]interface{}{
 			"probe": newProbe,
 			"token": string(newProbeToken),
 		}
-		jsonWriter := c.JsonWriterBuilder(ctx)
+		jsonWriter := c.JsonWriterBuilder(cmd)
 		if done, err := jsonWriter(out, "marshaling probe"); err != nil || done {
 			return err
 		}
 	}
 
-	w := c.TabWriterBuilder(ctx)
+	w := c.TabWriterBuilder(cmd)
 	fmt.Fprintf(w, "%s:\t%s\n", "name", newProbe.Name)
 	fmt.Fprintf(w, "%s:\t%s\n", "region", newProbe.Region)
 	fmt.Fprintf(w, "%s:\t%f\n", "latitude", newProbe.Latitude)
@@ -189,24 +189,24 @@ func (c ProbesClient) addProbe(ctx *cli.Context) error {
 	return nil
 }
 
-func (c ProbesClient) getProbe(ctx *cli.Context) error {
-	smClient, cleanup, err := c.ClientBuilder(ctx)
+func (c ProbesClient) getProbe(ctx context.Context, cmd *cli.Command) error {
+	smClient, cleanup, err := c.ClientBuilder(cmd)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = cleanup(ctx.Context) }()
+	defer func() { _ = cleanup(ctx) }()
 
-	probe, err := smClient.GetProbe(ctx.Context, ctx.Int64("id"))
+	probe, err := smClient.GetProbe(ctx, cmd.Int64("id"))
 	if err != nil {
 		return fmt.Errorf("getting probe: %w", err)
 	}
 
-	jsonWriter := c.JsonWriterBuilder(ctx)
+	jsonWriter := c.JsonWriterBuilder(cmd)
 	if done, err := jsonWriter(probe, "marshaling probe"); err != nil || done {
 		return err
 	}
 
-	w := c.TabWriterBuilder(ctx)
+	w := c.TabWriterBuilder(cmd)
 	fmt.Fprintf(w, "%s:\t%s\n", "name", probe.Name)
 	fmt.Fprintf(w, "%s:\t%s\n", "region", probe.Region)
 	fmt.Fprintf(w, "%s:\t%f\n", "latitude", probe.Latitude)
@@ -223,16 +223,16 @@ func (c ProbesClient) getProbe(ctx *cli.Context) error {
 	return nil
 }
 
-func (c ProbesClient) updateProbe(ctx *cli.Context) error {
-	smClient, cleanup, err := c.ClientBuilder(ctx)
+func (c ProbesClient) updateProbe(ctx context.Context, cmd *cli.Command) error {
+	smClient, cleanup, err := c.ClientBuilder(cmd)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = cleanup(ctx.Context) }()
+	defer func() { _ = cleanup(ctx) }()
 
 	var probeUpdateFunc func(ctx context.Context, probe sm.Probe) (*sm.Probe, []byte, error)
 
-	if ctx.Bool("reset-token") {
+	if cmd.Bool("reset-token") {
 		probeUpdateFunc = smClient.ResetProbeToken
 	} else {
 		probeUpdateFunc = func(ctx context.Context, probe sm.Probe) (*sm.Probe, []byte, error) {
@@ -242,29 +242,29 @@ func (c ProbesClient) updateProbe(ctx *cli.Context) error {
 		}
 	}
 
-	probe, err := smClient.GetProbe(ctx.Context, ctx.Int64("id"))
+	probe, err := smClient.GetProbe(ctx, cmd.Int64("id"))
 	if err != nil {
 		return fmt.Errorf("getting probe: %w", err)
 	}
 
-	if ctx.IsSet("latitude") {
-		probe.Latitude = float32(ctx.Float64("latitude"))
+	if cmd.IsSet("latitude") {
+		probe.Latitude = float32(cmd.Float64("latitude"))
 	}
 
-	if ctx.IsSet("longitude") {
-		probe.Longitude = float32(ctx.Float64("longitude"))
+	if cmd.IsSet("longitude") {
+		probe.Longitude = float32(cmd.Float64("longitude"))
 	}
 
-	if ctx.IsSet("region") {
-		probe.Region = ctx.String("region")
+	if cmd.IsSet("region") {
+		probe.Region = cmd.String("region")
 	}
 
-	if ctx.IsSet("deprecated") {
-		probe.Deprecated = ctx.Bool("deprecated")
+	if cmd.IsSet("deprecated") {
+		probe.Deprecated = cmd.Bool("deprecated")
 	}
 
-	if ctx.IsSet("labels") {
-		labels := ctx.StringSlice("labels")
+	if cmd.IsSet("labels") {
+		labels := cmd.StringSlice("labels")
 		probe.Labels = make([]sm.Label, 0, len(labels))
 
 		for _, label := range labels {
@@ -280,7 +280,7 @@ func (c ProbesClient) updateProbe(ctx *cli.Context) error {
 		}
 	}
 
-	newProbe, newProbeToken, err := probeUpdateFunc(ctx.Context, *probe)
+	newProbe, newProbeToken, err := probeUpdateFunc(ctx, *probe)
 	if err != nil {
 		return fmt.Errorf("updating probe: %w", err)
 	}
@@ -290,18 +290,18 @@ func (c ProbesClient) updateProbe(ctx *cli.Context) error {
 		token = base64.StdEncoding.EncodeToString(newProbeToken)
 	}
 
-	if ctx.Bool("json") {
+	if cmd.Bool("json") {
 		out := map[string]interface{}{
 			"probe": newProbe,
 			"token": token,
 		}
-		jsonWriter := c.JsonWriterBuilder(ctx)
+		jsonWriter := c.JsonWriterBuilder(cmd)
 		if done, err := jsonWriter(out, "marshaling probe"); err != nil || done {
 			return err
 		}
 	}
 
-	w := c.TabWriterBuilder(ctx)
+	w := c.TabWriterBuilder(cmd)
 	fmt.Fprintf(w, "%s:\t%s\n", "name", newProbe.Name)
 	fmt.Fprintf(w, "%s:\t%s\n", "region", newProbe.Region)
 	fmt.Fprintf(w, "%s:\t%f\n", "latitude", newProbe.Latitude)
@@ -321,21 +321,21 @@ func (c ProbesClient) updateProbe(ctx *cli.Context) error {
 	return nil
 }
 
-func (c ProbesClient) deleteProbe(ctx *cli.Context) error {
-	smClient, cleanup, err := c.ClientBuilder(ctx)
+func (c ProbesClient) deleteProbe(ctx context.Context, cmd *cli.Command) error {
+	smClient, cleanup, err := c.ClientBuilder(cmd)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = cleanup(ctx.Context) }()
+	defer func() { _ = cleanup(ctx) }()
 
-	for _, id := range ctx.Int64Slice("id") {
-		err := smClient.DeleteProbe(ctx.Context, id)
+	for _, id := range cmd.Int64Slice("id") {
+		err := smClient.DeleteProbe(ctx, id)
 		if err != nil {
 			return fmt.Errorf("deleting probe %d: %w", id, err)
 		}
 	}
 
-	jsonWriter := c.JsonWriterBuilder(ctx)
+	jsonWriter := c.JsonWriterBuilder(cmd)
 	if done, err := jsonWriter(struct{}{}, "marshaling result"); err != nil || done {
 		return err
 	}

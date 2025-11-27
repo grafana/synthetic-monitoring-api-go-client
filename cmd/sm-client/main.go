@@ -10,7 +10,7 @@ import (
 
 	smapi "github.com/grafana/synthetic-monitoring-api-go-client"
 	smCli "github.com/grafana/synthetic-monitoring-api-go-client/cli"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func main() {
@@ -30,33 +30,33 @@ func main() {
 		TabWriterBuilder:  newTabWriter,
 	}
 
-	app := &cli.App{
+	app := &cli.Command{
 		Name:  "sm-client",
 		Usage: "Make requests to Synthetic Monitoring API",
 		Flags: getGlobalFlags(),
-		Commands: cli.Commands{
-			&cli.Command{
-				Name:        "tenant",
-				Usage:       "tenant actions",
-				Aliases:     []string{"tenants"},
-				Subcommands: smCli.GetTenantCommands(tenantsClient),
+		Commands: []*cli.Command{
+			{
+				Name:     "tenant",
+				Usage:    "tenant actions",
+				Aliases:  []string{"tenants"},
+				Commands: smCli.GetTenantCommands(tenantsClient),
 			},
-			&cli.Command{
-				Name:        "probe",
-				Usage:       "probe actions",
-				Aliases:     []string{"probes"},
-				Subcommands: smCli.GetProbeCommands(probesClient),
+			{
+				Name:     "probe",
+				Usage:    "probe actions",
+				Aliases:  []string{"probes"},
+				Commands: smCli.GetProbeCommands(probesClient),
 			},
-			&cli.Command{
-				Name:        "check",
-				Usage:       "check actions",
-				Aliases:     []string{"checks"},
-				Subcommands: smCli.GetCheckCommands(checksClient),
+			{
+				Name:     "check",
+				Usage:    "check actions",
+				Aliases:  []string{"checks"},
+				Commands: smCli.GetCheckCommands(checksClient),
 			},
 		},
 	}
 
-	if err := app.Run(os.Args); err != nil {
+	if err := app.Run(context.Background(), os.Args); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -72,7 +72,7 @@ func getGlobalFlags() []cli.Flag {
 			Name:    "sm-api-token",
 			Value:   "",
 			Usage:   "token used to access the Synthetic Monitoring API server",
-			EnvVars: []string{"SM_API_TOKEN"},
+			Sources: cli.EnvVars("SM_API_TOKEN"),
 		},
 		&cli.Int64Flag{
 			Name:  "grafana-instance-id",
@@ -93,7 +93,7 @@ func getGlobalFlags() []cli.Flag {
 			Name:    "publisher-token",
 			Value:   "",
 			Usage:   "Grafana Cloud publisher token",
-			EnvVars: []string{"GRAFANA_PUBLISHER_TOKEN"},
+			Sources: cli.EnvVars("GRAFANA_PUBLISHER_TOKEN"),
 		},
 		&cli.BoolFlag{
 			Name:  "json",
@@ -103,20 +103,20 @@ func getGlobalFlags() []cli.Flag {
 	}
 }
 
-func newClient(c *cli.Context) (*smapi.Client, func(context.Context) error, error) {
-	token := c.String("sm-api-token")
-	smClient := smapi.NewClient(c.String("sm-api-url"), token, nil)
+func newClient(cmd *cli.Command) (*smapi.Client, func(context.Context) error, error) {
+	token := cmd.String("sm-api-token")
+	smClient := smapi.NewClient(cmd.String("sm-api-url"), token, nil)
 
 	if token != "" {
 		return smClient, func(context.Context) error { return nil }, nil
 	}
 
 	_, err := smClient.Install(
-		c.Context,
-		c.Int64("grafana-instance-id"),
-		c.Int64("metrics-instance-id"),
-		c.Int64("logs-instance-id"),
-		c.String("publisher-token"),
+		context.Background(),
+		cmd.Int64("grafana-instance-id"),
+		cmd.Int64("metrics-instance-id"),
+		cmd.Int64("logs-instance-id"),
+		cmd.String("publisher-token"),
 	)
 	if err != nil {
 		return nil, nil, fmt.Errorf("setting up Synthetic Monitoring tenant: %w", err)
@@ -125,21 +125,21 @@ func newClient(c *cli.Context) (*smapi.Client, func(context.Context) error, erro
 	return smClient, smClient.DeleteToken, nil
 }
 
-func newTabWriter(ctx *cli.Context) smCli.WriteFlusher {
+func newTabWriter(cmd *cli.Command) smCli.WriteFlusher {
 	const padding = 2
 
-	return tabwriter.NewWriter(ctx.App.Writer, 0, 0, padding, ' ', 0)
+	return tabwriter.NewWriter(cmd.Root().Writer, 0, 0, padding, ' ', 0)
 }
 
-func newJsonWriter(ctx *cli.Context) func(interface{}, string) (bool, error) {
-	if !ctx.Bool("json") {
+func newJsonWriter(cmd *cli.Command) func(interface{}, string) (bool, error) {
+	if !cmd.Bool("json") {
 		return func(interface{}, string) (bool, error) {
 			return false, nil
 		}
 	}
 
 	return func(value interface{}, errMsg string) (bool, error) {
-		enc := json.NewEncoder(ctx.App.Writer)
+		enc := json.NewEncoder(cmd.Root().Writer)
 
 		if err := enc.Encode(value); err != nil {
 			return true, fmt.Errorf("%s: %w", errMsg, err)
