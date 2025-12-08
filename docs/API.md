@@ -1,5 +1,15 @@
 # Synthetic Monitoring API
 
+> [!WARNING]
+> **Deprecated/Outdated Documentation**
+>
+> This document is no longer maintained and may contain outdated information.
+> Please visit the [official Synthetic Monitoring API documentation](https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/api-reference/)
+> or view the [Swagger OpenAPI UI](https://synthetic-monitoring-api.grafana.net/api/v1/swagger) for the most up-to-date reference.
+>
+> You can also directly download the [OpenAPI 3.0 specification](https://synthetic-monitoring-api.grafana.net/api/v1/openapi) for Grafana Cloud Synthetic Monitoring.
+
+
 This document describes the Synthetic Monitoring API. All the entry
 points return results formatted as JSON objects.
 
