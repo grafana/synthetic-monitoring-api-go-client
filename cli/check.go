@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,7 +12,7 @@ import (
 
 	sm "github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring"
 	smapi "github.com/grafana/synthetic-monitoring-api-go-client"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func getCommonCheckFlags() []cli.Flag {
@@ -47,16 +48,16 @@ func getCommonCheckFlags() []cli.Flag {
 		&cli.StringSliceFlag{
 			Name:  "probes",
 			Usage: "names or IDs of the probes where this check should run",
-			Value: cli.NewStringSlice("all"),
+			Value: []string{"all"},
 		},
 	}
 }
 
-func GetCheckCommands(cc ChecksClient) cli.Commands {
+func GetCheckCommands(cc ChecksClient) []*cli.Command {
 	const defaultDNSPort = 53
 
-	commands := cli.Commands{
-		&cli.Command{
+	commands := []*cli.Command{
+		{
 			Name:   "list",
 			Usage:  "list Synthetic Monitoring checks",
 			Action: cc.checkList,
@@ -69,7 +70,7 @@ func GetCheckCommands(cc ChecksClient) cli.Commands {
 				},
 			},
 		},
-		&cli.Command{
+		{
 			Name:   "get",
 			Usage:  "get a Synthetic Monitoring check",
 			Action: cc.checkGet,
@@ -81,9 +82,9 @@ func GetCheckCommands(cc ChecksClient) cli.Commands {
 				},
 			},
 		},
-		&cli.Command{
+		{
 			Name: "add",
-			Subcommands: []*cli.Command{
+			Commands: []*cli.Command{
 				{
 					Name:   "ping",
 					Usage:  "add a Synthetic Monitoring ping check",
@@ -268,7 +269,7 @@ func GetCheckCommands(cc ChecksClient) cli.Commands {
 				},
 			},
 		},
-		&cli.Command{
+		{
 			Name:   "delete",
 			Usage:  "delete one or more Synthetic Monitoring checks",
 			Action: cc.checkDelete,
@@ -286,7 +287,7 @@ func GetCheckCommands(cc ChecksClient) cli.Commands {
 		if cmd.Name != "add" {
 			continue
 		}
-		for _, subCmd := range cmd.Subcommands {
+		for _, subCmd := range cmd.Commands {
 			commonCheckFlags := getCommonCheckFlags()
 			flags := make([]cli.Flag, 0, len(commonCheckFlags)+len(subCmd.Flags))
 			flags = append(flags, commonCheckFlags...)
@@ -300,33 +301,33 @@ func GetCheckCommands(cc ChecksClient) cli.Commands {
 
 type ChecksClient ServiceClient
 
-func (c ChecksClient) checkList(ctx *cli.Context) error {
-	smClient, cleanup, err := c.ClientBuilder(ctx)
+func (c ChecksClient) checkList(ctx context.Context, cmd *cli.Command) error {
+	smClient, cleanup, err := c.ClientBuilder(cmd)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = cleanup(ctx.Context) }()
+	defer func() { _ = cleanup(ctx) }()
 
-	if includeAlerts := ctx.Bool("include-alerts"); includeAlerts {
-		return c.listAndPrintChecksWithAlerts(ctx, smClient)
+	if includeAlerts := cmd.Bool("include-alerts"); includeAlerts {
+		return c.listAndPrintChecksWithAlerts(ctx, cmd, smClient)
 	}
 
-	return c.listAndPrintChecks(ctx, smClient)
+	return c.listAndPrintChecks(ctx, cmd, smClient)
 }
 
-func (c ChecksClient) listAndPrintChecks(ctx *cli.Context, smClient *smapi.Client) error {
-	checks, err := smClient.ListChecks(ctx.Context)
+func (c ChecksClient) listAndPrintChecks(ctx context.Context, cmd *cli.Command, smClient *smapi.Client) error {
+	checks, err := smClient.ListChecks(ctx)
 	if err != nil {
 		return fmt.Errorf("listing checks: %w", err)
 	}
 
-	jsonWriter := c.JsonWriterBuilder(ctx)
+	jsonWriter := c.JsonWriterBuilder(cmd)
 
 	if done, err := jsonWriter(checks, "marshaling checks"); err != nil || done {
 		return err
 	}
 
-	w := c.TabWriterBuilder(ctx)
+	w := c.TabWriterBuilder(cmd)
 	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", "id", "type", "job", "target", "enabled", "frequency", "timeout")
 	for _, check := range checks {
 		fmt.Fprintf(
@@ -348,19 +349,19 @@ func (c ChecksClient) listAndPrintChecks(ctx *cli.Context, smClient *smapi.Clien
 	return nil
 }
 
-func (c ChecksClient) listAndPrintChecksWithAlerts(ctx *cli.Context, smClient *smapi.Client) error {
-	checks, err := smClient.ListChecksWithAlerts(ctx.Context)
+func (c ChecksClient) listAndPrintChecksWithAlerts(ctx context.Context, cmd *cli.Command, smClient *smapi.Client) error {
+	checks, err := smClient.ListChecksWithAlerts(ctx)
 	if err != nil {
 		return fmt.Errorf("listing checks: %w", err)
 	}
 
-	jsonWriter := c.JsonWriterBuilder(ctx)
+	jsonWriter := c.JsonWriterBuilder(cmd)
 
 	if done, err := jsonWriter(checks, "marshaling checks"); err != nil || done {
 		return err
 	}
 
-	w := c.TabWriterBuilder(ctx)
+	w := c.TabWriterBuilder(cmd)
 	fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", "id", "type", "job", "target", "enabled", "frequency", "timeout")
 	for _, check := range checks {
 		fmt.Fprintf(
@@ -388,59 +389,59 @@ func (c ChecksClient) listAndPrintChecksWithAlerts(ctx *cli.Context, smClient *s
 	return nil
 }
 
-func (c ChecksClient) checkGet(ctx *cli.Context) error {
-	smClient, cleanup, err := c.ClientBuilder(ctx)
+func (c ChecksClient) checkGet(ctx context.Context, cmd *cli.Command) error {
+	smClient, cleanup, err := c.ClientBuilder(cmd)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = cleanup(ctx.Context) }()
+	defer func() { _ = cleanup(ctx) }()
 
-	check, err := smClient.GetCheck(ctx.Context, ctx.Int64("id"))
+	check, err := smClient.GetCheck(ctx, cmd.Int64("id"))
 	if err != nil {
 		return fmt.Errorf("getting check: %w", err)
 	}
 
-	jsonWriter := c.JsonWriterBuilder(ctx)
+	jsonWriter := c.JsonWriterBuilder(cmd)
 
 	if done, err := jsonWriter(check, "marshaling check"); err != nil || done {
 		return err
 	}
 
-	return c.showCheck(ctx, os.Stdout, check)
+	return c.showCheck(ctx, cmd, os.Stdout, check)
 }
 
-func (c ChecksClient) checkAddPing(ctx *cli.Context) error {
-	smClient, cleanup, err := c.ClientBuilder(ctx)
+func (c ChecksClient) checkAddPing(ctx context.Context, cmd *cli.Command) error {
+	smClient, cleanup, err := c.ClientBuilder(cmd)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = cleanup(ctx.Context) }()
+	defer func() { _ = cleanup(ctx) }()
 
-	ipVersion := sm.IpVersion(*(ctx.Generic("ip-version").(*ipVersion)))
+	ipVersion := sm.IpVersion(*(cmd.Generic("ip-version").(*ipVersion)))
 
-	probes, err := smClient.ListProbes(ctx.Context)
+	probes, err := smClient.ListProbes(ctx)
 	if err != nil {
 		return fmt.Errorf("getting probes: %w", err)
 	}
 
 	check := sm.Check{
-		Job:       ctx.String("job"),
-		Target:    ctx.String("target"),
-		Frequency: ctx.Duration("frequency").Milliseconds(),
-		Timeout:   ctx.Duration("timeout").Milliseconds(),
-		Enabled:   ctx.Bool("enabled"),
+		Job:       cmd.String("job"),
+		Target:    cmd.String("target"),
+		Frequency: cmd.Duration("frequency").Milliseconds(),
+		Timeout:   cmd.Duration("timeout").Milliseconds(),
+		Enabled:   cmd.Bool("enabled"),
 		Settings: sm.CheckSettings{
 			Ping: &sm.PingSettings{
 				IpVersion:    ipVersion,
-				DontFragment: ctx.Bool("dont-fragment"),
-				PacketCount:  ctx.Int64("packet-count"),
+				DontFragment: cmd.Bool("dont-fragment"),
+				PacketCount:  cmd.Int64("packet-count"),
 			},
 		},
 	}
 
 	wantedProbes := make(map[string]struct{})
 
-	for _, probe := range ctx.StringSlice("probes") {
+	for _, probe := range cmd.StringSlice("probes") {
 		wantedProbes[strings.ToLower(strings.TrimSpace(probe))] = struct{}{}
 	}
 
@@ -462,77 +463,77 @@ func (c ChecksClient) checkAddPing(ctx *cli.Context) error {
 		return fmt.Errorf("invalid check: %w", err)
 	}
 
-	newCheck, err := smClient.AddCheck(ctx.Context, check)
+	newCheck, err := smClient.AddCheck(ctx, check)
 	if err != nil {
 		return fmt.Errorf("adding check: %w", err)
 	}
 
-	jsonWriter := c.JsonWriterBuilder(ctx)
+	jsonWriter := c.JsonWriterBuilder(cmd)
 
 	if done, err := jsonWriter(newCheck, "marshaling check"); err != nil || done {
 		return err
 	}
 
-	return c.showCheck(ctx, os.Stdout, newCheck)
+	return c.showCheck(ctx, cmd, os.Stdout, newCheck)
 }
 
-func (c ChecksClient) checkAddHttp(ctx *cli.Context) error {
-	smClient, cleanup, err := c.ClientBuilder(ctx)
+func (c ChecksClient) checkAddHttp(ctx context.Context, cmd *cli.Command) error {
+	smClient, cleanup, err := c.ClientBuilder(cmd)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = cleanup(ctx.Context) }()
+	defer func() { _ = cleanup(ctx) }()
 
-	ipVersion := sm.IpVersion(*(ctx.Generic("ip-version").(*ipVersion)))
-	httpMethod := sm.HttpMethod(*(ctx.Generic("method").(*httpMethod)))
-	compressionAlgo := sm.CompressionAlgorithm(*(ctx.Generic("compression-algorithm").(*compressionAlgo)))
+	ipVersion := sm.IpVersion(*(cmd.Generic("ip-version").(*ipVersion)))
+	httpMethod := sm.HttpMethod(*(cmd.Generic("method").(*httpMethod)))
+	compressionAlgo := sm.CompressionAlgorithm(*(cmd.Generic("compression-algorithm").(*compressionAlgo)))
 
 	var validHttpStatusCodes []int32
-	if ctx.IsSet("http-status-codes") {
-		in := ctx.IntSlice("http-status-codes")
+	if cmd.IsSet("http-status-codes") {
+		in := cmd.IntSlice("http-status-codes")
 		validHttpStatusCodes = make([]int32, 0, len(in))
 		for _, statusCode := range in {
 			validHttpStatusCodes = append(validHttpStatusCodes, int32(statusCode))
 		}
 	}
 
-	probes, err := smClient.ListProbes(ctx.Context)
+	probes, err := smClient.ListProbes(ctx)
 	if err != nil {
 		return fmt.Errorf("getting probes: %w", err)
 	}
 
 	check := sm.Check{
-		Job:       ctx.String("job"),
-		Target:    ctx.String("target"),
-		Frequency: ctx.Duration("frequency").Milliseconds(),
-		Timeout:   ctx.Duration("timeout").Milliseconds(),
-		Enabled:   ctx.Bool("enabled"),
+		Job:       cmd.String("job"),
+		Target:    cmd.String("target"),
+		Frequency: cmd.Duration("frequency").Milliseconds(),
+		Timeout:   cmd.Duration("timeout").Milliseconds(),
+		Enabled:   cmd.Bool("enabled"),
 		Settings: sm.CheckSettings{
 			Http: &sm.HttpSettings{
 				IpVersion:                  ipVersion,
 				Method:                     httpMethod,
-				Headers:                    ctx.StringSlice("headers"),
-				Body:                       ctx.String("body"),
-				NoFollowRedirects:          ctx.Bool("no-follow-redirects"),
-				BearerToken:                ctx.String("bearer-token"),
-				SecretManagerEnabled:       ctx.Bool("secret-manager-enabled"),
-				FailIfSSL:                  ctx.Bool("fail-if-ssl"),
-				FailIfNotSSL:               ctx.Bool("fail-if-not-ssl"),
+				Headers:                    cmd.StringSlice("headers"),
+				Body:                       cmd.String("body"),
+				NoFollowRedirects:          cmd.Bool("no-follow-redirects"),
+				BearerToken:                cmd.String("bearer-token"),
+				SecretManagerEnabled:       cmd.Bool("secret-manager-enabled"),
+				FailIfSSL:                  cmd.Bool("fail-if-ssl"),
+				FailIfNotSSL:               cmd.Bool("fail-if-not-ssl"),
 				ValidStatusCodes:           validHttpStatusCodes,
-				ValidHTTPVersions:          ctx.StringSlice("valid-http-versions"),
-				FailIfBodyMatchesRegexp:    ctx.StringSlice("fail-if-body-matches-regexp"),
-				FailIfBodyNotMatchesRegexp: ctx.StringSlice("fail-if-body-not-matches-regexp"),
+				ValidHTTPVersions:          cmd.StringSlice("valid-http-versions"),
+				FailIfBodyMatchesRegexp:    cmd.StringSlice("fail-if-body-matches-regexp"),
+				FailIfBodyNotMatchesRegexp: cmd.StringSlice("fail-if-body-not-matches-regexp"),
 				// FailIfHeaderMatchesRegexp:    c.StringSlice("fail-if-header-matches-regexp"),
 				// FailIfHeaderNotMatchesRegexp: c.StringSlice("fail-if-header-not-matches-regexp"),
 				Compression:                compressionAlgo,
-				CacheBustingQueryParamName: ctx.String("cache-busting-query-param-name"),
+				CacheBustingQueryParamName: cmd.String("cache-busting-query-param-name"),
 			},
 		},
 	}
 
 	wantedProbes := make(map[string]struct{})
 
-	for _, probe := range ctx.StringSlice("probes") {
+	for _, probe := range cmd.StringSlice("probes") {
 		wantedProbes[strings.ToLower(strings.TrimSpace(probe))] = struct{}{}
 	}
 
@@ -554,43 +555,43 @@ func (c ChecksClient) checkAddHttp(ctx *cli.Context) error {
 		return fmt.Errorf("invalid check: %w", err)
 	}
 
-	newCheck, err := smClient.AddCheck(ctx.Context, check)
+	newCheck, err := smClient.AddCheck(ctx, check)
 	if err != nil {
 		return fmt.Errorf("adding check: %w", err)
 	}
 
-	jsonWriter := c.JsonWriterBuilder(ctx)
+	jsonWriter := c.JsonWriterBuilder(cmd)
 
 	if done, err := jsonWriter(newCheck, "marshaling check"); err != nil || done {
 		return err
 	}
 
-	return c.showCheck(ctx, os.Stdout, newCheck)
+	return c.showCheck(ctx, cmd, os.Stdout, newCheck)
 }
 
-func (c ChecksClient) checkAddDns(ctx *cli.Context) error {
-	smClient, cleanup, err := c.ClientBuilder(ctx)
+func (c ChecksClient) checkAddDns(ctx context.Context, cmd *cli.Command) error {
+	smClient, cleanup, err := c.ClientBuilder(cmd)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = cleanup(ctx.Context) }()
+	defer func() { _ = cleanup(ctx) }()
 
-	ipVersion := sm.IpVersion(*(ctx.Generic("ip-version").(*ipVersion)))
+	ipVersion := sm.IpVersion(*(cmd.Generic("ip-version").(*ipVersion)))
 
 	check := sm.Check{
-		Job:       ctx.String("job"),
-		Target:    ctx.String("target"),
-		Frequency: ctx.Duration("frequency").Milliseconds(),
-		Timeout:   ctx.Duration("timeout").Milliseconds(),
-		Enabled:   ctx.Bool("enabled"),
+		Job:       cmd.String("job"),
+		Target:    cmd.String("target"),
+		Frequency: cmd.Duration("frequency").Milliseconds(),
+		Timeout:   cmd.Duration("timeout").Milliseconds(),
+		Enabled:   cmd.Bool("enabled"),
 		Settings: sm.CheckSettings{
 			Dns: &sm.DnsSettings{
 				IpVersion:   ipVersion,
-				Server:      ctx.String("server"),
-				Port:        int32(ctx.Int("port")),
-				RecordType:  sm.DnsRecordType(*(ctx.Generic("record-type").(*dnsRecordType))),
-				Protocol:    sm.DnsProtocol(*(ctx.Generic("protocol").(*dnsProtocol))),
-				ValidRCodes: ctx.StringSlice("valid-rcodes"),
+				Server:      cmd.String("server"),
+				Port:        int32(cmd.Int("port")),
+				RecordType:  sm.DnsRecordType(*(cmd.Generic("record-type").(*dnsRecordType))),
+				Protocol:    sm.DnsProtocol(*(cmd.Generic("protocol").(*dnsProtocol))),
+				ValidRCodes: cmd.StringSlice("valid-rcodes"),
 				// ValidateAnswer       *DNSRRValidator
 				// ValidateAuthority    *DNSRRValidator
 				// ValidateAdditional   *DNSRRValidator
@@ -598,14 +599,14 @@ func (c ChecksClient) checkAddDns(ctx *cli.Context) error {
 		},
 	}
 
-	probes, err := smClient.ListProbes(ctx.Context)
+	probes, err := smClient.ListProbes(ctx)
 	if err != nil {
 		return fmt.Errorf("getting probes: %w", err)
 	}
 
 	wantedProbes := make(map[string]struct{})
 
-	for _, probe := range ctx.StringSlice("probes") {
+	for _, probe := range cmd.StringSlice("probes") {
 		wantedProbes[strings.ToLower(strings.TrimSpace(probe))] = struct{}{}
 	}
 
@@ -627,59 +628,59 @@ func (c ChecksClient) checkAddDns(ctx *cli.Context) error {
 		return fmt.Errorf("invalid check: %w", err)
 	}
 
-	newCheck, err := smClient.AddCheck(ctx.Context, check)
+	newCheck, err := smClient.AddCheck(ctx, check)
 	if err != nil {
 		return fmt.Errorf("adding check: %w", err)
 	}
 
-	jsonWriter := c.JsonWriterBuilder(ctx)
+	jsonWriter := c.JsonWriterBuilder(cmd)
 
 	if done, err := jsonWriter(newCheck, "marshaling check"); err != nil || done {
 		return err
 	}
 
-	return c.showCheck(ctx, os.Stdout, newCheck)
+	return c.showCheck(ctx, cmd, os.Stdout, newCheck)
 }
 
-func (c ChecksClient) checkAddTcp(ctx *cli.Context) error {
-	smClient, cleanup, err := c.ClientBuilder(ctx)
+func (c ChecksClient) checkAddTcp(ctx context.Context, cmd *cli.Command) error {
+	smClient, cleanup, err := c.ClientBuilder(cmd)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = cleanup(ctx.Context) }()
+	defer func() { _ = cleanup(ctx) }()
 
-	ipVersion := sm.IpVersion(*(ctx.Generic("ip-version").(*ipVersion)))
+	ipVersion := sm.IpVersion(*(cmd.Generic("ip-version").(*ipVersion)))
 
 	check := sm.Check{
-		Job:       ctx.String("job"),
-		Target:    ctx.String("target"),
-		Frequency: ctx.Duration("frequency").Milliseconds(),
-		Timeout:   ctx.Duration("timeout").Milliseconds(),
-		Enabled:   ctx.Bool("enabled"),
+		Job:       cmd.String("job"),
+		Target:    cmd.String("target"),
+		Frequency: cmd.Duration("frequency").Milliseconds(),
+		Timeout:   cmd.Duration("timeout").Milliseconds(),
+		Enabled:   cmd.Bool("enabled"),
 		Settings: sm.CheckSettings{
 			Tcp: &sm.TcpSettings{
 				IpVersion: ipVersion,
-				Tls:       ctx.Bool("tls"),
+				Tls:       cmd.Bool("tls"),
 				TlsConfig: &sm.TLSConfig{
-					InsecureSkipVerify: ctx.Bool("tls-insecure-skip-verify"),
-					CACert:             []byte(ctx.String("tls-ca-cert")),
-					ClientCert:         []byte(ctx.String("tls-client-cert")),
-					ClientKey:          []byte(ctx.String("tls-client-key")),
-					ServerName:         ctx.String("tls-server-name"),
+					InsecureSkipVerify: cmd.Bool("tls-insecure-skip-verify"),
+					CACert:             []byte(cmd.String("tls-ca-cert")),
+					ClientCert:         []byte(cmd.String("tls-client-cert")),
+					ClientKey:          []byte(cmd.String("tls-client-key")),
+					ServerName:         cmd.String("tls-server-name"),
 				},
 				// QueryResponse        []TCPQueryResponse `protobuf:"bytes,5,rep,name=queryResponse,proto3" json:"queryResponse,omitempty"`
 			},
 		},
 	}
 
-	probes, err := smClient.ListProbes(ctx.Context)
+	probes, err := smClient.ListProbes(ctx)
 	if err != nil {
 		return fmt.Errorf("getting probes: %w", err)
 	}
 
 	wantedProbes := make(map[string]struct{})
 
-	for _, probe := range ctx.StringSlice("probes") {
+	for _, probe := range cmd.StringSlice("probes") {
 		wantedProbes[strings.ToLower(strings.TrimSpace(probe))] = struct{}{}
 	}
 
@@ -701,35 +702,35 @@ func (c ChecksClient) checkAddTcp(ctx *cli.Context) error {
 		return fmt.Errorf("invalid check: %w", err)
 	}
 
-	newCheck, err := smClient.AddCheck(ctx.Context, check)
+	newCheck, err := smClient.AddCheck(ctx, check)
 	if err != nil {
 		return fmt.Errorf("adding check: %w", err)
 	}
 
-	jsonWriter := c.JsonWriterBuilder(ctx)
+	jsonWriter := c.JsonWriterBuilder(cmd)
 
 	if done, err := jsonWriter(newCheck, "marshaling check"); err != nil || done {
 		return err
 	}
 
-	return c.showCheck(ctx, os.Stdout, newCheck)
+	return c.showCheck(ctx, cmd, os.Stdout, newCheck)
 }
 
-func (c ChecksClient) checkDelete(ctx *cli.Context) error {
-	smClient, cleanup, err := c.ClientBuilder(ctx)
+func (c ChecksClient) checkDelete(ctx context.Context, cmd *cli.Command) error {
+	smClient, cleanup, err := c.ClientBuilder(cmd)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = cleanup(ctx.Context) }()
+	defer func() { _ = cleanup(ctx) }()
 
-	for _, id := range ctx.Int64Slice("id") {
-		err := smClient.DeleteCheck(ctx.Context, id)
+	for _, id := range cmd.Int64Slice("id") {
+		err := smClient.DeleteCheck(ctx, id)
 		if err != nil {
 			return fmt.Errorf("deleting check %d: %w", id, err)
 		}
 	}
 
-	jsonWriter := c.JsonWriterBuilder(ctx)
+	jsonWriter := c.JsonWriterBuilder(cmd)
 
 	if done, err := jsonWriter(struct{}{}, "marshaling result"); err != nil || done {
 		return err
@@ -738,8 +739,8 @@ func (c ChecksClient) checkDelete(ctx *cli.Context) error {
 	return nil
 }
 
-func (c ChecksClient) showCheck(ctx *cli.Context, output io.Writer, check *sm.Check) error {
-	w := c.TabWriterBuilder(ctx)
+func (c ChecksClient) showCheck(ctx context.Context, cmd *cli.Command, output io.Writer, check *sm.Check) error {
+	w := c.TabWriterBuilder(cmd)
 	fmt.Fprintf(w, "%s:\t%d\n", "id", check.Id)
 	fmt.Fprintf(w, "%s:\t%s\n", "type", check.Type())
 	fmt.Fprintf(w, "%s:\t%s\n", "job", check.Job)
@@ -791,6 +792,10 @@ func (v *ipVersion) String() string {
 	return valueToString(&tmp)
 }
 
+func (v *ipVersion) Get() any {
+	return *v
+}
+
 func newIpVersion(v sm.IpVersion) *ipVersion {
 	tmp := ipVersion(v)
 
@@ -815,6 +820,10 @@ func (v *httpMethod) String() string {
 	tmp := sm.HttpMethod(*v)
 
 	return valueToString(&tmp)
+}
+
+func (v *httpMethod) Get() any {
+	return *v
 }
 
 func newHttpMethod(v sm.HttpMethod) *httpMethod {
@@ -843,6 +852,10 @@ func (v *compressionAlgo) String() string {
 	return valueToString(&tmp)
 }
 
+func (v *compressionAlgo) Get() any {
+	return *v
+}
+
 func newCompressionAlgo(v sm.CompressionAlgorithm) *compressionAlgo {
 	tmp := compressionAlgo(v)
 
@@ -869,6 +882,10 @@ func (v *dnsRecordType) String() string {
 	return valueToString(&tmp)
 }
 
+func (v *dnsRecordType) Get() any {
+	return *v
+}
+
 func newDnsRecordType(v sm.DnsRecordType) *dnsRecordType {
 	tmp := dnsRecordType(v)
 
@@ -893,6 +910,10 @@ func (v *dnsProtocol) String() string {
 	tmp := sm.DnsProtocol(*v)
 
 	return valueToString(&tmp)
+}
+
+func (v *dnsProtocol) Get() any {
+	return *v
 }
 
 func newDnsProtocol(v sm.DnsProtocol) *dnsProtocol {

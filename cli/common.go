@@ -9,7 +9,7 @@ import (
 	"time"
 
 	smapi "github.com/grafana/synthetic-monitoring-api-go-client"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 type WriteFlusher interface {
@@ -18,9 +18,9 @@ type WriteFlusher interface {
 }
 
 type ServiceClient struct {
-	ClientBuilder     func(*cli.Context) (*smapi.Client, func(context.Context) error, error)
-	JsonWriterBuilder func(*cli.Context) func(interface{}, string) (bool, error)
-	TabWriterBuilder  func(*cli.Context) WriteFlusher
+	ClientBuilder     func(*cli.Command) (*smapi.Client, func(context.Context) error, error)
+	JsonWriterBuilder func(*cli.Command) func(interface{}, string) (bool, error)
+	TabWriterBuilder  func(*cli.Command) WriteFlusher
 }
 
 func formatSMTime(t float64) string {
