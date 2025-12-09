@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.19.2](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.19.1...v0.19.2) (2025-12-09)
+
+
+### Miscellaneous Chores
+
+* **deps:** update grafana/shared-workflows/get-vault-secrets action to v1.3.0 ([47ef1fc](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/47ef1fca265c9f772bcac65080d0a98e68dfc230))
+* Update actions/checkout action to v6 ([#416](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/416)) ([7bd5f35](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/7bd5f35c91a11187462eb57111d820d91a346c9b))
+* Update actions/checkout action to v6.0.1 ([b907025](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/b907025c7f848026f0ba0fa2e1097469a0566e68))
+* Update actions/create-github-app-token action to v2.2.0 ([54bb012](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/54bb012d3ca0e816523e67eb2b188fa83b877289))
+* Update actions/create-github-app-token action to v2.2.1 ([80a57ad](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/80a57ad3ba927de7ba9862c6df2db96bb106a36b))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.23.1 ([#415](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/415)) ([27f136e](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/27f136e63aa2256b79e9b306ae59e114ba8012ba))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.25.0 ([400830a](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/400830a0b41b64b485b1a71ce2641d204da1a259))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.27.0 ([f2b5fd5](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/f2b5fd5472815c647689170f058cf99d94c2794e))
+* Update module github.com/grafana/synthetic-monitoring-agent to v0.48.0 ([c348c04](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/c348c04348d3b58fa95dc5a098f0b4e7fa2d7932))
+* Update Synthetic Monitoring API docs ([#425](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/425)) ([9eff6df](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/9eff6df8e28d4f0e8412875f5a149daa1fee365f))
+
 ## [0.19.1](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.19.0...v0.19.1) (2025-11-20)
 
 
