@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/google/go-cmp v0.7.0
-	github.com/grafana/synthetic-monitoring-agent v0.48.0
+	github.com/grafana/synthetic-monitoring-agent v0.49.0
 	github.com/quasilyte/go-ruleguard/dsl v0.3.23
 	github.com/rs/zerolog v1.34.0
 	github.com/stretchr/testify v1.11.1
@@ -20,7 +20,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
-	golang.org/x/exp v0.0.0-20251113190631-e25ba8c21ef6 // indirect
+	golang.org/x/exp v0.0.0-20251125195548-87e1e737ad39 // indirect
 	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
