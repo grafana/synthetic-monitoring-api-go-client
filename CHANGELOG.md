@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.19.3](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.19.2...v0.19.3) (2026-01-07)
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.27.1 ([0216573](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/02165734502bc801f929e0905cf6f2144a00239d))
+* Update module github.com/grafana/synthetic-monitoring-agent to v0.49.0 ([3186ea8](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/3186ea887630baa6c4ffc8239a6187f7017d4bdc))
+
 ## [0.19.2](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.19.1...v0.19.2) (2025-12-09)
 
 
