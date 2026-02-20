@@ -84,15 +84,6 @@ build-go: $(BUILD_GO_TARGETS) ## Build all Go binaries.
 .PHONY: build
 build: build-go ## Build everything.
 
-scripts/go/bin/bra: scripts/go/go.mod
-	$(S) cd scripts/go; \
-		$(GO) mod download && \
-		$(GO) build -o ./bin/bra github.com/unknwon/bra
-
-.PHONY: run
-run: scripts/go/bin/bra ## Build and run web server on filesystem changes.
-	$(S) GO111MODULE=on scripts/go/bin/bra run
-
 ##@ Testing
 
 .PHONY: test-go
@@ -126,27 +117,13 @@ golangci-lint:
 		--config '$(ROOTDIR)/.golangci.yaml' \
 		$(GO_PKGS)
 
-scripts/go/bin/gosec: scripts/go/go.mod
-	$(S) cd scripts/go && \
-		$(GO) mod download && \
-		$(GO) build -o ./bin/gosec github.com/securego/gosec/cmd/gosec
-
-# TODO recheck the rules and leave only necessary exclusions
-.PHONY: gosec
-gosec: scripts/go/bin/gosec
-	$(S) echo "lint via gosec"
-	$(S) scripts/go/bin/gosec -quiet \
-		-exclude= \
-		-conf=./scripts/go/configs/gosec.json \
-		$(GO_PKGS)
-
 .PHONY: go-vet
 go-vet:
 	$(S) echo "lint via go vet"
 	$(S) $(GO) vet $(GO_BUILD_MOD_FLAGS) $(GO_PKGS)
 
 .PHONY: lint-go
-lint-go: go-vet golangci-lint gosec ## Run all Go code checks.
+lint-go: go-vet golangci-lint ## Run all Go code checks.
 
 .PHONY: lint
 lint: lint-go ## Run all code checks.
