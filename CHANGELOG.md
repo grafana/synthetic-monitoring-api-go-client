@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.19.8](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.19.7...v0.19.8) (2026-02-23)
+
+
+### Miscellaneous Chores
+
+* Bump github.com/grafana/synthetic-monitoring-agent ([7c37ee4](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/7c37ee408967dec3f319d6c189c327fa5428e4a5))
+* **deps:** update grafana/shared-workflows/get-vault-secrets action to v1.3.1 ([815da3a](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/815da3ad9f21dffe68bc1ac37d80f76b830b8972))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.32.0 ([7c22a09](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/7c22a092b8e24a1b010e1d035a5be860a9a6dfd8))
+
 ## [0.19.7](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.19.6...v0.19.7) (2026-02-16)
 
 
