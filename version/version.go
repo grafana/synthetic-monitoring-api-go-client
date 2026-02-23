@@ -2,4 +2,4 @@ package version
 
 // Version is the synthetic-monitoring-api-go-client version.
 // This is automatically updated by release-please.
-var Version = "0.19.7" // x-release-please-version
+var Version = "0.19.8" // x-release-please-version
