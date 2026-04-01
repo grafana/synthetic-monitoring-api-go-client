@@ -1053,13 +1053,16 @@ func TestAddCheck(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	check := synthetic_monitoring.Check{}
+	check := synthetic_monitoring.Check{
+		FolderUid: "test-folder-uid",
+	}
 	newCheck, err := c.AddCheck(ctx, check)
 
 	require.NoError(t, err)
 	require.NotNil(t, newCheck)
 	require.Equal(t, testCheckID, newCheck.Id)
 	require.Equal(t, testTenant.id, newCheck.TenantId)
+	require.Equal(t, "test-folder-uid", newCheck.FolderUid)
 	require.Greater(t, newCheck.Created, float64(0))
 	require.Greater(t, newCheck.Modified, float64(0))
 	require.Empty(t, cmp.Diff(&check, newCheck, ignoreIDField(), ignoreTenantIDField(), ignoreTimeFields()),
@@ -1073,10 +1076,11 @@ func TestGetCheck(t *testing.T) {
 	testCheckID := int64(42)
 	checks := []synthetic_monitoring.Check{
 		{
-			Id:       testCheckID,
-			TenantId: testTenantID,
-			Job:      "check-1",
-			Target:   "http://example.org/",
+			Id:        testCheckID,
+			TenantId:  testTenantID,
+			Job:       "check-1",
+			Target:    "http://example.org/",
+			FolderUid: "folder-abc",
 		},
 		{
 			Id:       testCheckID + 1,
@@ -1136,6 +1140,7 @@ func TestGetCheck(t *testing.T) {
 		actualCheck, err := c.GetCheck(ctx, testCheckID)
 		require.NoError(t, err)
 		require.NotNil(t, actualCheck)
+		require.Equal(t, "folder-abc", actualCheck.FolderUid)
 		found := false
 		for _, check := range checks {
 			check := check
@@ -1200,6 +1205,7 @@ func TestUpdateCheck(t *testing.T) {
 		Job:              "job",
 		BasicMetricsOnly: true,
 		Enabled:          true,
+		FolderUid:        "updated-folder",
 	}
 	newCheck, err := c.UpdateCheck(ctx, check)
 
@@ -1207,6 +1213,7 @@ func TestUpdateCheck(t *testing.T) {
 	require.NotNil(t, newCheck)
 	require.Equal(t, testCheckID, newCheck.Id)
 	require.Equal(t, testTenant.id, newCheck.TenantId)
+	require.Equal(t, "updated-folder", newCheck.FolderUid)
 	require.Greater(t, newCheck.Created, float64(0))
 	require.Greater(t, newCheck.Modified, float64(0))
 	require.Empty(t, cmp.Diff(&check, newCheck, ignoreIDField(), ignoreTenantIDField(), ignoreTimeFields()),
@@ -1258,8 +1265,9 @@ func TestListChecks(t *testing.T) {
 	testTenantID := testTenant.id
 	checks := []synthetic_monitoring.Check{
 		{
-			Id:       42,
-			TenantId: testTenantID,
+			Id:        42,
+			TenantId:  testTenantID,
+			FolderUid: "folder-1",
 		},
 		{
 			Id:       43,
@@ -1301,8 +1309,9 @@ func TestListChecksWithAlerts(t *testing.T) {
 	checksWithAlerts := []model.CheckWithAlerts{
 		{
 			Check: synthetic_monitoring.Check{
-				Id:       42,
-				TenantId: testTenantID,
+				Id:        42,
+				TenantId:  testTenantID,
+				FolderUid: "folder-alerts",
 			},
 			Alerts: []model.CheckAlertWithStatus{
 				{
@@ -1356,10 +1365,11 @@ func TestQueryChecks(t *testing.T) {
 	testTenantId := testTenant.id
 	checks := []synthetic_monitoring.Check{
 		{
-			Id:       42,
-			TenantId: testTenantId,
-			Job:      "testing",
-			Target:   "icanhazip.com",
+			Id:        42,
+			TenantId:  testTenantId,
+			Job:       "testing",
+			Target:    "icanhazip.com",
+			FolderUid: "query-folder",
 		},
 		{
 			Id:       84,

@@ -49,6 +49,10 @@ func getCommonCheckFlags() []cli.Flag {
 			Usage: "names or IDs of the probes where this check should run",
 			Value: cli.NewStringSlice("all"),
 		},
+		&cli.StringFlag{
+			Name:  "folder-uid",
+			Usage: "UID of the Grafana folder to associate with the check",
+		},
 	}
 }
 
@@ -429,6 +433,7 @@ func (c ChecksClient) checkAddPing(ctx *cli.Context) error {
 		Frequency: ctx.Duration("frequency").Milliseconds(),
 		Timeout:   ctx.Duration("timeout").Milliseconds(),
 		Enabled:   ctx.Bool("enabled"),
+		FolderUid: ctx.String("folder-uid"),
 		Settings: sm.CheckSettings{
 			Ping: &sm.PingSettings{
 				IpVersion:    ipVersion,
@@ -507,6 +512,7 @@ func (c ChecksClient) checkAddHttp(ctx *cli.Context) error {
 		Frequency: ctx.Duration("frequency").Milliseconds(),
 		Timeout:   ctx.Duration("timeout").Milliseconds(),
 		Enabled:   ctx.Bool("enabled"),
+		FolderUid: ctx.String("folder-uid"),
 		Settings: sm.CheckSettings{
 			Http: &sm.HttpSettings{
 				IpVersion:                  ipVersion,
@@ -583,6 +589,7 @@ func (c ChecksClient) checkAddDns(ctx *cli.Context) error {
 		Frequency: ctx.Duration("frequency").Milliseconds(),
 		Timeout:   ctx.Duration("timeout").Milliseconds(),
 		Enabled:   ctx.Bool("enabled"),
+		FolderUid: ctx.String("folder-uid"),
 		Settings: sm.CheckSettings{
 			Dns: &sm.DnsSettings{
 				IpVersion:   ipVersion,
@@ -656,6 +663,7 @@ func (c ChecksClient) checkAddTcp(ctx *cli.Context) error {
 		Frequency: ctx.Duration("frequency").Milliseconds(),
 		Timeout:   ctx.Duration("timeout").Milliseconds(),
 		Enabled:   ctx.Bool("enabled"),
+		FolderUid: ctx.String("folder-uid"),
 		Settings: sm.CheckSettings{
 			Tcp: &sm.TcpSettings{
 				IpVersion: ipVersion,
@@ -747,6 +755,7 @@ func (c ChecksClient) showCheck(ctx *cli.Context, output io.Writer, check *sm.Ch
 	fmt.Fprintf(w, "%s:\t%t\n", "enabled", check.Enabled)
 	fmt.Fprintf(w, "%s:\t%s\n", "frequency", time.Duration(check.Frequency)*time.Millisecond)
 	fmt.Fprintf(w, "%s:\t%s\n", "timeout", time.Duration(check.Timeout)*time.Millisecond)
+	fmt.Fprintf(w, "%s:\t%s\n", "folder-uid", check.FolderUid)
 	fmt.Fprintf(w, "%s:\t%s\n", "created", formatSMTime(check.Created))
 	fmt.Fprintf(w, "%s:\t%s\n", "modified", formatSMTime(check.Modified))
 
