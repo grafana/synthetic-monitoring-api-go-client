@@ -17,6 +17,9 @@ policy:
 approval_rules:
   - name: Workflow .github/workflows/build.yml succeeded or skipped
     if:
+      file_not_deleted:
+        paths:
+          - ^\.github\/workflows\/build\.yml$
       targets_branch:
         pattern: (^(?:[^/]*)$)
     requires:
@@ -34,7 +37,9 @@ approval_rules:
           - ^renovate\.(?:[^/]*)$
           - ^\.renovate\.(?:[^/]*)$
           - ^\.github\/renovate\.(?:[^/]*)$
-          - ^\.github\/workflows\/renovate(?:[^/]*)$
+      file_not_deleted:
+        paths:
+          - ^\.github\/workflows\/renovate-validate\.yaml$
     requires:
       conditions:
         has_workflow_result:
@@ -48,6 +53,9 @@ approval_rules:
       changed_files:
         paths:
           - ^\.policy\.yml$
+      file_not_deleted:
+        paths:
+          - ^\.github\/workflows\/validate-policy-bot-config\.yml$
     requires:
       conditions:
         has_workflow_result:

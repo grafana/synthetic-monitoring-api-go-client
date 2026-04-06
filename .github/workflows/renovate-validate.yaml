@@ -6,8 +6,6 @@ on:
       - "renovate.*"
       - ".renovate.*"
       - ".github/renovate.*"
-      # Also when renovate version changes:
-      - ".github/workflows/renovate*"
 
 permissions:
   contents: none
@@ -25,5 +23,5 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - name: Self-hosted renovate
-        uses: grafana/sm-renovate/actions/renovate-validate@main
+      - name: Validate Renovate Config
+        uses: grafana/shared-workflows/actions/validate-renovate-config@726f1a912f45b4807774b76a6d40cbd3fb7a12c0 # validate-renovate-config/v0.1.2
