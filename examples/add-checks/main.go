@@ -10,6 +10,7 @@ import (
 
 	"github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring"
 	smapi "github.com/grafana/synthetic-monitoring-api-go-client"
+	"github.com/grafana/synthetic-monitoring-api-go-client/model"
 	"github.com/rs/zerolog"
 )
 
@@ -161,7 +162,7 @@ func addChecks(ctx context.Context, client *smapi.Client, logger zerolog.Logger)
 	}
 
 	for _, check := range getTestChecks(1, probeIDs) {
-		c, err := client.AddCheck(ctx, check)
+		c, err := client.AddCheck(ctx, model.Check{Check: check})
 		if err != nil {
 			logger.Error().Err(err).Msg("adding check")
 			continue

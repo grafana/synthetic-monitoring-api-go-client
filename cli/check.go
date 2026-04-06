@@ -11,6 +11,7 @@ import (
 
 	sm "github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring"
 	smapi "github.com/grafana/synthetic-monitoring-api-go-client"
+	"github.com/grafana/synthetic-monitoring-api-go-client/model"
 	"github.com/urfave/cli/v2"
 )
 
@@ -433,7 +434,6 @@ func (c ChecksClient) checkAddPing(ctx *cli.Context) error {
 		Frequency: ctx.Duration("frequency").Milliseconds(),
 		Timeout:   ctx.Duration("timeout").Milliseconds(),
 		Enabled:   ctx.Bool("enabled"),
-		FolderUid: ctx.String("folder-uid"),
 		Settings: sm.CheckSettings{
 			Ping: &sm.PingSettings{
 				IpVersion:    ipVersion,
@@ -467,7 +467,7 @@ func (c ChecksClient) checkAddPing(ctx *cli.Context) error {
 		return fmt.Errorf("invalid check: %w", err)
 	}
 
-	newCheck, err := smClient.AddCheck(ctx.Context, check)
+	newCheck, err := smClient.AddCheck(ctx.Context, model.Check{Check: check, FolderUid: ctx.String("folder-uid")})
 	if err != nil {
 		return fmt.Errorf("adding check: %w", err)
 	}
@@ -512,7 +512,6 @@ func (c ChecksClient) checkAddHttp(ctx *cli.Context) error {
 		Frequency: ctx.Duration("frequency").Milliseconds(),
 		Timeout:   ctx.Duration("timeout").Milliseconds(),
 		Enabled:   ctx.Bool("enabled"),
-		FolderUid: ctx.String("folder-uid"),
 		Settings: sm.CheckSettings{
 			Http: &sm.HttpSettings{
 				IpVersion:                  ipVersion,
@@ -560,7 +559,7 @@ func (c ChecksClient) checkAddHttp(ctx *cli.Context) error {
 		return fmt.Errorf("invalid check: %w", err)
 	}
 
-	newCheck, err := smClient.AddCheck(ctx.Context, check)
+	newCheck, err := smClient.AddCheck(ctx.Context, model.Check{Check: check, FolderUid: ctx.String("folder-uid")})
 	if err != nil {
 		return fmt.Errorf("adding check: %w", err)
 	}
@@ -589,7 +588,6 @@ func (c ChecksClient) checkAddDns(ctx *cli.Context) error {
 		Frequency: ctx.Duration("frequency").Milliseconds(),
 		Timeout:   ctx.Duration("timeout").Milliseconds(),
 		Enabled:   ctx.Bool("enabled"),
-		FolderUid: ctx.String("folder-uid"),
 		Settings: sm.CheckSettings{
 			Dns: &sm.DnsSettings{
 				IpVersion:   ipVersion,
@@ -634,7 +632,7 @@ func (c ChecksClient) checkAddDns(ctx *cli.Context) error {
 		return fmt.Errorf("invalid check: %w", err)
 	}
 
-	newCheck, err := smClient.AddCheck(ctx.Context, check)
+	newCheck, err := smClient.AddCheck(ctx.Context, model.Check{Check: check, FolderUid: ctx.String("folder-uid")})
 	if err != nil {
 		return fmt.Errorf("adding check: %w", err)
 	}
@@ -663,7 +661,6 @@ func (c ChecksClient) checkAddTcp(ctx *cli.Context) error {
 		Frequency: ctx.Duration("frequency").Milliseconds(),
 		Timeout:   ctx.Duration("timeout").Milliseconds(),
 		Enabled:   ctx.Bool("enabled"),
-		FolderUid: ctx.String("folder-uid"),
 		Settings: sm.CheckSettings{
 			Tcp: &sm.TcpSettings{
 				IpVersion: ipVersion,
@@ -709,7 +706,7 @@ func (c ChecksClient) checkAddTcp(ctx *cli.Context) error {
 		return fmt.Errorf("invalid check: %w", err)
 	}
 
-	newCheck, err := smClient.AddCheck(ctx.Context, check)
+	newCheck, err := smClient.AddCheck(ctx.Context, model.Check{Check: check, FolderUid: ctx.String("folder-uid")})
 	if err != nil {
 		return fmt.Errorf("adding check: %w", err)
 	}
@@ -746,7 +743,7 @@ func (c ChecksClient) checkDelete(ctx *cli.Context) error {
 	return nil
 }
 
-func (c ChecksClient) showCheck(ctx *cli.Context, output io.Writer, check *sm.Check) error {
+func (c ChecksClient) showCheck(ctx *cli.Context, output io.Writer, check *model.Check) error {
 	w := c.TabWriterBuilder(ctx)
 	fmt.Fprintf(w, "%s:\t%d\n", "id", check.Id)
 	fmt.Fprintf(w, "%s:\t%s\n", "type", check.Type())
