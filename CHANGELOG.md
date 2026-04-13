@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.19.10](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.19.9...v0.19.10) (2026-04-13)
+
+
+### Fixes
+
+* Bump grafana-build-tools to v1.35.1 ([d983b03](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/d983b034f1ec39243089a9d8c9ae66e27d972f42))
+* Remove legacy renovate workflow ([932810c](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/932810c5a0815e4dcd53c7101fb7bc9e55456898))
+* Update renovate configuration ([1f5fdb8](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/1f5fdb8c557d5ec0176364788f53af5cf2d6843e))
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.34.0 ([788ffb2](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/788ffb2719bd1750c870837a071378bbaaf41238))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.35.0 ([f3aa34a](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/f3aa34a2167d626585dcc892581e1ca12accb9d8))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.35.1 ([b8b1223](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/b8b1223425e47181911e7bb4900ebf8ac0f1af37))
+* Update module google.golang.org/grpc to v1.79.3 [SECURITY] ([#470](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/470)) ([37fd3ee](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/37fd3ee522ee1655e354ed8cc2d9196c5439095f))
+
 ## [0.19.9](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.19.8...v0.19.9) (2026-03-06)
 
 
