@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.19.11](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.19.10...v0.19.11) (2026-04-16)
+
+
+### Miscellaneous Chores
+
+* **deps:** update grafana/shared-workflows/ action to ([00c0bf4](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/00c0bf40893119e502c4bbd586b7d8cdaaf77c4e))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.36.0 ([f439cff](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/f439cffce3029d3dc0adca07aea20e67219987e4))
+* Update googleapis/release-please-action action to v4.4.1 ([e894927](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/e894927070b5632cf04d9c3a04ec68d33458421c))
+
 ## [0.19.10](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.19.9...v0.19.10) (2026-04-13)
 
 
