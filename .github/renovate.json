@@ -9,5 +9,8 @@
     "github>grafana/sm-renovate//presets/synthetic-monitoring.json5",
     "github>grafana/sm-renovate//presets/go.json5",
     "github>grafana/sm-renovate//presets/grafana-build-tools.json5"
+  ],
+  "ignorePresets": [
+    "github>grafana/grafana-renovate-config//presets/automerge"
   ]
 }

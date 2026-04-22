@@ -1,0 +1,15 @@
+$schema: https://docs.renovatebot.com/renovate-schema.json
+
+extends:
+  - github>grafana/grafana-renovate-config//presets/base
+  - github>grafana/grafana-renovate-config//presets/docker
+  - github>grafana/grafana-renovate-config//presets/github-actions
+  - github>grafana/grafana-renovate-config//presets/shared-workflows
+  - github>grafana/sm-renovate//presets/grafana.json5
+  - github>grafana/sm-renovate//presets/synthetic-monitoring.json5
+  - github>grafana/sm-renovate//presets/go.json5
+  - github>grafana/sm-renovate//presets/grafana-build-tools.json5
+
+ignorePresets:
+  # TODO(mem): review this preset to decide if we want to enable it.
+  - github>grafana/grafana-renovate-config//presets/automerge

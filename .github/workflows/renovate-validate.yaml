@@ -16,13 +16,20 @@ jobs:
       # Needed for logging into vault.
       contents: read
       id-token: write
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-amd64-small
     timeout-minutes: 5
     steps:
       - name: Checkout Code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+
+      - name: Check drift
+        run: |
+          ./scripts/generate-renovate-config
+
+          ./scripts/check-renovate-config "$GITHUB_STEP_SUMMARY"
+
       - name: Validate Renovate Config
         uses: grafana/shared-workflows/actions/validate-renovate-config@726f1a912f45b4807774b76a6d40cbd3fb7a12c0 # validate-renovate-config/v0.1.2
         with:
