@@ -141,6 +141,9 @@ publish-packages: package ## Publish Debian and RPM packages to the repository.
 	
 ##@ Helpers
 
+include scripts/make/620_generate_policy_bot_config.mk
+include scripts/make/630_generate_renovate_config.mk
+
 .PHONY: clean
 clean: ## Clean up intermediate build artifacts.
 	$(S) echo "Cleaning intermediate build artifacts..."
