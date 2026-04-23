@@ -379,6 +379,16 @@ For TCP, the structure is as follows:
 }
 ```
 
+For Traceroute, the structure is as follows:
+
+```
+<TracerouteSettings>: {
+  "maxHops": <int>,
+  "maxUnknownHops": <int>,
+  "ptrLookup": boolean,
+}
+```
+
 For MultiHTTP, the structure is as follows:
 
 ```
