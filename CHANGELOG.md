@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.19.12](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.19.11...v0.19.12) (2026-04-27)
+
+
+### Fixes
+
+* Clean up dependency management ([a72c2f9](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/a72c2f97352e4682c29ad5c16911feede8606c5c))
+
+
+### Miscellaneous Chores
+
+* **deps:** bump github.com/grafana/synthetic-monitoring-agent ([66d3483](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/66d34833b1f1d42d75edfca3847731cc7f92545a))
+* **deps:** bump github.com/rs/zerolog from 1.34.0 to 1.35.1 ([d683e88](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/d683e88efca8f6d6b117228b25ced0cb7632b548))
+* **deps:** update grafana/shared-workflows/ action to ([ede5b29](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/ede5b29b75ac815848f815cec206c68bea259b0a))
+* **deps:** update grafana/shared-workflows/ action to ([d64fd48](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/d64fd48323c593ade2f9b4f876f931c84a8b5cf7))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.37.0 ([#492](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/492)) ([4440b89](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/4440b893498789ee0c2380ff1ba56d34546f44c1))
+
 ## [0.19.11](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.19.10...v0.19.11) (2026-04-16)
 
 
