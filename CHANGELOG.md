@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.19.13](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.19.12...v0.19.13) (2026-05-05)
+
+
+### Miscellaneous Chores
+
+* **deps:** update grafana/shared-workflows/ action to ([1b362de](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/1b362deb347b6f4af75576bb6547800ca35f33e6))
+* Update googleapis/release-please-action action to v5 ([#493](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/493)) ([3b6210e](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/3b6210e4b7d435ac0af466164bacc1b1c79f4a69))
+
 ## [0.19.12](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.19.11...v0.19.12) (2026-04-27)
 
 
