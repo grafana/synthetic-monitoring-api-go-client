@@ -100,8 +100,15 @@ type CheckAlertWithStatus struct {
 	Error  string `json:"error,omitempty"`
 }
 
-type CheckWithAlerts struct {
+// Check wraps the protobuf Check type and adds API-only fields that are not
+// part of the protobuf definition.
+type Check struct {
 	synthetic_monitoring.Check
+	FolderUid string `json:"folderUid,omitempty"`
+}
+
+type CheckWithAlerts struct {
+	Check
 	Alerts []CheckAlertWithStatus `json:"alerts"`
 }
 

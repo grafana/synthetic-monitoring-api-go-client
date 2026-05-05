@@ -400,7 +400,7 @@ func (h *Client) ListProbes(ctx context.Context) ([]synthetic_monitoring.Probe, 
 // AddCheck creates a new Synthetic Monitoring check in the API server.
 //
 // The return value contains the assigned ID.
-func (h *Client) AddCheck(ctx context.Context, check synthetic_monitoring.Check) (*synthetic_monitoring.Check, error) {
+func (h *Client) AddCheck(ctx context.Context, check model.Check) (*model.Check, error) {
 	if err := h.requireAuthToken(); err != nil {
 		return nil, err
 	}
@@ -410,7 +410,7 @@ func (h *Client) AddCheck(ctx context.Context, check synthetic_monitoring.Check)
 		return nil, fmt.Errorf("sending check add request: %w", err)
 	}
 
-	var result synthetic_monitoring.Check
+	var result model.Check
 
 	if err := ValidateResponse("check add request", resp, &result); err != nil {
 		return nil, err
@@ -421,7 +421,7 @@ func (h *Client) AddCheck(ctx context.Context, check synthetic_monitoring.Check)
 
 // GetCheck returns a single Synthetic Monitoring check identified by
 // the provided ID.
-func (h *Client) GetCheck(ctx context.Context, id int64) (*synthetic_monitoring.Check, error) {
+func (h *Client) GetCheck(ctx context.Context, id int64) (*model.Check, error) {
 	if err := h.requireAuthToken(); err != nil {
 		return nil, err
 	}
@@ -431,7 +431,7 @@ func (h *Client) GetCheck(ctx context.Context, id int64) (*synthetic_monitoring.
 		return nil, fmt.Errorf("sending check get request: %w", err)
 	}
 
-	var result synthetic_monitoring.Check
+	var result model.Check
 
 	if err := ValidateResponse("check get request", resp, &result); err != nil {
 		return nil, err
@@ -444,7 +444,7 @@ func (h *Client) GetCheck(ctx context.Context, id int64) (*synthetic_monitoring.
 //
 // The return value contains the updated check (updated timestamps,
 // etc).
-func (h *Client) UpdateCheck(ctx context.Context, check synthetic_monitoring.Check) (*synthetic_monitoring.Check, error) {
+func (h *Client) UpdateCheck(ctx context.Context, check model.Check) (*model.Check, error) {
 	if err := h.requireAuthToken(); err != nil {
 		return nil, err
 	}
@@ -454,7 +454,7 @@ func (h *Client) UpdateCheck(ctx context.Context, check synthetic_monitoring.Che
 		return nil, fmt.Errorf("sending check update request: %w", err)
 	}
 
-	var result synthetic_monitoring.Check
+	var result model.Check
 
 	if err := ValidateResponse("check update request", resp, &result); err != nil {
 		return nil, err
@@ -486,7 +486,7 @@ func (h *Client) DeleteCheck(ctx context.Context, id int64) error {
 
 // ListChecks returns the list of Synthetic Monitoring checks for the
 // authenticated tenant.
-func (h *Client) ListChecks(ctx context.Context) ([]synthetic_monitoring.Check, error) {
+func (h *Client) ListChecks(ctx context.Context) ([]model.Check, error) {
 	if err := h.requireAuthToken(); err != nil {
 		return nil, err
 	}
@@ -496,7 +496,7 @@ func (h *Client) ListChecks(ctx context.Context) ([]synthetic_monitoring.Check, 
 		return nil, fmt.Errorf("sending check list request: %w", err)
 	}
 
-	var result []synthetic_monitoring.Check
+	var result []model.Check
 
 	if err := ValidateResponse("check list request", resp, &result); err != nil {
 		return nil, err
@@ -529,7 +529,7 @@ func (h *Client) ListChecksWithAlerts(ctx context.Context) ([]model.CheckWithAle
 // QueryCheck returns a Synthetic Monitoring check for the
 // authenticated tenant that matches the job and target passed in.
 // Job and Target must be set to non empty strings.
-func (h *Client) QueryCheck(ctx context.Context, job string, target string) (*synthetic_monitoring.Check, error) {
+func (h *Client) QueryCheck(ctx context.Context, job string, target string) (*model.Check, error) {
 	if job == "" || target == "" {
 		return nil, fmt.Errorf("check query request: target and job must be set")
 	}
@@ -542,7 +542,7 @@ func (h *Client) QueryCheck(ctx context.Context, job string, target string) (*sy
 		return nil, fmt.Errorf("check query err: %w", err)
 	}
 
-	var result *synthetic_monitoring.Check
+	var result *model.Check
 
 	if err := ValidateResponse("check query request", resp, &result); err != nil {
 		return nil, err
