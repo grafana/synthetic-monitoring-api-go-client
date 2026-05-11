@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.19.13](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.19.12...v0.19.13) (2026-05-11)
+
+
+### Miscellaneous Chores
+
+* **deps:** update grafana/shared-workflows/ action to ([1b362de](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/1b362deb347b6f4af75576bb6547800ca35f33e6))
+* **deps:** update grafana/shared-workflows/get-vault-secrets action to v1.3.2 ([#498](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/498)) ([bcebadd](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/bcebadd6ca1ec8aad402d4a19d29b1414fe2addd))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.37.1 ([#495](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/495)) ([d466a5e](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/d466a5e833c1eaaadeb7fbbd6a57f2b07441e125))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.38.0 ([1217937](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/1217937b97ec31c266b082575684a2ff7bfe4ec5))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.38.1 ([8340236](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/83402361e0ec295bc97046f0988b7205911a086b))
+* Update googleapis/release-please-action action to v5 ([#493](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/493)) ([3b6210e](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/3b6210e4b7d435ac0af466164bacc1b1c79f4a69))
+
 ## [0.19.12](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.19.11...v0.19.12) (2026-04-27)
 
 
