@@ -11,6 +11,7 @@ import (
 
 	sm "github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring"
 	smapi "github.com/grafana/synthetic-monitoring-api-go-client"
+	"github.com/grafana/synthetic-monitoring-api-go-client/model"
 	"github.com/urfave/cli/v2"
 )
 
@@ -48,6 +49,10 @@ func getCommonCheckFlags() []cli.Flag {
 			Name:  "probes",
 			Usage: "names or IDs of the probes where this check should run",
 			Value: cli.NewStringSlice("all"),
+		},
+		&cli.StringFlag{
+			Name:  "folder-uid",
+			Usage: "UID of the Grafana folder to associate with the check",
 		},
 	}
 }
@@ -462,7 +467,7 @@ func (c ChecksClient) checkAddPing(ctx *cli.Context) error {
 		return fmt.Errorf("invalid check: %w", err)
 	}
 
-	newCheck, err := smClient.AddCheck(ctx.Context, check)
+	newCheck, err := smClient.AddCheck(ctx.Context, model.Check{Check: check, FolderUid: ctx.String("folder-uid")})
 	if err != nil {
 		return fmt.Errorf("adding check: %w", err)
 	}
@@ -554,7 +559,7 @@ func (c ChecksClient) checkAddHttp(ctx *cli.Context) error {
 		return fmt.Errorf("invalid check: %w", err)
 	}
 
-	newCheck, err := smClient.AddCheck(ctx.Context, check)
+	newCheck, err := smClient.AddCheck(ctx.Context, model.Check{Check: check, FolderUid: ctx.String("folder-uid")})
 	if err != nil {
 		return fmt.Errorf("adding check: %w", err)
 	}
@@ -627,7 +632,7 @@ func (c ChecksClient) checkAddDns(ctx *cli.Context) error {
 		return fmt.Errorf("invalid check: %w", err)
 	}
 
-	newCheck, err := smClient.AddCheck(ctx.Context, check)
+	newCheck, err := smClient.AddCheck(ctx.Context, model.Check{Check: check, FolderUid: ctx.String("folder-uid")})
 	if err != nil {
 		return fmt.Errorf("adding check: %w", err)
 	}
@@ -701,7 +706,7 @@ func (c ChecksClient) checkAddTcp(ctx *cli.Context) error {
 		return fmt.Errorf("invalid check: %w", err)
 	}
 
-	newCheck, err := smClient.AddCheck(ctx.Context, check)
+	newCheck, err := smClient.AddCheck(ctx.Context, model.Check{Check: check, FolderUid: ctx.String("folder-uid")})
 	if err != nil {
 		return fmt.Errorf("adding check: %w", err)
 	}
@@ -738,7 +743,7 @@ func (c ChecksClient) checkDelete(ctx *cli.Context) error {
 	return nil
 }
 
-func (c ChecksClient) showCheck(ctx *cli.Context, output io.Writer, check *sm.Check) error {
+func (c ChecksClient) showCheck(ctx *cli.Context, output io.Writer, check *model.Check) error {
 	w := c.TabWriterBuilder(ctx)
 	fmt.Fprintf(w, "%s:\t%d\n", "id", check.Id)
 	fmt.Fprintf(w, "%s:\t%s\n", "type", check.Type())
@@ -747,6 +752,7 @@ func (c ChecksClient) showCheck(ctx *cli.Context, output io.Writer, check *sm.Ch
 	fmt.Fprintf(w, "%s:\t%t\n", "enabled", check.Enabled)
 	fmt.Fprintf(w, "%s:\t%s\n", "frequency", time.Duration(check.Frequency)*time.Millisecond)
 	fmt.Fprintf(w, "%s:\t%s\n", "timeout", time.Duration(check.Timeout)*time.Millisecond)
+	fmt.Fprintf(w, "%s:\t%s\n", "folder-uid", check.FolderUid)
 	fmt.Fprintf(w, "%s:\t%s\n", "created", formatSMTime(check.Created))
 	fmt.Fprintf(w, "%s:\t%s\n", "modified", formatSMTime(check.Modified))
 
