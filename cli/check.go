@@ -11,7 +11,7 @@ import (
 
 	sm "github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring"
 	smapi "github.com/grafana/synthetic-monitoring-api-go-client"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func getCommonCheckFlags() []cli.Flag {
