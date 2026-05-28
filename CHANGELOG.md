@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.19.14](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.19.13...v0.19.14) (2026-05-28)
+
+
+### Fixes
+
+* Add id-token: write for create-github-app-token ([5473ee9](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/5473ee9e1aea91c8fc7f9e9f38977fd00d195c06))
+* Migrate workflows to NOT use get-vault-secrets ([920cee2](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/920cee22bfd610e8cc6bc3fa0d65fc1b5605adc1))
+* Point release please at .github/release-please/release-please-manifest.json ([#506](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/506)) ([22ecf65](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/22ecf65a1fe7072667c40156a3ad1edaac67ccd7))
+
+
+### Miscellaneous Chores
+
+* **deps:** update grafana/shared-workflows/create-github-app-token action to v0.2.3 ([29868a9](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/29868a948fa65634aae1f33c525c302cfd0c56f0))
+* **deps:** update grafana/shared-workflows/validate-renovate-config action to v0.1.3 ([23c65ca](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/23c65caf0491a1e1da2a9b30faf1d7506725801d))
+* Update module github.com/grafana/synthetic-monitoring-agent to v0.57.2 ([06b320a](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/06b320a157599b97d85652a9a549ca8eee6f506d))
+* Update module golang.org/x/net to v0.55.0 [SECURITY] ([#508](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/508)) ([02e73c2](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/02e73c2a4bbc14ba06b4da16d3ce47ff7016b940))
+
 ## [0.19.13](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.19.12...v0.19.13) (2026-05-11)
 
 
