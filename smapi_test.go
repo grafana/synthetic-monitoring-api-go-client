@@ -1032,7 +1032,7 @@ func TestAddCheck(t *testing.T) {
 	url, mux, cleanup := newTestServer(t)
 	defer cleanup()
 	mux.Handle("/api/v1/check/add", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var req synthetic_monitoring.Check
+		var req model.Check
 		tenantID, err := readPostRequest(orgs, w, r, &req, testTenantID)
 		if err != nil {
 			return
@@ -1053,16 +1053,19 @@ func TestAddCheck(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	check := synthetic_monitoring.Check{}
+	check := model.Check{
+		FolderUid: "test-folder-uid",
+	}
 	newCheck, err := c.AddCheck(ctx, check)
 
 	require.NoError(t, err)
 	require.NotNil(t, newCheck)
 	require.Equal(t, testCheckID, newCheck.Id)
 	require.Equal(t, testTenant.id, newCheck.TenantId)
+	require.Equal(t, "test-folder-uid", newCheck.FolderUid)
 	require.Greater(t, newCheck.Created, float64(0))
 	require.Greater(t, newCheck.Modified, float64(0))
-	require.Empty(t, cmp.Diff(&check, newCheck, ignoreIDField(), ignoreTenantIDField(), ignoreTimeFields()),
+	require.Empty(t, cmp.Diff(&check.Check, &newCheck.Check, ignoreIDField(), ignoreTenantIDField(), ignoreTimeFields()),
 		"AddCheck mismatch (-want +got)")
 }
 
@@ -1071,18 +1074,23 @@ func TestGetCheck(t *testing.T) {
 	testTenant := orgs.findTenantByOrg(1000)
 	testTenantID := testTenant.id
 	testCheckID := int64(42)
-	checks := []synthetic_monitoring.Check{
+	checks := []model.Check{
 		{
-			Id:       testCheckID,
-			TenantId: testTenantID,
-			Job:      "check-1",
-			Target:   "http://example.org/",
+			Check: synthetic_monitoring.Check{
+				Id:       testCheckID,
+				TenantId: testTenantID,
+				Job:      "check-1",
+				Target:   "http://example.org/",
+			},
+			FolderUid: "folder-abc",
 		},
 		{
-			Id:       testCheckID + 1,
-			TenantId: testTenantID + 1,
-			Job:      "check-2",
-			Target:   "http://example.org/",
+			Check: synthetic_monitoring.Check{
+				Id:       testCheckID + 1,
+				TenantId: testTenantID + 1,
+				Job:      "check-2",
+				Target:   "http://example.org/",
+			},
 		},
 	}
 
@@ -1136,6 +1144,7 @@ func TestGetCheck(t *testing.T) {
 		actualCheck, err := c.GetCheck(ctx, testCheckID)
 		require.NoError(t, err)
 		require.NotNil(t, actualCheck)
+		require.Equal(t, "folder-abc", actualCheck.FolderUid)
 		found := false
 		for _, check := range checks {
 			check := check
@@ -1159,7 +1168,7 @@ func TestUpdateCheck(t *testing.T) {
 	url, mux, cleanup := newTestServer(t)
 	defer cleanup()
 	mux.Handle("/api/v1/check/update", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var req synthetic_monitoring.Check
+		var req model.Check
 		tenantID, err := readPostRequest(orgs, w, r, &req, testTenantID)
 		if err != nil {
 			return
@@ -1190,16 +1199,19 @@ func TestUpdateCheck(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	check := synthetic_monitoring.Check{
-		Id:               testCheckID,
-		TenantId:         testTenantID,
-		Frequency:        1000,
-		Timeout:          500,
-		Offset:           1,
-		Target:           "target",
-		Job:              "job",
-		BasicMetricsOnly: true,
-		Enabled:          true,
+	check := model.Check{
+		Check: synthetic_monitoring.Check{
+			Id:               testCheckID,
+			TenantId:         testTenantID,
+			Frequency:        1000,
+			Timeout:          500,
+			Offset:           1,
+			Target:           "target",
+			Job:              "job",
+			BasicMetricsOnly: true,
+			Enabled:          true,
+		},
+		FolderUid: "updated-folder",
 	}
 	newCheck, err := c.UpdateCheck(ctx, check)
 
@@ -1207,10 +1219,11 @@ func TestUpdateCheck(t *testing.T) {
 	require.NotNil(t, newCheck)
 	require.Equal(t, testCheckID, newCheck.Id)
 	require.Equal(t, testTenant.id, newCheck.TenantId)
+	require.Equal(t, "updated-folder", newCheck.FolderUid)
 	require.Greater(t, newCheck.Created, float64(0))
 	require.Greater(t, newCheck.Modified, float64(0))
-	require.Empty(t, cmp.Diff(&check, newCheck, ignoreIDField(), ignoreTenantIDField(), ignoreTimeFields()),
-		"AddCheck mismatch (-want +got)")
+	require.Empty(t, cmp.Diff(&check.Check, &newCheck.Check, ignoreIDField(), ignoreTenantIDField(), ignoreTimeFields()),
+		"UpdateCheck mismatch (-want +got)")
 }
 
 func TestDeleteCheck(t *testing.T) {
@@ -1256,14 +1269,19 @@ func TestListChecks(t *testing.T) {
 	orgs := orgs()
 	testTenant := orgs.findTenantByOrg(1000)
 	testTenantID := testTenant.id
-	checks := []synthetic_monitoring.Check{
+	checks := []model.Check{
 		{
-			Id:       42,
-			TenantId: testTenantID,
+			Check: synthetic_monitoring.Check{
+				Id:       42,
+				TenantId: testTenantID,
+			},
+			FolderUid: "folder-1",
 		},
 		{
-			Id:       43,
-			TenantId: testTenantID,
+			Check: synthetic_monitoring.Check{
+				Id:       43,
+				TenantId: testTenantID,
+			},
 		},
 	}
 
@@ -1300,9 +1318,12 @@ func TestListChecksWithAlerts(t *testing.T) {
 	testTenantID := testTenant.id
 	checksWithAlerts := []model.CheckWithAlerts{
 		{
-			Check: synthetic_monitoring.Check{
-				Id:       42,
-				TenantId: testTenantID,
+			Check: model.Check{
+				Check: synthetic_monitoring.Check{
+					Id:       42,
+					TenantId: testTenantID,
+				},
+				FolderUid: "folder-alerts",
 			},
 			Alerts: []model.CheckAlertWithStatus{
 				{
@@ -1354,28 +1375,32 @@ func TestQueryChecks(t *testing.T) {
 	orgs := orgs()
 	testTenant := orgs.findTenantByOrg(1000)
 	testTenantId := testTenant.id
-	checks := []synthetic_monitoring.Check{
+	checks := []model.Check{
 		{
-			Id:       42,
-			TenantId: testTenantId,
-			Job:      "testing",
-			Target:   "icanhazip.com",
+			Check: synthetic_monitoring.Check{
+				Id:       42,
+				TenantId: testTenantId,
+				Job:      "testing",
+				Target:   "icanhazip.com",
+			},
+			FolderUid: "query-folder",
 		},
 		{
-			Id:       84,
-			TenantId: testTenantId,
-			Job:      "not-testing",
-			Target:   "nocanhazip.com",
+			Check: synthetic_monitoring.Check{
+				Id:       84,
+				TenantId: testTenantId,
+				Job:      "not-testing",
+				Target:   "nocanhazip.com",
+			},
 		},
 	}
 	url, mux, cleanup := newTestServer(t)
 	defer cleanup()
 	mux.Handle("/api/v1/check/query", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var resp *synthetic_monitoring.Check
+		var resp *model.Check
 		fmt.Println(r.URL.RawQuery)
 		job := r.URL.Query().Get("job")
 		target := r.URL.Query().Get("target")
-		// Emulate searching for a check
 		for _, check := range checks {
 			if check.Job == job && check.Target == target {
 				resp = &check
