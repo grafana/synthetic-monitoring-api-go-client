@@ -1,10 +1,10 @@
 module github.com/grafana/synthetic-monitoring-api-go-client
 
-go 1.25.0
+go 1.25.5
 
 require (
 	github.com/google/go-cmp v0.7.0
-	github.com/grafana/synthetic-monitoring-agent v0.57.2
+	github.com/grafana/synthetic-monitoring-agent v0.58.0
 	github.com/quasilyte/go-ruleguard/dsl v0.3.23
 	github.com/rs/zerolog v1.35.1
 	github.com/stretchr/testify v1.11.1
@@ -24,7 +24,7 @@ require (
 	golang.org/x/sys v0.45.0 // indirect
 	golang.org/x/text v0.37.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260311181403-84a4fc48630c // indirect
-	google.golang.org/grpc v1.81.0 // indirect
+	google.golang.org/grpc v1.81.1 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
