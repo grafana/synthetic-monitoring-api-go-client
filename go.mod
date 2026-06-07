@@ -4,7 +4,7 @@ go 1.25.5
 
 require (
 	github.com/google/go-cmp v0.7.0
-	github.com/grafana/synthetic-monitoring-agent v0.58.0
+	github.com/grafana/synthetic-monitoring-agent v0.58.2
 	github.com/quasilyte/go-ruleguard/dsl v0.3.23
 	github.com/rs/zerolog v1.35.1
 	github.com/stretchr/testify v1.11.1
