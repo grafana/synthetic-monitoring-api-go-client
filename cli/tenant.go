@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/grafana/synthetic-monitoring-agent/pkg/pb/synthetic_monitoring"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func GetTenantCommands(c TenantsClient) cli.Commands {
