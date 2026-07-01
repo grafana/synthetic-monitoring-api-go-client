@@ -10,7 +10,7 @@ import (
 
 	smapi "github.com/grafana/synthetic-monitoring-api-go-client"
 	smCli "github.com/grafana/synthetic-monitoring-api-go-client/cli"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 func main() {
