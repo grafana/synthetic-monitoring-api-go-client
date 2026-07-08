@@ -9,7 +9,7 @@ import (
 	"time"
 
 	smapi "github.com/grafana/synthetic-monitoring-api-go-client"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 type WriteFlusher interface {
