@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.20.6](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.20.5...v0.20.6) (2026-07-23)
+
+
+### Miscellaneous Chores
+
+* Update actions/checkout action to v7.0.1 ([#539](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/539)) ([7240502](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/724050277812cdb19d3a75a55d2110c6487aaa79))
+* Update module golang.org/x/text to v0.39.0 [SECURITY] ([#536](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/536)) ([a1bbd59](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/a1bbd59c5af84ca95f993853fed42b82cf174a97))
+* Update module google.golang.org/grpc to v1.82.1 [SECURITY] ([#537](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/537)) ([6622980](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/66229808b7ced760a32958c40d1864783ae8ecd8))
+
 ## [0.20.5](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.20.4...v0.20.5) (2026-07-17)
 
 
