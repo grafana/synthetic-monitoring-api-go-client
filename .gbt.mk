@@ -4,4 +4,4 @@
 # and a shell script. This is achieved by using the `VAR=value` syntax, which
 # is valid in both Makefile and shell.
 
-GBT_IMAGE=ghcr.io/grafana/grafana-build-tools:v1.44.0@sha256:0b7232ad33819ad59b4ad157420d115eeb850c4d1e9fdfaf6168b0c12e1277d7
+GBT_IMAGE=ghcr.io/grafana/grafana-build-tools:v1.46.0@sha256:295103f9021a79d414e72f1de0e1258a00379399841b5dac4dd38fb4462ac40c
