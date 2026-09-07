@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.20.9](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.20.8...v0.20.9) (2026-09-07)
+
+
+### Miscellaneous Chores
+
+* Update module github.com/grafana/synthetic-monitoring-agent to v0.63.0 ([#545](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/545)) ([8f21896](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/8f218965f3d5133875dd741cbb0a934b635c9e72))
+* Update module github.com/grafana/synthetic-monitoring-agent to v0.64.2 ([#550](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/550)) ([68d4fde](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/68d4fde797b6883605e7f074e6ac1fcc43bf9955))
+* Update module github.com/stretchr/testify to v1.12.1 ([#546](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/546)) ([ea4e6c8](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/ea4e6c80f60d9cbefcaf5879ed43bc24dbca510e))
+* Update module google.golang.org/grpc to v1.83.1 [SECURITY] ([#551](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/551)) ([ffdce8a](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/ffdce8a4e598893f74173051915b9a7124162725))
+
 ## [0.20.8](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.20.7...v0.20.8) (2026-08-22)
 
 
