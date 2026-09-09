@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.20.10](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.20.9...v0.20.10) (2026-09-09)
+
+
+### Miscellaneous Chores
+
+* Update module google.golang.org/grpc to v1.83.2 [SECURITY] ([#552](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/552)) ([85b53c5](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/85b53c56f0f55961b7dceab9bef6f1a71a6c52eb))
+
 ## [0.20.9](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.20.8...v0.20.9) (2026-09-07)
 
 
