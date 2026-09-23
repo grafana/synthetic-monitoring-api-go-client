@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.20.11](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.20.10...v0.20.11) (2026-09-21)
+
+
+### Miscellaneous Chores
+
+* **deps:** update grafana/shared-workflows/create-github-app-token action to v1.0 ([#556](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/556)) ([4809b02](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/4809b029722cefa61c50246fc2265e5fcadbf403))
+
 ## [0.20.10](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.20.9...v0.20.10) (2026-09-13)
 
 
