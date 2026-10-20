@@ -421,7 +421,7 @@ func (c ChecksClient) checkAddPing(ctx *cli.Context) error {
 	}
 	defer func() { _ = cleanup(ctx.Context) }()
 
-	ipVersion := sm.IpVersion(*(ctx.Generic("ip-version").(*ipVersion)))
+	ipVersion := sm.IpVersion(*ctx.Generic("ip-version").(*ipVersion))
 
 	probes, err := smClient.ListProbes(ctx.Context)
 	if err != nil {
@@ -488,9 +488,9 @@ func (c ChecksClient) checkAddHttp(ctx *cli.Context) error {
 	}
 	defer func() { _ = cleanup(ctx.Context) }()
 
-	ipVersion := sm.IpVersion(*(ctx.Generic("ip-version").(*ipVersion)))
-	httpMethod := sm.HttpMethod(*(ctx.Generic("method").(*httpMethod)))
-	compressionAlgo := sm.CompressionAlgorithm(*(ctx.Generic("compression-algorithm").(*compressionAlgo)))
+	ipVersion := sm.IpVersion(*ctx.Generic("ip-version").(*ipVersion))
+	httpMethod := sm.HttpMethod(*ctx.Generic("method").(*httpMethod))
+	compressionAlgo := sm.CompressionAlgorithm(*ctx.Generic("compression-algorithm").(*compressionAlgo))
 
 	var validHttpStatusCodes []int32
 	if ctx.IsSet("http-status-codes") {
@@ -580,7 +580,7 @@ func (c ChecksClient) checkAddDns(ctx *cli.Context) error {
 	}
 	defer func() { _ = cleanup(ctx.Context) }()
 
-	ipVersion := sm.IpVersion(*(ctx.Generic("ip-version").(*ipVersion)))
+	ipVersion := sm.IpVersion(*ctx.Generic("ip-version").(*ipVersion))
 
 	check := sm.Check{
 		Job:       ctx.String("job"),
@@ -593,8 +593,8 @@ func (c ChecksClient) checkAddDns(ctx *cli.Context) error {
 				IpVersion:   ipVersion,
 				Server:      ctx.String("server"),
 				Port:        int32(ctx.Int("port")),
-				RecordType:  sm.DnsRecordType(*(ctx.Generic("record-type").(*dnsRecordType))),
-				Protocol:    sm.DnsProtocol(*(ctx.Generic("protocol").(*dnsProtocol))),
+				RecordType:  sm.DnsRecordType(*ctx.Generic("record-type").(*dnsRecordType)),
+				Protocol:    sm.DnsProtocol(*ctx.Generic("protocol").(*dnsProtocol)),
 				ValidRCodes: ctx.StringSlice("valid-rcodes"),
 				// ValidateAnswer       *DNSRRValidator
 				// ValidateAuthority    *DNSRRValidator
@@ -653,7 +653,7 @@ func (c ChecksClient) checkAddTcp(ctx *cli.Context) error {
 	}
 	defer func() { _ = cleanup(ctx.Context) }()
 
-	ipVersion := sm.IpVersion(*(ctx.Generic("ip-version").(*ipVersion)))
+	ipVersion := sm.IpVersion(*ctx.Generic("ip-version").(*ipVersion))
 
 	check := sm.Check{
 		Job:       ctx.String("job"),
