@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.20.12](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.20.11...v0.20.12) (2026-10-21)
+
+
+### Miscellaneous Chores
+
+* Build with Go 1.26.10 (CVE-2026-111943) ([#569](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/569)) ([52de1f7](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/52de1f7e8de620a48adf37a1f3104f40459f4b7c))
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.48.1 ([#554](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/554)) ([c7fddc9](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/c7fddc95d10e60c16207d70634bd7d7f4f675a23))
+
 ## [0.20.11](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.20.10...v0.20.11) (2026-09-21)
 
 
