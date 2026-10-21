@@ -33,11 +33,15 @@ if test -z "${GOARCH}" ; then
 	GOARCH=$(go env GOARCH)
 fi
 
+# Keep the container's caches separate from the host's: a host go toolchain
+# sharing the build cache with the one in the image corrupts it.
+mkdir -p "${HOME}/.cache/gbt"
+
 exec docker run                                  \
 	--rm                                     \
 	--user "$(id -u):$(id -g)"               \
 	--volume "${ROOTDIR}:${ROOTDIR}"         \
-	--volume "${HOME}/.cache:/.cache"        \
+	--volume "${HOME}/.cache/gbt:/.cache"    \
 	--volume "${GOPATH}:/go"                 \
 	--volume "${GOMODCACHE}:/go/pkg/mod"     \
 	--workdir "${ROOTDIR}"                   \
