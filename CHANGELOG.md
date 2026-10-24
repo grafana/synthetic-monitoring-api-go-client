@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.20.13](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.20.12...v0.20.13) (2026-10-24)
+
+
+### Miscellaneous Chores
+
+* Update ghcr.io/grafana/grafana-build-tools Docker tag to v1.49.0 ([#570](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/570)) ([0eaf08a](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/0eaf08a54ea1cb3c28227793428bce40803c284c))
+* Update github.com/xrash/smetrics digest to 39c47d9 ([#566](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/566)) ([e13f553](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/e13f553dadd3a4e3495c5af2e629461684651392))
+* Update google.golang.org/genproto/googleapis/rpc digest to ce908d2 ([#567](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/567)) ([b09ef86](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/b09ef86b85c746caf54d874700143ba0d8ea738a))
+* Update grafana/shared-workflows digest to cdfa828 ([#557](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/557)) ([5b94329](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/5b943296045d316836e10957d4d3f594d69f6427))
+* Update module github.com/grafana/synthetic-monitoring-agent to v0.66.1 ([#559](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/559)) ([cf118fd](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/cf118fdb359072d9b268d75221b61ccb2ab19981))
+* Update module github.com/mattn/go-colorable to v0.1.16 ([#561](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/561)) ([1372528](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/13725281b9215b01ae4f1d818e32d6acee99ffb3))
+* Update module github.com/mattn/go-isatty to v0.0.24 ([#562](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/562)) ([c72ae11](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/c72ae110268eff2ad6d9393f919bc3d0340a08aa))
+* Update module github.com/tdewolff/parse/v2 to v2.8.19 ([#573](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/573)) ([eb500f2](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/eb500f2dd489b18b65b953b67d3ee8a49581fe75))
+* Update module golang.org/x/net to v0.60.0 [SECURITY] ([#560](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/560)) ([532d18b](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/532d18be468767aac631dae9a87a353cc580870f))
+* Update module golang.org/x/net to v0.61.0 ([#572](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/572)) ([40f3b04](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/40f3b043f66a0461af4c0d010f850a4fa05ac0a1))
+* Update module golang.org/x/text to v0.43.0 ([#564](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/564)) ([6671f0d](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/6671f0d4098e46ad2d303b1bf39cb0bd3d778faf))
+* Update module google.golang.org/grpc to v1.84.0 ([#565](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/565)) ([47632be](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/47632be5f85ada199710095d7993990b1cb97c46))
+
 ## [0.20.12](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.20.11...v0.20.12) (2026-10-21)
 
 
