@@ -6,8 +6,8 @@ github.com/golang/protobuf v1.5.4 h1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek
 github.com/golang/protobuf v1.5.4/go.mod h1:lnTiLA8Wa4RWRcIUkrtSVa5nRhsEGBg48fD6rSs7xps=
 github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
 github.com/google/go-cmp v0.7.0/go.mod h1:pXiqmnSA92OHEEa9HXL2W4E7lf9JzCmGVUdgjX3N/iU=
-github.com/grafana/synthetic-monitoring-agent v0.66.1 h1:qSGNjCt95+WerbQcjYR2jw4Mo1GxEbK1sCUdO2vdppc=
-github.com/grafana/synthetic-monitoring-agent v0.66.1/go.mod h1:3QcjM1stz4A6KJuxCm9cdoTQIarcAmsJ8V8G46ln3LU=
+github.com/grafana/synthetic-monitoring-agent v0.67.0 h1:2J0IR7PRMII75cv/Nf8fJPGr9uhNx5/sr/w33HAFpTg=
+github.com/grafana/synthetic-monitoring-agent v0.67.0/go.mod h1:9YaWXemJ8hmufmIcVn06RzuSQpBjKLxArKp+/7/4BC4=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/mattn/go-colorable v0.1.16 h1:+2YjeAe7xP1OQbZW1jERPWWCDLlNqFNCvjiqGiAt84A=
