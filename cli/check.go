@@ -184,8 +184,9 @@ func GetCheckCommands(cc ChecksClient) cli.Commands {
 							Usage: "name of the query parameter to add to the request to bust the cache",
 						},
 						&cli.BoolFlag{
-							Name:  "secret-manager-enabled",
-							Usage: "enable secret manager for bearer token and basic auth password resolution",
+							Name:   "secret-manager-enabled",
+							Usage:  "deprecated and ignored, the API sets this value by itself",
+							Hidden: true,
 						},
 					},
 				},
@@ -520,7 +521,7 @@ func (c ChecksClient) checkAddHttp(ctx *cli.Context) error {
 				Body:                       ctx.String("body"),
 				NoFollowRedirects:          ctx.Bool("no-follow-redirects"),
 				BearerToken:                ctx.String("bearer-token"),
-				SecretManagerEnabled:       ctx.Bool("secret-manager-enabled"),
+				SecretManagerEnabled:       ctx.Bool("secret-manager-enabled"), // still sent until every API version sets it by itself
 				FailIfSSL:                  ctx.Bool("fail-if-ssl"),
 				FailIfNotSSL:               ctx.Bool("fail-if-not-ssl"),
 				ValidStatusCodes:           validHttpStatusCodes,
