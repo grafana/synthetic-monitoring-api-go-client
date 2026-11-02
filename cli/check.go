@@ -521,7 +521,7 @@ func (c ChecksClient) checkAddHttp(ctx *cli.Context) error {
 				Body:                       ctx.String("body"),
 				NoFollowRedirects:          ctx.Bool("no-follow-redirects"),
 				BearerToken:                ctx.String("bearer-token"),
-				SecretManagerEnabled:       ctx.Bool("secret-manager-enabled"), // still sent until every API version sets it by itself
+				SecretManagerEnabled:       ctx.Bool("secret-manager-enabled"), //nolint:staticcheck // agents before v0.69.0 need it until the API sets it by itself
 				FailIfSSL:                  ctx.Bool("fail-if-ssl"),
 				FailIfNotSSL:               ctx.Bool("fail-if-not-ssl"),
 				ValidStatusCodes:           validHttpStatusCodes,
