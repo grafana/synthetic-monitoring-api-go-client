@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.21.0](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.20.14...v0.21.0) (2026-11-06)
+
+
+### Features
+
+* deprecate secretManagerEnabled ([#577](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/577)) ([ddfe470](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/ddfe4709b555881f4ea6a5b5ed3ac77c3c62f141))
+
 ## [0.20.14](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.20.13...v0.20.14) (2026-11-03)
 
 
