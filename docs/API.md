@@ -349,6 +349,9 @@ For HTTP, the structure is as follows:
 }
 ```
 
+`secretManagerEnabled` is deprecated. The API sets it by itself and ignores
+the value a client sends.
+
 For ping (ICMP), the structure is as follows:
 
 ```
