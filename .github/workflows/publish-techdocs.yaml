@@ -14,7 +14,7 @@ concurrency:
 permissions: {}
 jobs:
   publish-docs:
-    uses: grafana/shared-workflows/.github/workflows/publish-techdocs.yaml@cdfa828a8c3148777e8b91d326ff2ed355be4631 # main
+    uses: grafana/shared-workflows/.github/workflows/publish-techdocs.yaml@6a943082408bb241a26b14661e446220c3e62b16 # main
     permissions:
       contents: read
       id-token: write
