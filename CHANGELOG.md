@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.21.2](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.21.1...v0.21.2) (2026-11-27)
+
+
+### Miscellaneous Chores
+
+* unify CODEOWNERS to @grafana/synthetic-monitoring-dev ([#591](https://github.com/grafana/synthetic-monitoring-api-go-client/issues/591)) ([f7b0768](https://github.com/grafana/synthetic-monitoring-api-go-client/commit/f7b0768073785a3b7adeaa9cfcf204a0948a47bd))
+
 ## [0.21.1](https://github.com/grafana/synthetic-monitoring-api-go-client/compare/v0.21.0...v0.21.1) (2026-11-17)
 
 
